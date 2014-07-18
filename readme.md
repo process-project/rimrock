@@ -8,4 +8,4 @@ To enable code hot-deployment add the following as VM arguments in the Run confi
 
 `java -javaagent:{path_to_springloaded_jar}/springloaded-1.2.0.RELEASE.jar -noverify`
 
-Fix the path above accordingly.
+Fix the path above accordingly (you can get the jar with the help of maven: `mvn dependency:get -Dartifact="org.springframework:springloaded:1.2.0.RELEASE"`).
