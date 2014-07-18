@@ -12,7 +12,7 @@ Fix the path above accordingly (you can get the jar with the help of maven: `mvn
 
 ## Testing the basic run RESt method
 
-After the application is started you can the user proxy (e.g. from DataNet), save it to a file and use the following commands to execute something on the UI machine:
+After the application is started you can fetch the user proxy (e.g. from DataNet), save it to a file and use the following commands to execute something on the UI machine:
 
 	proxy="`cat /home/daniel/temp/user-proxy.pem | awk 1 ORS='\\\n'`"
 	message="{\"host\":\"zeus.cyfronet.pl\", \"command\":\"pwd\", \"proxy\":\"$proxy\"}"
