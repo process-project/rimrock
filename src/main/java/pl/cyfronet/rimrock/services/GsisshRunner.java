@@ -1,6 +1,7 @@
-package pl.cyfronet.rimrock;
+package pl.cyfronet.rimrock.services;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -10,7 +11,7 @@ import org.globus.gsi.X509Credential;
 import org.globus.gsi.gssapi.GlobusGSSCredentialImpl;
 import org.ietf.jgss.GSSCredential;
 import org.ietf.jgss.GSSException;
-import org.junit.Test;
+import org.springframework.stereotype.Service;
 
 import com.sshtools.j2ssh.SshClient;
 import com.sshtools.j2ssh.authentication.AuthenticationProtocolState;
@@ -21,31 +22,31 @@ import com.sshtools.j2ssh.io.IOStreamConnector;
 import com.sshtools.j2ssh.session.SessionChannelClient;
 import com.sshtools.j2ssh.util.InvalidStateException;
 
-public class ApplicationTests {
-	private static final String HOST = "zeus.cyfronet.pl";
-
-	@Test
-	public void contextLoads() throws IOException, InvalidStateException, InterruptedException, CredentialException, GSSException {
-		SshClient ssh = new SshClient();
-		SshConnectionProperties properties = new SshConnectionProperties();
-		properties.setHost(HOST);
-		
-		X509Credential proxy = new X509Credential("/home/daniel/temp/user-proxy.pem");
+@Service
+public class GsisshRunner {
+	public RunResults run(String host, String proxyValue, String command) throws CredentialException, GSSException, IOException, InvalidStateException, InterruptedException {
+		X509Credential proxy = new X509Credential(new ByteArrayInputStream(proxyValue.getBytes()));
 		GSSCredential gsscredential = new GlobusGSSCredentialImpl(proxy, GSSCredential.INITIATE_ONLY);
 		proxy.verify();
+		
+		SshConnectionProperties properties = new SshConnectionProperties();
+		properties.setHost(host);
 		properties.setUserProxy(gsscredential);
-		ssh.connect(properties);
-
+		
 		GSSAuthenticationClient pwd = new GSSAuthenticationClient(gsscredential);
-		pwd.setUsername(extractUsername(proxy.getSubject()));
-
-		int result = ssh.authenticate(pwd, HOST);
+		pwd.setUsername(extractUserName(proxy.getSubject()));
+		
+		SshClient ssh = new SshClient();
+		ssh.connect(properties);
+		
+		RunResults results = new RunResults();
+		int result = ssh.authenticate(pwd, host);
 
 		if(result == AuthenticationProtocolState.COMPLETE) {
 			SessionChannelClient session = ssh.openSessionChannel();
 
 			if(!session.requestPseudoTerminal("vt100", 80, 24, 0, 0, "")) {
-				System.out.println("Failed to allocate a pseudo terminal");
+				throw new IOException("Failed to allocate a pseudo terminal");
 			}
 
 			if(session.startShell()) {
@@ -55,19 +56,32 @@ public class ApplicationTests {
 				output.setCloseOutput(false);
 				input.setCloseInput(false);
 				error.setCloseOutput(false);
-				input.connect(System.in, session.getOutputStream());
-				output.connect(session.getInputStream(), System.out);
-				error.connect(session.getStderrInputStream(), System.out);
+				input.connect(new ByteArrayInputStream(completeCommand(command)), session.getOutputStream());
+				
+				ByteArrayOutputStream standardOutput = new ByteArrayOutputStream();
+				output.connect(session.getInputStream(), standardOutput);
+				
+				ByteArrayOutputStream standardError = new ByteArrayOutputStream();
+				error.connect(session.getStderrInputStream(), standardError);
 				session.getState().waitForState(ChannelState.CHANNEL_CLOSED);
+				
+				results.setOutput(new String(standardOutput.toByteArray()));
+				results.setError(new String(standardError.toByteArray()));
 			} else {
-				System.out.println("Failed to start the users shell");
+				throw new IOException("Failed to start the users shell");
 			}
 
 			ssh.disconnect();
 		}
+		
+		return results;
 	}
 
-	private String extractUsername(String subject) {
+	private byte[] completeCommand(String command) {
+		return (command + "; exit\n").getBytes();
+	}
+
+	private String extractUserName(String subject) {
 		Pattern pattern = Pattern.compile(".+CN=(plg.+),.+");
 		Matcher matcher = pattern.matcher(subject);
 		
