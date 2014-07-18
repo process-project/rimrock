@@ -1,4 +1,4 @@
-package demo;
+package pl.cyfronet.rimrock;
 
 import java.io.IOException;
 
