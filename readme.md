@@ -1,7 +1,7 @@
-# Running the rimrock application
+## Running the rimrock application
 
 * Checkout the project
-* Right-click pl.cyfronet.rimrock.RimrockApplication and run as Java application
+* Right-click `pl.cyfronet.rimrock.RimrockApplication` and run as Java application
 * That is it :)
 
 To enable code hot-deployment add the following as VM arguments in the Run configurations... dialog (in eclipse):
