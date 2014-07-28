@@ -23,7 +23,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import pl.cyfronet.rimrock.RimrockApplication;
-import pl.cyfronet.rimrock.controllers.rest.RunRequest;
+import pl.cyfronet.rimrock.controllers.rest.run.RunRequest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 

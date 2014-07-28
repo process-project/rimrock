@@ -19,6 +19,7 @@
 	</parent>
 
 	<dependencies>
+		<!-- Basic spring dependencies -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
@@ -32,6 +33,10 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-log4j</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-thymeleaf</artifactId>
 		</dependency>
 
 		<!-- Infrastructure dependencies -->
@@ -64,6 +69,11 @@
 			<groupId>org.apache.airavata</groupId>
 			<artifactId>gsissh</artifactId>
 			<version>0.12</version>
+		</dependency>
+		<dependency>
+			<groupId>org.jglobus</groupId>
+			<artifactId>gridftp</artifactId>
+			<version>2.0.6</version>
 		</dependency>
 
 		<!-- Test dependencies -->

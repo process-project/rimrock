@@ -1,4 +1,4 @@
-package pl.cyfronet.rimrock.controllers.rest;
+package pl.cyfronet.rimrock.controllers.rest.run;
 
 public class RunResponse {
 	private String exitCode;

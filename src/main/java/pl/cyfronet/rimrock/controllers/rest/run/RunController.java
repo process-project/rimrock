@@ -1,4 +1,4 @@
-package pl.cyfronet.rimrock.controllers.rest;
+package pl.cyfronet.rimrock.controllers.rest.run;
 
 import java.io.IOException;
 
@@ -14,18 +14,18 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.sshtools.j2ssh.util.InvalidStateException;
-
 import pl.cyfronet.rimrock.services.GsisshRunner;
 import pl.cyfronet.rimrock.services.RunResults;
 
+import com.sshtools.j2ssh.util.InvalidStateException;
+
 @Controller
-public class RestController {
-	private static final Logger log = LoggerFactory.getLogger(RestController.class);
+public class RunController {
+	private static final Logger log = LoggerFactory.getLogger(RunController.class);
 	
 	@Autowired GsisshRunner runner;
 	
-	@RequestMapping(value = "run", method = RequestMethod.POST,
+	@RequestMapping(value = "/api/run", method = RequestMethod.POST,
 			consumes = MediaType.APPLICATION_JSON_VALUE,
 			produces = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody

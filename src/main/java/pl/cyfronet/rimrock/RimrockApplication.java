@@ -10,7 +10,7 @@ import org.springframework.context.annotation.ComponentScan;
 @ComponentScan
 public class RimrockApplication {
 	private static final Logger log = LoggerFactory.getLogger(RimrockApplication.class);
-	
+
 	public static void main(String[] args) {
 		new SpringApplicationBuilder(RimrockApplication.class).run(args);
 		log.info("rimrock application successfully started");
