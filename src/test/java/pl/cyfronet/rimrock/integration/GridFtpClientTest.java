@@ -1,4 +1,4 @@
-package pl.cyfronet.rimrock;
+package pl.cyfronet.rimrock.integration;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -21,6 +21,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import pl.cyfronet.rimrock.RimrockApplication;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = RimrockApplication.class)

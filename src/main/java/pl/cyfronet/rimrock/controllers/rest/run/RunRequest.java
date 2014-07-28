@@ -1,22 +1,20 @@
 package pl.cyfronet.rimrock.controllers.rest.run;
 
+import javax.validation.constraints.NotNull;
+
+
 public class RunRequest {
+	@NotNull
 	private String host;
-	private int port;
 	private String command;
+	@NotNull
 	private String proxy;
-	
+
 	public String getHost() {
 		return host;
 	}
 	public void setHost(String host) {
 		this.host = host;
-	}
-	public int getPort() {
-		return port;
-	}
-	public void setPort(int port) {
-		this.port = port;
 	}
 	public String getCommand() {
 		return command;
@@ -33,7 +31,7 @@ public class RunRequest {
 	
 	@Override
 	public String toString() {
-		return "RunRequest [host=" + host + ", port=" + port + ", command="
-				+ command + ", proxy=" + proxy + "]";
+		return "RunRequest [host=" + host + ", command=" + command + ", proxy="
+				+ proxy + "]";
 	}
 }

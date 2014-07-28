@@ -1,4 +1,4 @@
-package pl.cyfronet.rimrock;
+package pl.cyfronet.rimrock.integration;
 
 import java.io.IOException;
 import java.util.regex.Matcher;

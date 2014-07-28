@@ -3,6 +3,7 @@ package pl.cyfronet.rimrock.services;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -11,6 +12,8 @@ import org.globus.gsi.X509Credential;
 import org.globus.gsi.gssapi.GlobusGSSCredentialImpl;
 import org.ietf.jgss.GSSCredential;
 import org.ietf.jgss.GSSException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import com.sshtools.j2ssh.SshClient;
@@ -24,6 +27,8 @@ import com.sshtools.j2ssh.util.InvalidStateException;
 
 @Service
 public class GsisshRunner {
+	private static final Logger log = LoggerFactory.getLogger(GsisshRunner.class);
+	
 	public RunResults run(String host, String proxyValue, String command) throws CredentialException, GSSException, IOException, InvalidStateException, InterruptedException {
 		X509Credential proxy = new X509Credential(new ByteArrayInputStream(proxyValue.getBytes()));
 		GSSCredential gsscredential = new GlobusGSSCredentialImpl(proxy, GSSCredential.INITIATE_ONLY);
@@ -56,7 +61,9 @@ public class GsisshRunner {
 				output.setCloseOutput(false);
 				input.setCloseInput(false);
 				error.setCloseOutput(false);
-				input.connect(new ByteArrayInputStream(completeCommand(command)), session.getOutputStream());
+				
+				String separator = UUID.randomUUID().toString();
+				input.connect(new ByteArrayInputStream(completeCommand(command, separator)), session.getOutputStream());
 				
 				ByteArrayOutputStream standardOutput = new ByteArrayOutputStream();
 				output.connect(session.getInputStream(), standardOutput);
@@ -65,7 +72,8 @@ public class GsisshRunner {
 				error.connect(session.getStderrInputStream(), standardError);
 				session.getState().waitForState(ChannelState.CHANNEL_CLOSED);
 				
-				results.setOutput(new String(standardOutput.toByteArray()));
+				String retrievedStandardOutput = new String(standardOutput.toByteArray());
+				results.setOutput(normalizeStandardOutput(retrievedStandardOutput, separator));
 				results.setError(new String(standardError.toByteArray()));
 			} else {
 				throw new IOException("Failed to start the users shell");
@@ -77,8 +85,23 @@ public class GsisshRunner {
 		return results;
 	}
 
-	private byte[] completeCommand(String command) {
-		return (command + "; exit\n").getBytes();
+	private String normalizeStandardOutput(String output, String separator) {
+		log.trace("Output being normalized: {}" + output);
+		
+		String result = null;
+		Pattern pattern = Pattern.compile(".*^" + separator + "$\\s+(.*?)\\s+^" + separator + "$.*",
+				Pattern.MULTILINE | Pattern.DOTALL);
+		Matcher matcher = pattern.matcher(output);
+		
+		if(matcher.matches()) {
+			result = matcher.group(1);
+		}
+		
+		return result;
+	}
+
+	private byte[] completeCommand(String command, String separator) {
+		return ("echo '" + separator + "'; " + command + "; echo '" + separator + "'; exit\n").getBytes();
 	}
 
 	private String extractUserName(String subject) {

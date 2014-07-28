@@ -1,6 +1,7 @@
-package pl.cyfronet.rimrock.rest;
+package pl.cyfronet.rimrock.integration.rest;
 
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.startsWith;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -56,13 +57,14 @@ public class RunTest {
 		runRequest.setHost("zeus.cyfronet.pl");
 		runRequest.setProxy(new String(Files.readAllBytes(Paths.get(proxyPath))));
 		
-		mockMvc.perform(post("/run")
+		mockMvc.perform(post("/api/run")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(mapper.writeValueAsBytes(runRequest)))
 				
 				.andDo(print())
 				
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
-				.andExpect(jsonPath("$.exitCode", is("0")));
+				.andExpect(jsonPath("$.exit_code", is("0")))
+				.andExpect(jsonPath("$.standard_output", startsWith("/people")));
 	}
 }

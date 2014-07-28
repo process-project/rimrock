@@ -1,14 +1,33 @@
 package pl.cyfronet.rimrock.controllers.rest.run;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class RunResponse {
+	@JsonProperty("exit_code")
 	private String exitCode;
-	private String standardOutput;
-	private String errorOutput;
 	
-	public RunResponse(String exitCode, String standardOutput, String errorOutput) {
+	@JsonProperty("standard_output")
+	private String standardOutput;
+	
+	@JsonProperty("error_output")
+	private String errorOutput;
+	private Status status;
+	
+	@JsonProperty("error_message")
+	private String errorMessage;
+	
+	public enum Status {
+		ok,
+		error
+	}
+	
+	public RunResponse(Status status, String exitCode, String standardOutput, String errorOutput,
+			String errorMessage) {
+		this.setStatus(status);
 		this.exitCode = exitCode;
 		this.standardOutput = standardOutput;
 		this.errorOutput = errorOutput;
+		this.errorMessage = errorMessage;
 	}
 	
 	public String getExitCode() {
@@ -28,5 +47,21 @@ public class RunResponse {
 	}
 	public void setErrorOutput(String errorOutput) {
 		this.errorOutput = errorOutput;
+	}
+
+	public String getErrorMessage() {
+		return errorMessage;
+	}
+
+	public void setErrorMessage(String errorMessage) {
+		this.errorMessage = errorMessage;
+	}
+
+	public Status getStatus() {
+		return status;
+	}
+
+	public void setStatus(Status status) {
+		this.status = status;
 	}
 }
