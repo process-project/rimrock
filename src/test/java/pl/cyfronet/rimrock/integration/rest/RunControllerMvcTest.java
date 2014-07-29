@@ -1,6 +1,5 @@
 package pl.cyfronet.rimrock.integration.rest;
 
-import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -109,6 +108,25 @@ public class RunControllerMvcTest {
 				.andExpect(jsonPath("$.status", is("error")))
 				.andExpect(jsonPath("$.error_message", containsString("proxy:")))
 				.andExpect(jsonPath("$.error_message", containsString("host:")));
+	}
+	
+	@Test
+	public void testMultilineOutput() throws Exception {
+		RunRequest runRequest = new RunRequest();
+		runRequest.setCommand("echo hello1; echo hello2; echo hello3");
+		runRequest.setHost("zeus.cyfronet.pl");
+		runRequest.setProxy(getProxy());
+		
+		mockMvc.perform(post("/api/run")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(mapper.writeValueAsBytes(runRequest)))
+				
+				.andDo(print())
+				
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(jsonPath("$.status", is("ok")))
+				.andExpect(jsonPath("$.exit_code", is(0)))
+				.andExpect(jsonPath("$.standard_output", is("hello1\nhello2\nhello3")));
 	}
 	
 	private String getProxy() throws IOException {

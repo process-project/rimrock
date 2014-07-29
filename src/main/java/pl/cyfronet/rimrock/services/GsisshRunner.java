@@ -101,7 +101,7 @@ public class GsisshRunner {
 		Matcher matcher = pattern.matcher(output);
 		
 		if(matcher.matches()) {
-			result.output = matcher.group(1).replaceAll("\r\n", "\n");
+			result.output = matcher.group(1).replaceAll("\r\n", "\n").trim();
 			
 			try {
 				result.exitCode = Integer.parseInt(matcher.group(2));
