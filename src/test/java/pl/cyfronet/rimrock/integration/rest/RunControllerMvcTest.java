@@ -1,5 +1,8 @@
 package pl.cyfronet.rimrock.integration.rest;
 
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.startsWith;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -7,6 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
@@ -26,6 +30,7 @@ import org.springframework.web.context.WebApplicationContext;
 import pl.cyfronet.rimrock.RimrockApplication;
 import pl.cyfronet.rimrock.controllers.rest.run.RunRequest;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -37,7 +42,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = RimrockApplication.class)
 @WebAppConfiguration
-public class RunTest {
+public class RunControllerMvcTest {
 	@Autowired private WebApplicationContext wac;
 	@Autowired ObjectMapper mapper;
 	
@@ -55,7 +60,7 @@ public class RunTest {
 		RunRequest runRequest = new RunRequest();
 		runRequest.setCommand("pwd");
 		runRequest.setHost("zeus.cyfronet.pl");
-		runRequest.setProxy(new String(Files.readAllBytes(Paths.get(proxyPath))));
+		runRequest.setProxy(getProxy());
 		
 		mockMvc.perform(post("/api/run")
 				.contentType(MediaType.APPLICATION_JSON)
@@ -64,7 +69,49 @@ public class RunTest {
 				.andDo(print())
 				
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
-				.andExpect(jsonPath("$.exit_code", is("0")))
+				.andExpect(jsonPath("$.status", is("ok")))
+				.andExpect(jsonPath("$.exit_code", is(0)))
 				.andExpect(jsonPath("$.standard_output", startsWith("/people")));
+	}
+	
+	@Test
+	public void testExitCodeAndStandardErrorPresentInsideStandardOutput() throws Exception {
+		RunRequest runRequest = new RunRequest();
+		//at least the second mkdir command will return a 1 exit code
+		runRequest.setCommand("echo 'error' > /dev/stderr; mkdir /tmp/test; mkdir /tmp/test");
+		runRequest.setHost("zeus.cyfronet.pl");
+		runRequest.setProxy(getProxy());
+		
+		mockMvc.perform(post("/api/run")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(mapper.writeValueAsBytes(runRequest)))
+				
+				.andDo(print())
+				
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(jsonPath("$.exit_code", is(1)))
+				.andExpect(jsonPath("$.status", is("ok")))
+				.andExpect(jsonPath("$.standard_output", startsWith("error")));
+	}
+	
+	@Test
+	public void testNotNullValidation() throws JsonProcessingException, Exception {
+		RunRequest runRequest = new RunRequest();
+		mockMvc.perform(post("/api/run")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(mapper.writeValueAsBytes(runRequest)))
+				
+				.andDo(print())
+				
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(jsonPath("$.exit_code", is(-1)))
+				.andExpect(jsonPath("$.standard_output", is(equalTo(null))))
+				.andExpect(jsonPath("$.status", is("error")))
+				.andExpect(jsonPath("$.error_message", containsString("proxy:")))
+				.andExpect(jsonPath("$.error_message", containsString("host:")));
+	}
+	
+	private String getProxy() throws IOException {
+		return new String(Files.readAllBytes(Paths.get(proxyPath)));
 	}
 }

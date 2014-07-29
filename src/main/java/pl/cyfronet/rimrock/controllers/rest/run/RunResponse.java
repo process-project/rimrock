@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class RunResponse {
 	@JsonProperty("exit_code")
-	private String exitCode;
+	private int exitCode;
 	
 	@JsonProperty("standard_output")
 	private String standardOutput;
@@ -21,7 +21,7 @@ public class RunResponse {
 		error
 	}
 	
-	public RunResponse(Status status, String exitCode, String standardOutput, String errorOutput,
+	public RunResponse(Status status, int exitCode, String standardOutput, String errorOutput,
 			String errorMessage) {
 		this.setStatus(status);
 		this.exitCode = exitCode;
@@ -30,12 +30,6 @@ public class RunResponse {
 		this.errorMessage = errorMessage;
 	}
 	
-	public String getExitCode() {
-		return exitCode;
-	}
-	public void setExitCode(String exitCode) {
-		this.exitCode = exitCode;
-	}
 	public String getStandardOutput() {
 		return standardOutput;
 	}
@@ -63,5 +57,13 @@ public class RunResponse {
 
 	public void setStatus(Status status) {
 		this.status = status;
+	}
+
+	public int getExitCode() {
+		return exitCode;
+	}
+
+	public void setExitCode(int exitCode) {
+		this.exitCode = exitCode;
 	}
 }

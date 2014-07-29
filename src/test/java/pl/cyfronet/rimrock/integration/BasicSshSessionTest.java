@@ -9,6 +9,7 @@ import org.globus.gsi.X509Credential;
 import org.globus.gsi.gssapi.GlobusGSSCredentialImpl;
 import org.ietf.jgss.GSSCredential;
 import org.ietf.jgss.GSSException;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.sshtools.j2ssh.SshClient;
@@ -20,11 +21,12 @@ import com.sshtools.j2ssh.io.IOStreamConnector;
 import com.sshtools.j2ssh.session.SessionChannelClient;
 import com.sshtools.j2ssh.util.InvalidStateException;
 
-public class ApplicationTests {
+@Ignore("This test blocks and awaits stdin. Only run manually.")
+public class BasicSshSessionTest {
 	private static final String HOST = "zeus.cyfronet.pl";
 
 	@Test
-	public void contextLoads() throws IOException, InvalidStateException, InterruptedException, CredentialException, GSSException {
+	public void testBasicSshSession() throws IOException, InvalidStateException, InterruptedException, CredentialException, GSSException {
 		SshClient ssh = new SshClient();
 		SshConnectionProperties properties = new SshConnectionProperties();
 		properties.setHost(HOST);
@@ -43,7 +45,7 @@ public class ApplicationTests {
 		if(result == AuthenticationProtocolState.COMPLETE) {
 			SessionChannelClient session = ssh.openSessionChannel();
 
-			if(!session.requestPseudoTerminal("vt100", 80, 24, 0, 0, "")) {
+			if(!session.requestPseudoTerminal("vt100", 160, 24, 0, 0, "")) {
 				System.out.println("Failed to allocate a pseudo terminal");
 			}
 
@@ -56,7 +58,7 @@ public class ApplicationTests {
 				error.setCloseOutput(false);
 				input.connect(System.in, session.getOutputStream());
 				output.connect(session.getInputStream(), System.out);
-				error.connect(session.getStderrInputStream(), System.out);
+				error.connect(session.getStderrInputStream(), System.err);
 				session.getState().waitForState(ChannelState.CHANNEL_CLOSED);
 			} else {
 				System.out.println("Failed to start the users shell");

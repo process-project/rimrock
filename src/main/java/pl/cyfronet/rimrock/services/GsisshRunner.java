@@ -29,6 +29,11 @@ import com.sshtools.j2ssh.util.InvalidStateException;
 public class GsisshRunner {
 	private static final Logger log = LoggerFactory.getLogger(GsisshRunner.class);
 	
+	private class NormalizedOutput {
+		String output;
+		int exitCode;
+	}
+	
 	public RunResults run(String host, String proxyValue, String command) throws CredentialException, GSSException, IOException, InvalidStateException, InterruptedException {
 		X509Credential proxy = new X509Credential(new ByteArrayInputStream(proxyValue.getBytes()));
 		GSSCredential gsscredential = new GlobusGSSCredentialImpl(proxy, GSSCredential.INITIATE_ONLY);
@@ -50,7 +55,7 @@ public class GsisshRunner {
 		if(result == AuthenticationProtocolState.COMPLETE) {
 			SessionChannelClient session = ssh.openSessionChannel();
 
-			if(!session.requestPseudoTerminal("vt100", 80, 24, 0, 0, "")) {
+			if(!session.requestPseudoTerminal("vt100", 320, 24, 0, 0, "")) {
 				throw new IOException("Failed to allocate a pseudo terminal");
 			}
 
@@ -73,7 +78,9 @@ public class GsisshRunner {
 				session.getState().waitForState(ChannelState.CHANNEL_CLOSED);
 				
 				String retrievedStandardOutput = new String(standardOutput.toByteArray());
-				results.setOutput(normalizeStandardOutput(retrievedStandardOutput, separator));
+				NormalizedOutput normalizedOutput = normalizeStandardOutput(retrievedStandardOutput, separator);
+				results.setOutput(normalizedOutput.output);
+				results.setExitCode(normalizedOutput.exitCode);
 				results.setError(new String(standardError.toByteArray()));
 			} else {
 				throw new IOException("Failed to start the users shell");
@@ -85,23 +92,29 @@ public class GsisshRunner {
 		return results;
 	}
 
-	private String normalizeStandardOutput(String output, String separator) {
+	private NormalizedOutput normalizeStandardOutput(String output, String separator) {
 		log.trace("Output being normalized: {}" + output);
 		
-		String result = null;
-		Pattern pattern = Pattern.compile(".*^" + separator + "$\\s+(.*?)\\s+^" + separator + "$.*",
+		NormalizedOutput result = new NormalizedOutput();
+		Pattern pattern = Pattern.compile(".*^" + separator + "$\\s+(.*)^(.*?)\\s+^" + separator + "$.*",
 				Pattern.MULTILINE | Pattern.DOTALL);
 		Matcher matcher = pattern.matcher(output);
 		
 		if(matcher.matches()) {
-			result = matcher.group(1);
+			result.output = matcher.group(1).replaceAll("\r\n", "\n");
+			
+			try {
+				result.exitCode = Integer.parseInt(matcher.group(2));
+			} catch(NumberFormatException e) {
+				log.warn("Exit code {} could not be parsed");
+			}
 		}
 		
 		return result;
 	}
 
 	private byte[] completeCommand(String command, String separator) {
-		return ("echo '" + separator + "'; " + command + "; echo '" + separator + "'; exit\n").getBytes();
+		return ("echo '" + separator + "'; " + command + "; echo $?; echo '" + separator + "'; exit\n").getBytes();
 	}
 
 	private String extractUserName(String subject) {

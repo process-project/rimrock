@@ -3,20 +3,30 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>org.demo</groupId>
-	<artifactId>demo</artifactId>
+	<groupId>pl.cyfronet</groupId>
+	<artifactId>rimrock</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>rimrock - Robust Remote Process Controller</name>
-	<description>Demo project</description>
+	<description>
+		The project provides a robust REST API allowing for remote process execution
+		through an SSH channel in batch and interactive mode, as well as, job submission.
+	</description>
 
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
 		<version>1.1.4.RELEASE</version>
-		<relativePath /> <!-- lookup parent from repository -->
+		<relativePath/>
 	</parent>
+	
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<start-class>pl.cyfronet.rimrock.RimrockApplication</start-class>
+		<java.version>1.8</java.version>
+		<tomcat.version>8.0.8</tomcat.version>
+	</properties>
 
 	<dependencies>
 		<!-- Basic spring dependencies -->
@@ -94,14 +104,7 @@
 			<version>0.9.1</version>
 			<scope>test</scope>
 		</dependency>
-
 	</dependencies>
-
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<start-class>demo.Application</start-class>
-		<java.version>1.7</java.version>
-	</properties>
 
 	<build>
 		<plugins>
@@ -111,5 +114,4 @@
 			</plugin>
 		</plugins>
 	</build>
-
 </project>

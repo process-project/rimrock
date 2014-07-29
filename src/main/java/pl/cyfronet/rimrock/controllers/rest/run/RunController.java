@@ -1,11 +1,9 @@
 package pl.cyfronet.rimrock.controllers.rest.run;
 
-import java.io.IOException;
+import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
-import org.globus.gsi.CredentialException;
-import org.ietf.jgss.GSSException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,8 +18,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import pl.cyfronet.rimrock.controllers.rest.run.RunResponse.Status;
 import pl.cyfronet.rimrock.services.GsisshRunner;
 import pl.cyfronet.rimrock.services.RunResults;
-
-import com.sshtools.j2ssh.util.InvalidStateException;
 
 @Controller
 public class RunController {
@@ -42,22 +38,26 @@ public class RunController {
 		log.debug("Processing run request {}", runRequest);
 		
 		if(errors.hasErrors()) {
-			return new RunResponse(Status.error, null, null, null, errors.toString());
+			return new RunResponse(Status.error, -1, null, null, convertErrors(errors));
 		}
-		
-		RunResults results = null;
 		
 		try {
-			results = runner.run(runRequest.getHost(), runRequest.getProxy(), runRequest.getCommand());
-		} catch (CredentialException | InvalidStateException | GSSException
-				| IOException | InterruptedException e) {
+			RunResults results = runner.run(runRequest.getHost(), runRequest.getProxy(), runRequest.getCommand());
+			
+			return new RunResponse(Status.ok, results.getExitCode(), results.getOutput(), results.getError(), null);
+		} catch (Throwable e) {
 			log.error("Error", e);
+			
+			return new RunResponse(Status.error, -1, null, null, e.getMessage());
 		}
-		
-		if(results != null) {
-			return new RunResponse(Status.ok, "0", results.getOutput(), results.getError(), null);
-		}
-		
-		return new RunResponse(Status.error, "1", "error!", "error!", null);
+	}
+
+	private String convertErrors(BindingResult errors) {
+		return errors.getFieldErrors()
+				.stream()
+				.map(f -> {
+					return f.getField() + ": " + String.join(", ", f.getCodes());
+				})
+				.collect(Collectors.joining("; "));
 	}
 }

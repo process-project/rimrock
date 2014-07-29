@@ -3,6 +3,7 @@ package pl.cyfronet.rimrock.services;
 public class RunResults {
 	private String output;
 	private String error;
+	private int exitCode;
 	
 	public String getOutput() {
 		return output;
@@ -15,5 +16,15 @@ public class RunResults {
 	}
 	public void setError(String error) {
 		this.error = error;
+	}
+	public int getExitCode() {
+		return exitCode;
+	}
+	public void setExitCode(int exitCode) {
+		this.exitCode = exitCode;
+	}
+	@Override
+	public String toString() {
+		return "RunResults [output=" + output + ", error=" + error + ", exitCode=" + exitCode + "]";
 	}
 }
