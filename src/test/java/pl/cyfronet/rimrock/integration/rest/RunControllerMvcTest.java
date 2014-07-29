@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -68,6 +69,7 @@ public class RunControllerMvcTest {
 				.andDo(print())
 				
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.status", is("ok")))
 				.andExpect(jsonPath("$.exit_code", is(0)))
 				.andExpect(jsonPath("$.standard_output", startsWith("/people")));
@@ -88,6 +90,7 @@ public class RunControllerMvcTest {
 				.andDo(print())
 				
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.exit_code", is(1)))
 				.andExpect(jsonPath("$.status", is("ok")))
 				.andExpect(jsonPath("$.standard_output", startsWith("error")));
@@ -103,6 +106,7 @@ public class RunControllerMvcTest {
 				.andDo(print())
 				
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isUnprocessableEntity())
 				.andExpect(jsonPath("$.exit_code", is(-1)))
 				.andExpect(jsonPath("$.standard_output", is(equalTo(null))))
 				.andExpect(jsonPath("$.status", is("error")))
@@ -124,6 +128,7 @@ public class RunControllerMvcTest {
 				.andDo(print())
 				
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.status", is("ok")))
 				.andExpect(jsonPath("$.exit_code", is(0)))
 				.andExpect(jsonPath("$.standard_output", is("hello1\nhello2\nhello3")));
