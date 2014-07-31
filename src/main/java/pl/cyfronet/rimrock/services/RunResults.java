@@ -4,6 +4,7 @@ public class RunResults {
 	private String output;
 	private String error;
 	private int exitCode;
+	private boolean timeoutOccured;
 	
 	public String getOutput() {
 		return output;
@@ -26,5 +27,11 @@ public class RunResults {
 	@Override
 	public String toString() {
 		return "RunResults [output=" + output + ", error=" + error + ", exitCode=" + exitCode + "]";
+	}
+	public boolean isTimeoutOccured() {
+		return timeoutOccured;
+	}
+	public void setTimeoutOccured(boolean timeoutOccured) {
+		this.timeoutOccured = timeoutOccured;
 	}
 }

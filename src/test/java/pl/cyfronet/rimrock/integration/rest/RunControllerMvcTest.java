@@ -134,6 +134,27 @@ public class RunControllerMvcTest {
 				.andExpect(jsonPath("$.standard_output", is("hello1\nhello2\nhello3")));
 	}
 	
+	@Test
+	public void testTimout() throws Exception {
+		RunRequest runRequest = new RunRequest();
+		runRequest.setCommand("echo 'going to sleep'; sleep 5");
+		runRequest.setHost("zeus.cyfronet.pl");
+		runRequest.setProxy(getProxy());
+		
+		mockMvc.perform(post("/api/run")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(mapper.writeValueAsBytes(runRequest)))
+				
+				.andDo(print())
+				
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isRequestTimeout())
+				.andExpect(jsonPath("$.status", is("error")))
+				.andExpect(jsonPath("$.exit_code", is(-1)))
+				.andExpect(jsonPath("$.standard_output", is("going to sleep")))
+				.andExpect(jsonPath("$.error_message", startsWith("timeout")));
+	}
+	
 	private String getProxy() throws IOException {
 		return new String(Files.readAllBytes(Paths.get(proxyPath)));
 	}

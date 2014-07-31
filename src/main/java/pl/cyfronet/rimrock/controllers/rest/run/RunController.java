@@ -7,6 +7,7 @@ import javax.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +27,8 @@ public class RunController {
 	private static final Logger log = LoggerFactory.getLogger(RunController.class);
 	
 	private GsisshRunner runner;
+	
+	@Value("${run.timeout.millis}") int runTimeoutMillis;
 
 	@Autowired
 	public RunController(GsisshRunner runner) {
@@ -47,6 +50,13 @@ public class RunController {
 		
 		try {
 			RunResults results = runner.run(runRequest.getHost(), runRequest.getProxy(), runRequest.getCommand());
+			
+			if(results.isTimeoutOccured()) {
+				return new ResponseEntity<RunResponse>(
+						new RunResponse(Status.error, -1, results.getOutput(), results.getError(),
+								"timeout occurred; maximum allowed execution time for this operation is " + runTimeoutMillis + " ms"),
+								HttpStatus.REQUEST_TIMEOUT);
+			}
 			
 			return new ResponseEntity<RunResponse>(
 					new RunResponse(Status.ok, results.getExitCode(), results.getOutput(), results.getError(), null),
