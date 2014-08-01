@@ -1,14 +1,130 @@
 <!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8" />
-<title>rimrock home page</title>
-</head>
-<body>
-	<div>
-		<p><a th:href="@{/api/run}">REST run</a></p>
-		<p>REST irun: TODO</p>
-		<p>REST submit: TODO</p>
-	</div>
-</body>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+  <head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>rimrock main page</title>
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css"/>
+  </head>
+  <body>
+  	<div class="container">
+  		<h1>rimrock job submitter</h1>
+  		<div class="lead">
+  			Allows for easy and robust process (including local jobs) management
+  			via a REST interface with user proxy certificate delegation.
+  		</div>
+  		<h2>Basic command execution</h2>
+  		<p>
+  			Executes a single command on a remote machine and returns its exit code
+  			and standard output. The execution time is limited to 1000 ms.
+  		</p>
+  		<table class="table table-bordered">
+  			<tr>
+  				<th>Title</th>
+  				<td>Execute command</td>
+  			</tr>
+  			<tr>
+  				<th>URL</th>
+  				<td><code>/api/run</code></td>
+  			</tr>
+  			<tr>
+  				<th>Method</th>
+  				<td><span class="label label-primary">POST</span></td>
+  			</tr>
+  			<tr>
+  				<th>URL Params</th>
+  				<td><em>None</em></td>
+  			</tr>
+  			<tr>
+  				<th>Data Params</th>
+  				<td>
+  					<p><strong>JSON:</strong></p>
+  					<pre>
+{
+  "host": [string (required)],
+  "command": [string (required)],
+  "proxy": [string (required)]
+}
+  					</pre>
+  					<p><strong>Example:</strong></p>
+  					<pre>
+{
+  "host": "zeus.cyfronet.pl",
+  "command": "date",
+  "proxy": "-----BEGIN CERTIFICATE-----
+            MIIDfzCCAmegAwIBAgII
+            ...
+            uXBa+dITjblqY+DhMGizcG7ul62mQ==
+            -----END CERTIFICATE-----"
+}
+  					</pre>
+  				</td>
+  			</tr>
+  			<tr class="success">
+  				<th>Success Response</th>
+  				<td>
+  					<p><strong>Code:</strong> <em>200</em></p>
+  					<p><strong>Example:</strong></p>
+  					<pre>
+{
+  "status":"ok",
+  "exit_code":0,
+  "standard_output":"Fri Aug  1 14:33:55 CEST 2014",
+  "error_output":"",
+  "error_message":null
+}
+  					</pre>
+  				</td>
+  			</tr>
+  			<tr class="danger">
+  				<th>Error Response</th>
+  				<td>
+  				<p><strong>Code:</strong> <em>408</em> | <em>422</em> | <em>500</em></p>
+  					<p><strong>Example:</strong></p>
+  					<pre>
+{
+  "status":"error",
+  "exit_code":-1,
+  "standard_output":"whatever was printed before timeout",
+  "error_output":"",
+  "error_message":"timeout occurred..."
+}
+  					</pre>
+  				</td>
+  			</tr>
+  			<tr>
+  				<th>Sample Call</th>
+  				<td>
+  					<p><strong>Bash (with awk and curl):</strong></p>
+  					<pre>
+proxy="`cat /home/daniel/temp/user-proxy.pem | awk 1 ORS='\\\n'`"
+message="{\"host\":\"zeus.cyfronet.pl\", \"command\":\"pwd\", \"proxy\":\"$proxy\"}"
+echo $message > message.txt
+curl -X POST --data-binary @message.txt --header "Content-Type:application/json" http://localhost:8080/api/run
+  					</pre>
+  				</td>
+  			</tr>
+  			<tr>
+  				<th>Notes</th>
+  				<td><em>None</em></td>
+  			</tr>
+  		</table>
+  		
+  		<h2>Interactive command execution</h2>
+  		<p>
+  			Manages execution of an interactive process by fetching output and feeding input
+  			via subsequent REST calls.
+  		</p>
+  		
+  		<h2>Job submission</h2>
+  		<p>
+  			Manages an entire life-cicle of jobs via a set of REST methods.
+  		</p>
+  	</div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+  </body>
 </html>
