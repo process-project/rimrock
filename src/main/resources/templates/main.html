@@ -99,7 +99,7 @@
   				<td>
   					<p><strong>Bash (with awk and curl):</strong></p>
   					<pre>
-proxy="`cat /home/daniel/temp/user-proxy.pem | awk 1 ORS='\\\n'`"
+proxy="`cat {path-to-proxy-file} | awk 1 ORS='\\\n'`"
 message="{\"host\":\"zeus.cyfronet.pl\", \"command\":\"pwd\", \"proxy\":\"$proxy\"}"
 echo $message > message.txt
 curl -X POST --data-binary @message.txt --header "Content-Type:application/json" http://localhost:8080/api/run
