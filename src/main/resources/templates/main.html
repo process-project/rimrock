@@ -27,11 +27,11 @@
   			</tr>
   			<tr>
   				<th>URL</th>
-  				<td><code>/api/run</code></td>
+  				<td><code>/api/process</code></td>
   			</tr>
   			<tr>
   				<th>Method</th>
-  				<td><span class="label label-primary">POST</span></td>
+  				<td><span class="label label-primary">GET</span></td>
   			</tr>
   			<tr>
   				<th>URL Params</th>
@@ -102,7 +102,7 @@
 proxy="`cat {path-to-proxy-file} | awk 1 ORS='\\\n'`"
 message="{\"host\":\"zeus.cyfronet.pl\", \"command\":\"pwd\", \"proxy\":\"$proxy\"}"
 echo $message > message.txt
-curl -X POST --data-binary @message.txt --header "Content-Type:application/json" http://localhost:8080/api/run
+curl -X GET --data-binary @message.txt --header "Content-Type:application/json" http://localhost:8080/api/process
   					</pre>
   				</td>
   			</tr>

@@ -35,7 +35,7 @@ public class RunController {
 		this.runner = runner;
 	}
 	
-	@RequestMapping(value = "/api/process", method = RequestMethod.POST,
+	@RequestMapping(value = "/api/process", method = RequestMethod.GET,
 			consumes = MediaType.APPLICATION_JSON_VALUE,
 			produces = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
