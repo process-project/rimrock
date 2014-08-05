@@ -1,11 +1,18 @@
 package pl.cyfronet.rimrock.integration;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import org.globus.gsi.CredentialException;
+import org.globus.gsi.X509Credential;
+import org.globus.gsi.gssapi.GlobusGSSCredentialImpl;
+import org.ietf.jgss.GSSCredential;
+import org.ietf.jgss.GSSException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -18,21 +25,28 @@ import pl.cyfronet.rimrock.services.filemanager.FileManagerFactory;
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = RimrockApplication.class)
 public class FileUploadTest {
-	@Value("${test.proxy.path}") 
-	private String proxyPath;
-	
-	@Value("${test.uploadDir.path}")
-	private String uploadDir;
-	
-	@Autowired 
-	private FileManagerFactory factory;
-	
-	@Autowired 
-	private ProxyFactory proxyFactory;
+	@Autowired private FileManagerFactory factory;
+	@Autowired private ProxyFactory proxyFactory;
 	
 	@Test
 	public void shouldUploadFile() throws Exception {			
-		FileManager manager = factory.get(proxyFactory.getProxy());
-		manager.copyFile(uploadDir, new FileSystemResource(new File("pom.xml")));
+		String proxy = proxyFactory.getProxy();
+		String uploadFolder = "/people/" + getUser(proxy) + "/";
+		FileManager manager = factory.get(proxy);
+		manager.copyFile(uploadFolder, new FileSystemResource(new File("pom.xml")));
+	}
+
+	private String getUser(String proxyValue) throws CredentialException, GSSException {
+		X509Credential proxy = new X509Credential(new ByteArrayInputStream(proxyValue.getBytes()));
+		GSSCredential gsscredential = new GlobusGSSCredentialImpl(proxy, GSSCredential.INITIATE_ONLY);
+		String dn = gsscredential.getName().toString();
+		Pattern pattern = Pattern.compile(".*=(.*)$");
+		Matcher matcher = pattern.matcher(dn);
+		
+		if(matcher.matches()) {
+			return matcher.group(1);
+		} else {
+			throw new IllegalArgumentException("Could not extract user name from the supplied user proxy");
+		}
 	}	
 }

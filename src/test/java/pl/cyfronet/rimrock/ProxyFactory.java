@@ -26,8 +26,8 @@ public class ProxyFactory {
 	
 	@Value("classpath:usercert.pem") private Resource userCertFile;
 	@Value("classpath:userkey.pem") private Resource userKeyFile;
-	@Value("${test.user.key.pass}") private String userKeyPass;
-	@Value("${test.proxy.path}") private String proxyPath; 
+	@Value("${test.user.key.pass:}") private String userKeyPass;
+	@Value("${test.proxy.path:}") private String proxyPath; 
 	
 	private BouncyCastleCertProcessingFactory factory;
 	private String proxy;
@@ -38,7 +38,7 @@ public class ProxyFactory {
 	
 	public synchronized String getProxy() throws Exception {
 		if(proxy == null) {
-			if(proxyPath != null && !proxyPath.equals("")) {
+			if(proxyPath != null && !proxyPath.isEmpty()) {
 				proxy = getProxyPayload();
 			} else {
 				proxy = generateProxy();
