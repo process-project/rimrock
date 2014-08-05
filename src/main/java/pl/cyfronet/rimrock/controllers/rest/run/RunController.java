@@ -1,6 +1,11 @@
 package pl.cyfronet.rimrock.controllers.rest.run;
 
-import java.util.stream.Collectors;
+import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
+import static org.springframework.http.HttpStatus.OK;
+import static org.springframework.http.HttpStatus.REQUEST_TIMEOUT;
+import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+import static org.springframework.web.bind.annotation.RequestMethod.GET;
 
 import javax.validation.Valid;
 
@@ -8,16 +13,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import pl.cyfronet.rimrock.controllers.rest.RestHelper;
 import pl.cyfronet.rimrock.controllers.rest.run.RunResponse.Status;
 import pl.cyfronet.rimrock.services.GsisshRunner;
 import pl.cyfronet.rimrock.services.RunResults;
@@ -35,17 +38,14 @@ public class RunController {
 		this.runner = runner;
 	}
 	
-	@RequestMapping(value = "/api/process", method = RequestMethod.GET,
-			consumes = MediaType.APPLICATION_JSON_VALUE,
-			produces = MediaType.APPLICATION_JSON_VALUE)
+	@RequestMapping(value = "/api/process", method = GET, consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
 	@ResponseBody
 	public ResponseEntity<RunResponse> run(@Valid @RequestBody RunRequest runRequest, BindingResult errors) {
 		log.debug("Processing run request {}", runRequest);
 		
 		if(errors.hasErrors()) {
 			return new ResponseEntity<RunResponse>(
-					new RunResponse(Status.error, -1, null, null, convertErrors(errors)),
-							HttpStatus.UNPROCESSABLE_ENTITY);
+					new RunResponse(Status.error, -1, null, null, RestHelper.convertErrors(errors)), UNPROCESSABLE_ENTITY);
 		}
 		
 		try {
@@ -54,28 +54,15 @@ public class RunController {
 			if(results.isTimeoutOccured()) {
 				return new ResponseEntity<RunResponse>(
 						new RunResponse(Status.error, -1, results.getOutput(), results.getError(),
-								"timeout occurred; maximum allowed execution time for this operation is " + runTimeoutMillis + " ms"),
-								HttpStatus.REQUEST_TIMEOUT);
+								"timeout occurred; maximum allowed execution time for this operation is " + runTimeoutMillis + " ms"), REQUEST_TIMEOUT);
 			}
 			
 			return new ResponseEntity<RunResponse>(
-					new RunResponse(Status.ok, results.getExitCode(), results.getOutput(), results.getError(), null),
-							HttpStatus.OK);
+					new RunResponse(Status.ok, results.getExitCode(), results.getOutput(), results.getError(), null), OK);
 		} catch (Throwable e) {
 			log.error("Error", e);
 			
-			return new ResponseEntity<RunResponse>(
-					new RunResponse(Status.error, -1, null, null, e.getMessage()),
-							HttpStatus.INTERNAL_SERVER_ERROR);
+			return new ResponseEntity<RunResponse>(new RunResponse(Status.error, -1, null, null, e.getMessage()), INTERNAL_SERVER_ERROR);
 		}
-	}
-
-	private String convertErrors(BindingResult errors) {
-		return errors.getFieldErrors()
-				.stream()
-				.map(f -> {
-					return f.getField() + ": " + String.join(", ", f.getCodes());
-				})
-				.collect(Collectors.joining("; "));
 	}
 }
