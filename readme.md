@@ -23,8 +23,20 @@ After the application is started you can fetch the user proxy (e.g. from DataNet
 
 * Create `src/main/resources/config/application.properties` file and put the following inside:
 
+    test.proxy.path = [path_to_already_generated_proxy]
+    
+**OR**    
+
+* Create `src/main/resources/config/application.properties` file and put the following inside:
+
     test.user.key.pass = [user_key_pass]
 
 * Put `usercert.pem` and `userkey.pem` files in the `src/main/resources` directory
 
 Note that all these resources are ignored so no private data leaks through git.
+
+## Configuring upload dir for file manager integration tests
+
+* Create `src/main/resources/config/application.properties` file and put the following inside:
+	
+	test.uploadDir.path = [upload_dir]

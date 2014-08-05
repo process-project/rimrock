@@ -1,6 +1,8 @@
 package pl.cyfronet.rimrock;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.GeneralSecurityException;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
@@ -25,7 +27,8 @@ public class ProxyFactory {
 	@Value("classpath:usercert.pem") private Resource userCertFile;
 	@Value("classpath:userkey.pem") private Resource userKeyFile;
 	@Value("${test.user.key.pass}") private String userKeyPass;
-
+	@Value("${test.proxy.path}") private String proxyPath; 
+	
 	private BouncyCastleCertProcessingFactory factory;
 	private String proxy;
 
@@ -35,7 +38,11 @@ public class ProxyFactory {
 	
 	public synchronized String getProxy() throws Exception {
 		if(proxy == null) {
-			proxy = generateProxy();
+			if(proxyPath != null && !proxyPath.equals("")) {
+				proxy = getProxyPayload();
+			} else {
+				proxy = generateProxy();
+			}
 		}
 		
 		return proxy;
@@ -64,5 +71,9 @@ public class ProxyFactory {
 		credential.save(out);
 		
 		return new String(out.toByteArray());
+	}
+	
+	private String getProxyPayload() throws IOException {
+		return new String(Files.readAllBytes(Paths.get(proxyPath)));
 	}
 }
