@@ -14,6 +14,7 @@ import org.globus.gsi.X509Credential;
 import org.globus.gsi.gssapi.GlobusGSSCredentialImpl;
 import org.ietf.jgss.GSSCredential;
 import org.ietf.jgss.GSSException;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -26,6 +27,7 @@ import pl.cyfronet.rimrock.RimrockApplication;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = RimrockApplication.class)
+@Ignore("This may come in handy in the future...")
 public class GridFtpClientTest {
 	private final static Logger log = LoggerFactory.getLogger(GridFtpClientTest.class);
 	

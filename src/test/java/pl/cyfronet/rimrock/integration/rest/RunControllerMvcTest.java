@@ -4,21 +4,16 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.startsWith;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -27,6 +22,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import pl.cyfronet.rimrock.ProxyFactory;
 import pl.cyfronet.rimrock.RimrockApplication;
 import pl.cyfronet.rimrock.controllers.rest.run.RunRequest;
 
@@ -44,9 +40,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @WebAppConfiguration
 public class RunControllerMvcTest {
 	@Autowired private WebApplicationContext wac;
-	@Autowired ObjectMapper mapper;
-	
-	@Value("${test.proxy.path}") String proxyPath;
+	@Autowired private ObjectMapper mapper;
+	@Autowired private ProxyFactory proxyFactory;
 	
 	private MockMvc mockMvc;
 	
@@ -54,15 +49,15 @@ public class RunControllerMvcTest {
     public void setup() {
         this.mockMvc = MockMvcBuilders.webAppContextSetup(this.wac).build();
     }
-	
+
 	@Test
 	public void testSimpleRun() throws Exception {
 		RunRequest runRequest = new RunRequest();
 		runRequest.setCommand("pwd");
 		runRequest.setHost("zeus.cyfronet.pl");
-		runRequest.setProxy(getProxy());
+		runRequest.setProxy(proxyFactory.getProxy());
 		
-		mockMvc.perform(post("/api/run")
+		mockMvc.perform(get("/api/process")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(mapper.writeValueAsBytes(runRequest)))
 				
@@ -74,16 +69,16 @@ public class RunControllerMvcTest {
 				.andExpect(jsonPath("$.exit_code", is(0)))
 				.andExpect(jsonPath("$.standard_output", startsWith("/people")));
 	}
-	
+
 	@Test
 	public void testExitCodeAndStandardErrorPresentInsideStandardOutput() throws Exception {
 		RunRequest runRequest = new RunRequest();
 		//at least the second mkdir command will return a 1 exit code
 		runRequest.setCommand("echo 'error' > /dev/stderr; mkdir /tmp/test; mkdir /tmp/test");
 		runRequest.setHost("zeus.cyfronet.pl");
-		runRequest.setProxy(getProxy());
+		runRequest.setProxy(proxyFactory.getProxy());
 		
-		mockMvc.perform(post("/api/run")
+		mockMvc.perform(get("/api/process")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(mapper.writeValueAsBytes(runRequest)))
 				
@@ -99,7 +94,7 @@ public class RunControllerMvcTest {
 	@Test
 	public void testNotNullValidation() throws JsonProcessingException, Exception {
 		RunRequest runRequest = new RunRequest();
-		mockMvc.perform(post("/api/run")
+		mockMvc.perform(get("/api/process")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(mapper.writeValueAsBytes(runRequest)))
 				
@@ -119,9 +114,9 @@ public class RunControllerMvcTest {
 		RunRequest runRequest = new RunRequest();
 		runRequest.setCommand("echo hello1; echo hello2; echo hello3");
 		runRequest.setHost("zeus.cyfronet.pl");
-		runRequest.setProxy(getProxy());
+		runRequest.setProxy(proxyFactory.getProxy());
 		
-		mockMvc.perform(post("/api/run")
+		mockMvc.perform(get("/api/process")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(mapper.writeValueAsBytes(runRequest)))
 				
@@ -139,9 +134,9 @@ public class RunControllerMvcTest {
 		RunRequest runRequest = new RunRequest();
 		runRequest.setCommand("echo 'going to sleep'; sleep 5");
 		runRequest.setHost("zeus.cyfronet.pl");
-		runRequest.setProxy(getProxy());
+		runRequest.setProxy(proxyFactory.getProxy());
 		
-		mockMvc.perform(post("/api/run")
+		mockMvc.perform(get("/api/process")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(mapper.writeValueAsBytes(runRequest)))
 				
@@ -153,9 +148,5 @@ public class RunControllerMvcTest {
 				.andExpect(jsonPath("$.exit_code", is(-1)))
 				.andExpect(jsonPath("$.standard_output", is("going to sleep")))
 				.andExpect(jsonPath("$.error_message", startsWith("timeout")));
-	}
-	
-	private String getProxy() throws IOException {
-		return new String(Files.readAllBytes(Paths.get(proxyPath)));
 	}
 }
