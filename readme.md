@@ -18,3 +18,13 @@ After the application is started you can fetch the user proxy (e.g. from DataNet
 	message="{\"host\":\"zeus.cyfronet.pl\", \"command\":\"pwd\", \"proxy\":\"$proxy\"}"
 	echo $message > message.txt
 	curl -X GET --data-binary @message.txt --header "Content-Type:application/json" http://localhost:8080/api/process
+
+## Configuring proxy generation for integration tests
+
+* Create `src/main/resources/config/application.properties` file and put the following inside:
+
+    test.user.key.pass = [user_key_pass]
+
+* Put `usercert.pem` and `userkey.pem` files in the `src/main/resources` directory
+
+Note that all these resources are ignored so no private data leaks through git.
