@@ -1,0 +1,31 @@
+#!/bin/bash
+
+# $1 == job_id
+
+function usage {
+	echo "Usage: $0 job_id"
+}
+
+function report_error {
+	echo -e "{\n\t\"result\": \"ERROR\",\n\t\"error_message\": \"$1\"\n}"
+}
+
+function report_success {
+	echo -e "{\n\t\"result\": \"STOP_SENT\"\n}"
+}
+
+if [ -z "$1" ]
+then
+	usage
+	exit 1
+fi
+
+output=$(qdel $1 2>&1)
+
+if [ $? -ne 0 ]
+then
+	report_error "qsub error! $output"
+	exit 2
+fi
+
+report_success $1

@@ -1,0 +1,49 @@
+#!/bin/bash
+
+# $1 == job_script
+
+function usage {
+	echo "Usage: $0 job_script"
+}
+
+function report_error {
+	echo -e "{\n\t\"result\": \"ERROR\",\n\t\"error_message\": \"$1\"\n}"
+}
+
+function report_success {
+	echo -e "{\n\t\"result\": \"QUEUED\",\n\t\"job_id\": \"$1\",\n\t\"stadard_output\":\"$2\"\n\t\"standard_error\": \"$3\"\n}"
+}
+
+if [ -z "$1" ]
+then
+	usage
+	exit 1
+fi
+
+#do a qsub
+output=$(qsub $1 2>&1)
+
+if [ $? -ne 0 ]
+then
+	report_error "qsub error! $output"
+	exit 2
+fi
+
+job_id=$(echo "$output" | tail -n 1)
+
+#ask for job details (lets hope it doesn't end so fast)
+output=$(qstat -f $job_id 2>&1)
+
+if [ $? -ne 0 ]
+then
+	report_error "qstat error! $output"
+	exit 3
+fi
+
+outline=$(echo "$output" | grep Output_Path)
+errline=$(echo "$output" | grep Error_Path)
+
+out=$(echo $outline | cut -f 2 -d ":")
+err=$(echo $errline | cut -f 2 -d ":")
+
+report_success $job_id $out $err
