@@ -6,6 +6,7 @@ import java.util.Arrays;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -26,23 +27,53 @@ public class FileManager {
 		this.proxyPayload = proxyPayload;		
 	}
 
-	public void copyFile(String filePath, Resource file) throws FileManagerException {
-		MultiValueMap<String, Object> values = new LinkedMultiValueMap<>();		
-		
-		values.add("proxy", proxyPayload);
+	public void cp(String filePath, Resource file) throws FileManagerException {
+		MultiValueMap<String, Object> values = getFormDataWithProxyAndLang();		
 		values.add("file", getFileEntity(filePath, file));
+		
+		HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(values, getHeders());
+		try {
+			restTemplate.postForEntity(uploadUrl(getFileDir(filePath)), request, null);
+		} catch(HttpClientErrorException e) {		
+			throw new FileManagerException(e.getResponseBodyAsString());
+		}
+	}
+	
+	public void rm(String filePath) throws FileManagerException {
+		rm(filePath, getFormDataWithProxyAndLang());
+	}
+	
+	public void rmDir(String path) throws FileManagerException {
+		MultiValueMap<String, Object> values = getFormDataWithProxyAndLang();
+		values.add("is_dir", true);
+		
+		rm(path, values);
+	}
+	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	private void rm(String path, MultiValueMap<String, Object> values) throws FileManagerException {
+		HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(values, getHeders());
+		try {
+			restTemplate.exchange(rmUrl(path), HttpMethod.DELETE, request, (Class)null);
+		} catch(HttpClientErrorException e) {		
+			throw new FileManagerException(e.getResponseBodyAsString());
+		}
+	}
+	
+	private MultiValueMap<String, Object> getFormDataWithProxyAndLang() {
+		MultiValueMap<String, Object> values = new LinkedMultiValueMap<>();
+		values.add("proxy", proxyPayload);
 		values.add("locale", "en");
 		
+		return values;
+	}
+
+	private HttpHeaders getHeders() {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.MULTIPART_FORM_DATA);
 		headers.setAccept(Arrays.asList(MediaType.ALL));
 		
-		HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(values, headers);
-		try {
-			restTemplate.postForEntity(postUrl(getFileDir(filePath)), request, null);
-		} catch(HttpClientErrorException e) {		
-			throw new FileManagerException(e.getResponseBodyAsString());
-		}
+		return headers;
 	}
 	
 	private HttpEntity<Resource> getFileEntity(String filePath, Resource file) {
@@ -63,9 +94,17 @@ public class FileManager {
 		return f.getParent();
 	}
 	
-	private String postUrl(String filePath) {
+	private String uploadUrl(String filePath) {
+		return plgdataUrl("upload", filePath);
+	}
+	
+	private String rmUrl(String path) {
+		return plgdataUrl("remove", path);
+	}
+	
+	private String plgdataUrl(String action, String path) {
 		UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUriString(plgridDataUrl);
-		uriBuilder.path("/upload/").path(filePath);
+		uriBuilder.path("/" + action + "/").path(path);
 		return uriBuilder.build().toUriString();
 	}
 }

@@ -52,7 +52,7 @@ public class JobsController {
 		
 		try {
 			FileManager fileManager = fileManagerFactory.get(submitRequest.getProxy());
-			fileManager.copyFile(buildPath(submitRequest, "script.sh"), new ByteArrayResource(submitRequest.getScript().getBytes()));
+			fileManager.cp(buildPath(submitRequest, "script.sh"), new ByteArrayResource(submitRequest.getScript().getBytes()));
 			
 			return new ResponseEntity<SubmitResponse>(new SubmitResponse("status", null, "jobId"), OK);
 		} catch(Throwable e) {

@@ -5,11 +5,10 @@ import java.io.File;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.globus.gsi.CredentialException;
 import org.globus.gsi.X509Credential;
 import org.globus.gsi.gssapi.GlobusGSSCredentialImpl;
 import org.ietf.jgss.GSSCredential;
-import org.ietf.jgss.GSSException;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,14 +29,30 @@ public class FileUploadTest {
 	
 	@Test
 	public void shouldUploadFile() throws Exception {			
-		String proxy = proxyFactory.getProxy();
-		String uploadPath = "/people/" + getUser(proxy) + "/upload_test.xml";
-		FileManager manager = factory.get(proxy);
-		manager.copyFile(uploadPath, new FileSystemResource(new File("pom.xml")));
+		String uploadPath = getHomedir() + "/upload_test.xml";
+		getFileManager().cp(uploadPath, new FileSystemResource(new File("pom.xml")));
 	}
 
-	private String getUser(String proxyValue) throws CredentialException, GSSException {
-		X509Credential proxy = new X509Credential(new ByteArrayInputStream(proxyValue.getBytes()));
+	@Test
+	@Ignore
+	public void shouldRmFile() throws Exception {
+		String path = getHomedir() + "/upload_test.xml";
+		getFileManager().rm(path);
+	}
+	
+	@Test
+	@Ignore
+	public void shouldRmDir() throws Exception {
+		String path = getHomedir() + "/delete_test";
+		getFileManager().rmDir(path);
+	}
+	
+	private String getHomedir() throws Exception {
+		return "/people/" + getUser();
+	}
+	
+	private String getUser() throws Exception {
+		X509Credential proxy = new X509Credential(new ByteArrayInputStream(proxyFactory.getProxy().getBytes()));
 		GSSCredential gsscredential = new GlobusGSSCredentialImpl(proxy, GSSCredential.INITIATE_ONLY);
 		String dn = gsscredential.getName().toString();
 		Pattern pattern = Pattern.compile(".*=(.*)$");
@@ -48,5 +63,10 @@ public class FileUploadTest {
 		} else {
 			throw new IllegalArgumentException("Could not extract user name from the supplied user proxy");
 		}
+	}	
+	
+	private FileManager getFileManager() throws Exception {
+		String proxy = proxyFactory.getProxy();
+		return factory.get(proxy);
 	}
 }
