@@ -7,8 +7,17 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
+import java.io.ByteArrayInputStream;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import javax.validation.Valid;
 
+import org.globus.gsi.CredentialException;
+import org.globus.gsi.X509Credential;
+import org.globus.gsi.gssapi.GlobusGSSCredentialImpl;
+import org.ietf.jgss.GSSCredential;
+import org.ietf.jgss.GSSException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,7 +52,7 @@ public class JobsController {
 		
 		try {
 			FileManager fileManager = fileManagerFactory.get(submitRequest.getProxy());
-			fileManager.copyFile("/people/plgtesthar/", new ByteArrayResource(submitRequest.getScript().getBytes()));
+			fileManager.cp(buildPath(submitRequest, "script.sh"), new ByteArrayResource(submitRequest.getScript().getBytes()));
 			
 			return new ResponseEntity<SubmitResponse>(new SubmitResponse("status", null, "jobId"), OK);
 		} catch(Throwable e) {
@@ -65,5 +74,35 @@ public class JobsController {
 			@RequestHeader(value = "PROXY", required = false) String proxy,
 			@PathVariable String jobId) {
 		return new ResponseEntity<OutputResponse>(new OutputResponse(), OK);
+	}
+	
+	private String buildPath(SubmitRequest submitRequest, String fileName) throws CredentialException, GSSException {
+		String rootPath = submitRequest.getWorkingDirectory() == null ? getRootPath(submitRequest) : submitRequest.getWorkingDirectory();
+		
+		return rootPath + fileName;
+	}
+
+	private String getRootPath(SubmitRequest submitRequest) throws CredentialException, GSSException {
+		switch(submitRequest.getHost().trim()) {
+			case "zeus.cyfronet.pl":
+			case "ui.cyfronet.pl":
+				return "/people/" + getUserLogin(submitRequest.getProxy()) + "/";
+			default:
+				throw new IllegalArgumentException("Without submitting a working directory only zeus.cyfronet.pl host is supported");
+		}
+	}
+
+	private String getUserLogin(String proxyValue) throws CredentialException, GSSException {
+		X509Credential proxy = new X509Credential(new ByteArrayInputStream(proxyValue.getBytes()));
+		GSSCredential gsscredential = new GlobusGSSCredentialImpl(proxy, GSSCredential.INITIATE_ONLY);
+		String dn = gsscredential.getName().toString();
+		Pattern pattern = Pattern.compile(".*=(.*)$");
+		Matcher matcher = pattern.matcher(dn);
+		
+		if(matcher.matches()) {
+			return matcher.group(1);
+		} else {
+			throw new IllegalArgumentException("Could not extract user name from the supplied user proxy");
+		}
 	}
 }
