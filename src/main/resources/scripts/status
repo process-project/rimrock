@@ -1,0 +1,66 @@
+#!/bin/bash
+
+function usage {
+	echo "Usage: $0"
+}
+
+function report_error {
+	echo -e "{\n\t\"result\": \"ERROR\",\n\t\"error_message\": \"$1\"\n}"
+}
+
+function report_success {
+	echo -e "{\n\t\"result\": \"OK\",\n\t\"job_id\": \"$2\",\n\t\"stadard_output\":\"$2\"\n\t\"standard_error\": \"$3\"\n}"
+	echo ${1[@]}
+}
+
+if [ -n "$1" ]
+then
+	usage
+	exit 1
+fi
+
+#do a qstat, output == jobids in new lines
+output=$(qstat -u $USER | tail -n +6 | cut -f 1 -d "." 2>&1)
+#output=$(qstat | head | tail -n +6 | cut -f 1 -d "." 2>&1)
+
+if [ $? -ne 0 ]
+then
+	report_error "qstat listing error! $output"
+	exit 2
+fi
+
+declare -A state
+state["Q"]="QUEUED"
+state["R"]="RUNNING"
+state["E"]="ERROR"
+state["C"]="COMPLETED"
+
+declare -a job_list=(${output[@]})
+if [ ${#job_list[@]} -gt 0 ]
+then
+	last_element=${job_list[${#job_list[@]}-1]}
+else
+	last_element=""
+fi
+
+text_output=""
+
+for job_id in "${job_list[@]}"
+do
+	job_state=$(qstat -f $job_id | grep job_state | cut -f 2 -d "=" | tr -d " " 2>&1)
+
+	if [ $? -ne 0 ]
+	then
+		report_error "qstat error! $job_state"
+		exit 3
+	fi
+	#todo: calculate state
+	text_output="${text_output}\t\t{\n\t\t\t\"job_id\": \"${job_id}.batch.grid.cyf-kr.edu.pl\",\n\t\t\t\"job_state\": \"${state[${job_state}]}\"\n\t\t}"
+	if [ "${job_id}" != "${last_element}" ]
+	then
+		text_output="${text_output},"
+	fi
+	text_output="${text_output}\n"
+done
+
+echo -e "{\n\t\"statuses\": [\n${text_output}\t],\n\t\"result\": \"OK\"\n}"
