@@ -31,9 +31,9 @@ public class FileUploadTest {
 	@Test
 	public void shouldUploadFile() throws Exception {			
 		String proxy = proxyFactory.getProxy();
+		String uploadPath = "/people/" + getUser(proxy) + "/upload_test.xml";
 		FileManager manager = factory.get(proxy);
-		String uploadFolder = "/people/" + getUser(proxy) + "/";
-		manager.copyFile(uploadFolder, new FileSystemResource(new File("pom.xml")));
+		manager.copyFile(uploadPath, new FileSystemResource(new File("pom.xml")));
 	}
 
 	private String getUser(String proxyValue) throws CredentialException, GSSException {
