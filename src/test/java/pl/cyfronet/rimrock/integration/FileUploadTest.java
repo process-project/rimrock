@@ -30,7 +30,7 @@ public class FileUploadTest {
 	@Test
 	public void shouldUploadFile() throws Exception {			
 		String uploadPath = getHomedir() + "/upload_test.xml";
-		getFileManager().copyFile(uploadPath, new FileSystemResource(new File("pom.xml")));
+		getFileManager().cp(uploadPath, new FileSystemResource(new File("pom.xml")));
 	}
 
 	@Test

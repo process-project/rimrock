@@ -27,7 +27,7 @@ public class FileManager {
 		this.proxyPayload = proxyPayload;		
 	}
 
-	public void copyFile(String filePath, Resource file) throws FileManagerException {
+	public void cp(String filePath, Resource file) throws FileManagerException {
 		MultiValueMap<String, Object> values = getFormDataWithProxyAndLang();		
 		values.add("file", getFileEntity(filePath, file));
 		
