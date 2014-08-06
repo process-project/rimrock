@@ -11,7 +11,7 @@ function report_error {
 }
 
 function report_success {
-	echo -e "{\n\t\"result\": \"STOP_SENT\"\n}"
+	echo -e "{\n\t\"result\": \"OK\"\n}"
 }
 
 if [ -z "$1" ]
