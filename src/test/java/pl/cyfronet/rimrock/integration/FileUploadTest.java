@@ -31,8 +31,8 @@ public class FileUploadTest {
 	@Test
 	public void shouldUploadFile() throws Exception {			
 		String proxy = proxyFactory.getProxy();
-		String uploadFolder = "/people/" + getUser(proxy) + "/";
 		FileManager manager = factory.get(proxy);
+		String uploadFolder = "/people/" + getUser(proxy) + "/";
 		manager.copyFile(uploadFolder, new FileSystemResource(new File("pom.xml")));
 	}
 
@@ -48,5 +48,5 @@ public class FileUploadTest {
 		} else {
 			throw new IllegalArgumentException("Could not extract user name from the supplied user proxy");
 		}
-	}	
+	}
 }
