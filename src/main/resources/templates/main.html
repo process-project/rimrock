@@ -97,12 +97,12 @@
   			<tr>
   				<th>Sample Call</th>
   				<td>
-  					<p><strong>Bash (with awk and curl):</strong></p>
+  					<p><strong>Bash (with base64, tr and curl):</strong></p>
   					<pre>
-proxy="`cat {path-to-proxy-file} | awk 1 ORS='\\\n'`"
-message="{\"host\":\"zeus.cyfronet.pl\", \"command\":\"pwd\", \"proxy\":\"$proxy\"}"
+proxy="`cat {path-to-proxy-file} | base64 | tr -d '\n'`"
+message="{\"host\":\"zeus.cyfronet.pl\", \"command\":\"pwd\"}"
 echo $message > message.txt
-curl -X GET --data-binary @message.txt --header "Content-Type:application/json" http://localhost:8080/api/process
+curl -X GET --data-binary @message.txt --header "Content-Type:application/json" --header "PROXY:$proxy" http://localhost:8080/api/process
   					</pre>
   				</td>
   			</tr>
