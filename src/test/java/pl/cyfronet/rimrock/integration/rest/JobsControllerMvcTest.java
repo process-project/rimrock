@@ -1,6 +1,7 @@
 package pl.cyfronet.rimrock.integration.rest;
 
 import static org.hamcrest.Matchers.is;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -85,7 +86,7 @@ public class JobsControllerMvcTest {
 	
 	@Test
 	public void testStatusRetrievalForInvalidJobId() throws Exception {
-		mockMvc.perform(get("/api/jobs/nonexisting_id", "utf-8")
+		mockMvc.perform(get("/api/jobs/nonexisting_id")
 				.header("PROXY", RestHelper.encodeProxy(proxyFactory.getProxy())))
 				
 				.andDo(print())
@@ -93,5 +94,50 @@ public class JobsControllerMvcTest {
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(jsonPath("$.status", is("ERROR")))
 				.andExpect(status().isNotFound());
+	}
+	
+	@Test
+	public void testGlobalStatusRetrievalForInvalidJobId() throws Exception {
+		mockMvc.perform(get("/api/jobs")
+				.header("PROXY", RestHelper.encodeProxy(proxyFactory.getProxy())))
+				
+				.andDo(print())
+				
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(jsonPath("$.status", is("OK")))
+				.andExpect(status().isOk());
+	}
+	
+	@Test
+	public void testJobCancelling() throws JsonProcessingException, Exception {
+		SubmitRequest submitRequest = new SubmitRequest();
+		submitRequest.setHost("zeus.cyfronet.pl");
+		submitRequest.setScript("#!/bin/bash\n"
+				+ "echo hello\n"
+				+ "exit 0");
+		
+		MvcResult result = mockMvc.perform(post("/api/jobs")
+				.header("PROXY", RestHelper.encodeProxy(proxyFactory.getProxy()))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(mapper.writeValueAsBytes(submitRequest)))
+				
+				.andDo(print())
+				
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk())
+				.andReturn();
+		
+		String body = result.getResponse().getContentAsString();
+		SubmitResponse submitResult = mapper.readValue(body, SubmitResponse.class);
+		String jobId = submitResult.getJobId();
+		log.info("Stopping job for job id {}", jobId);
+		
+		mockMvc.perform(delete("/api/jobs/" + jobId)
+				.header("PROXY", RestHelper.encodeProxy(proxyFactory.getProxy())))
+				
+				.andDo(print())
+				
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk());
 	}
 }

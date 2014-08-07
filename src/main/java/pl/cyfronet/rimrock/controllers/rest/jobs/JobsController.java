@@ -11,6 +11,7 @@ import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -108,26 +109,69 @@ public class JobsController {
 			} else {
 				return new ResponseEntity<StatusResponse>(new StatusResponse(jobId, statusValue, null), OK);
 			}
-		} catch (CredentialException | InvalidStateException | GSSException | IOException | InterruptedException | FileManagerException e) {
-			log.error("Job status retrieval error", e);
+		} catch (Throwable e) {
+			log.error("Job status for job with id " + jobId + " retrieval error", e);
 			
 			return new ResponseEntity<StatusResponse>(new StatusResponse(jobId, "ERROR", e.getMessage()), INTERNAL_SERVER_ERROR);
 		}
 	}
 
 	@RequestMapping(value = "/api/jobs", method = GET, produces = APPLICATION_JSON_VALUE)
-	public ResponseEntity<StatusResponse> globalStatus(@RequestHeader("PROXY") String proxy, @PathVariable String jobId) {
-		return new ResponseEntity<StatusResponse>(new StatusResponse(null, null, null), OK);
+	public ResponseEntity<GlobalStatusResponse> globalStatus(@RequestHeader("PROXY") String proxy) {
+		try {
+			StatusResult statusResult = getStatusResult(RestHelper.decodeProxy(proxy));
+			
+			if(statusResult.getErrorMessage() != null) {
+				return new ResponseEntity<GlobalStatusResponse>(new GlobalStatusResponse("ERROR", statusResult.getErrorMessage(), null), INTERNAL_SERVER_ERROR);
+			} else {
+				return new ResponseEntity<GlobalStatusResponse>(new GlobalStatusResponse("OK", null, mapStatuses(statusResult.getStatuses())), OK);
+			}
+		} catch (Throwable e) {
+			log.error("Job status retrieval error", e);
+			
+			return new ResponseEntity<GlobalStatusResponse>(new GlobalStatusResponse("ERROR", e.getMessage(), null), INTERNAL_SERVER_ERROR);
+		}
 	}
-	
+
 	@RequestMapping(value = "/api/jobs/{jobId:.+}", method = DELETE, produces = APPLICATION_JSON_VALUE)
-	public ResponseEntity<StatusResponse> deleteJob(@RequestHeader("PROXY") String proxy, @PathVariable String jobId) {
-		return new ResponseEntity<StatusResponse>(new StatusResponse(null, null, null), OK);
+	public ResponseEntity<StopResponse> deleteJob(@RequestHeader("PROXY") String proxy, @PathVariable String jobId) throws CredentialException, GSSException, FileManagerException {
+		//TODO(DH): obtain host from db
+		String host = "zeus.cyfronet.pl";
+		FileManager fileManager = fileManagerFactory.get(RestHelper.decodeProxy(proxy));
+		String rootPath = getRootPath(host, RestHelper.decodeProxy(proxy));
+		fileManager.cp(rootPath + ".rimrock/stop", new ClassPathResource("scripts/stop"));
+		
+		try {
+			RunResults result = runner.run(host, RestHelper.decodeProxy(proxy), "cd " + rootPath + ".rimrock; chmod +x stop; ./stop " + jobId, -1);
+			
+			if(result.isTimeoutOccured() || result.getExitCode() != 0) {
+				return new ResponseEntity<StopResponse>(new StopResponse("ERROR", result.getError()), INTERNAL_SERVER_ERROR);
+			} else {
+				StopResult stopResult = mapper.readValue(result.getOutput(), StopResult.class);
+				
+				return new ResponseEntity<StopResponse>(new StopResponse(stopResult.getResult(), stopResult.getErrorMessage()), OK);
+			}
+		} catch (Throwable e) {
+			log.error("Stopping job with id " + jobId + " failed", e);
+			
+			return new ResponseEntity<StopResponse>(new StopResponse("ERROR", e.getMessage()), INTERNAL_SERVER_ERROR);
+		}
 	}
 	
 	@RequestMapping(value = "/api/jobs/{jobId}/output", method = GET, produces = APPLICATION_JSON_VALUE)
 	public ResponseEntity<OutputResponse> output(@RequestHeader("PROXY") String proxy, @PathVariable String jobId) {
 		return new ResponseEntity<OutputResponse>(new OutputResponse(), OK);
+	}
+	
+	private List<StatusResponse> mapStatuses(List<Status> statuses) {
+		List<StatusResponse> result = new ArrayList<>();
+
+		//TODO(DH): merge with DB
+		for(Status status : statuses) {
+			result.add(new StatusResponse(status.getJobId(), status.getStatus(), status.getErrorMessage()));
+		}
+		
+		return result;
 	}
 	
 	private String findStatusValue(String jobId, List<Status> statuses) {
