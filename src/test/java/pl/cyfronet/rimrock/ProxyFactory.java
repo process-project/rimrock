@@ -8,12 +8,12 @@ import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 
 import org.apache.tomcat.util.http.fileupload.ByteArrayOutputStream;
-import org.globus.gsi.CertUtil;
 import org.globus.gsi.GSIConstants;
-import org.globus.gsi.GlobusCredential;
 import org.globus.gsi.OpenSSLKey;
+import org.globus.gsi.X509Credential;
 import org.globus.gsi.bc.BouncyCastleCertProcessingFactory;
 import org.globus.gsi.bc.BouncyCastleOpenSSLKey;
+import org.globus.gsi.util.CertificateLoadUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -48,28 +48,29 @@ public class ProxyFactory {
 		return proxy;
 	}
 
-	private String generateProxy() throws GeneralSecurityException, IOException, Exception {
+	private String generateProxy() throws GeneralSecurityException,
+			IOException, Exception {
 		log.info("Generating proxy");
+
+		X509Certificate userCert = CertificateLoadUtil.loadCertificate(userCertFile.getInputStream());
+		OpenSSLKey key = new BouncyCastleOpenSSLKey(userKeyFile.getInputStream());
+
+		if (key.isEncrypted()) {
+			try {
+				key.decrypt(userKeyPass);
+			} catch (GeneralSecurityException e) {
+				throw new Exception("Wrong password or other security error");
+			}
+		}
+
+		PrivateKey userKey = key.getPrivateKey();
+		X509Credential credential = factory.createCredential(
+				new X509Certificate[] { userCert }, userKey, 2048, 3600,
+				GSIConstants.CertificateType.GSI_2_PROXY);
 		
-		X509Certificate userCert = CertUtil.loadCertificate(userCertFile.getInputStream());
-        OpenSSLKey key =  new BouncyCastleOpenSSLKey(userKeyFile.getInputStream());
-
-        if(key.isEncrypted()) {
-            try {
-                    key.decrypt(userKeyPass);
-            } catch(GeneralSecurityException e) {
-                    throw new Exception("Wrong password or other security error");
-            }
-        }
-
-        PrivateKey userKey = key.getPrivateKey();
-        GlobusCredential credential = factory.createCredential(new X509Certificate[] {userCert},
-                        userKey,
-                        2048,
-                        3600, GSIConstants.GSI_2_PROXY, null);
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		credential.save(out);
-		
+
 		return new String(out.toByteArray());
 	}
 	
