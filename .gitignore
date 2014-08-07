@@ -4,3 +4,6 @@
 /.project
 /.springBeans
 /rimrock.log
+/src/test/resources/usercert.pem
+/src/test/resources/userkey.pem
+/src/test/resources/config/application.properties
