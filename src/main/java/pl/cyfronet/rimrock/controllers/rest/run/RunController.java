@@ -17,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
@@ -40,29 +41,29 @@ public class RunController {
 	
 	@RequestMapping(value = "/api/process", method = GET, consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
 	@ResponseBody
-	public ResponseEntity<RunResponse> run(@Valid @RequestBody RunRequest runRequest, BindingResult errors) {
+	public ResponseEntity<RunResponse> run(@RequestHeader("PROXY") String proxy, @Valid @RequestBody RunRequest runRequest, BindingResult errors) {
 		log.debug("Processing run request {}", runRequest);
 		
 		if(errors.hasErrors()) {
 			return new ResponseEntity<RunResponse>(
-					new RunResponse(Status.error, -1, null, null, RestHelper.convertErrors(errors)), UNPROCESSABLE_ENTITY);
+					new RunResponse(Status.ERROR, -1, null, null, RestHelper.convertErrors(errors)), UNPROCESSABLE_ENTITY);
 		}
 		
 		try {
-			RunResults results = runner.run(runRequest.getHost(), runRequest.getProxy(), runRequest.getCommand(), -1);
+			RunResults results = runner.run(runRequest.getHost(), RestHelper.decodeProxy(proxy), runRequest.getCommand(), -1);
 			
 			if(results.isTimeoutOccured()) {
 				return new ResponseEntity<RunResponse>(
-						new RunResponse(Status.error, -1, results.getOutput(), results.getError(),
+						new RunResponse(Status.ERROR, -1, results.getOutput(), results.getError(),
 								"timeout occurred; maximum allowed execution time for this operation is " + runTimeoutMillis + " ms"), REQUEST_TIMEOUT);
 			}
 			
 			return new ResponseEntity<RunResponse>(
-					new RunResponse(Status.ok, results.getExitCode(), results.getOutput(), results.getError(), null), OK);
+					new RunResponse(Status.OK, results.getExitCode(), results.getOutput(), results.getError(), null), OK);
 		} catch (Throwable e) {
 			log.error("Error", e);
 			
-			return new ResponseEntity<RunResponse>(new RunResponse(Status.error, -1, null, null, e.getMessage()), INTERNAL_SERVER_ERROR);
+			return new ResponseEntity<RunResponse>(new RunResponse(Status.ERROR, -1, null, null, e.getMessage()), INTERNAL_SERVER_ERROR);
 		}
 	}
 }

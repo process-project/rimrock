@@ -24,6 +24,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 import pl.cyfronet.rimrock.ProxyFactory;
 import pl.cyfronet.rimrock.RimrockApplication;
+import pl.cyfronet.rimrock.controllers.rest.RestHelper;
 import pl.cyfronet.rimrock.controllers.rest.run.RunRequest;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -55,9 +56,9 @@ public class RunControllerMvcTest {
 		RunRequest runRequest = new RunRequest();
 		runRequest.setCommand("pwd");
 		runRequest.setHost("zeus.cyfronet.pl");
-		runRequest.setProxy(proxyFactory.getProxy());
 		
 		mockMvc.perform(get("/api/process")
+				.header("PROXY", RestHelper.encodeProxy(proxyFactory.getProxy()))
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(mapper.writeValueAsBytes(runRequest)))
 				
@@ -76,9 +77,9 @@ public class RunControllerMvcTest {
 		//at least the second mkdir command will return a 1 exit code
 		runRequest.setCommand("echo 'error' > /dev/stderr; mkdir /tmp/test; mkdir /tmp/test");
 		runRequest.setHost("zeus.cyfronet.pl");
-		runRequest.setProxy(proxyFactory.getProxy());
 		
 		mockMvc.perform(get("/api/process")
+				.header("PROXY", RestHelper.encodeProxy(proxyFactory.getProxy()))
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(mapper.writeValueAsBytes(runRequest)))
 				
@@ -114,9 +115,9 @@ public class RunControllerMvcTest {
 		RunRequest runRequest = new RunRequest();
 		runRequest.setCommand("echo hello1; echo hello2; echo hello3");
 		runRequest.setHost("zeus.cyfronet.pl");
-		runRequest.setProxy(proxyFactory.getProxy());
 		
 		mockMvc.perform(get("/api/process")
+				.header("PROXY", RestHelper.encodeProxy(proxyFactory.getProxy()))
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(mapper.writeValueAsBytes(runRequest)))
 				
@@ -134,9 +135,9 @@ public class RunControllerMvcTest {
 		RunRequest runRequest = new RunRequest();
 		runRequest.setCommand("echo 'going to sleep'; sleep 5");
 		runRequest.setHost("zeus.cyfronet.pl");
-		runRequest.setProxy(proxyFactory.getProxy());
 		
 		mockMvc.perform(get("/api/process")
+				.header("PROXY", RestHelper.encodeProxy(proxyFactory.getProxy()))
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(mapper.writeValueAsBytes(runRequest)))
 				

@@ -5,10 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class SubmitRequest {
 	private String host;
 	private String script;
-	private String proxy;
-	
-	@JsonProperty(value = "working_directory")
-	private String workingDirectory;
+	@JsonProperty(value = "working_directory") private String workingDirectory;
 	
 	public String getHost() {
 		return host;
@@ -22,12 +19,6 @@ public class SubmitRequest {
 	public void setScript(String script) {
 		this.script = script;
 	}
-	public String getProxy() {
-		return proxy;
-	}
-	public void setProxy(String proxy) {
-		this.proxy = proxy;
-	}
 	public String getWorkingDirectory() {
 		return workingDirectory;
 	}
@@ -37,6 +28,6 @@ public class SubmitRequest {
 	
 	@Override
 	public String toString() {
-		return "SubmitRequest [host=" + host + ", script=" + script + ", proxy=" + proxy + ", workingDirectory=" + workingDirectory + "]";
+		return "SubmitRequest [host=" + host + ", script=" + script + ", workingDirectory=" + workingDirectory + "]";
 	}
 }

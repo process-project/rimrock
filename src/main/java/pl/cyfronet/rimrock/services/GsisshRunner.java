@@ -135,7 +135,7 @@ public class GsisshRunner {
 	}
 
 	private NormalizedOutput normalizeStandardOutput(String output, String separator) {
-		log.trace("Output being normalized: {}" + output);
+		log.trace("Output being normalized: {}", output);
 		
 		NormalizedOutput result = new NormalizedOutput();
 		

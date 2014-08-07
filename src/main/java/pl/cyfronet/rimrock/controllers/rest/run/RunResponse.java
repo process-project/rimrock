@@ -17,8 +17,8 @@ public class RunResponse {
 	private String errorMessage;
 	
 	public enum Status {
-		ok,
-		error
+		OK,
+		ERROR
 	}
 	
 	public RunResponse(Status status, int exitCode, String standardOutput, String errorOutput,

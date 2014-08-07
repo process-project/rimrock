@@ -54,18 +54,18 @@ public class ProxyFactory {
 		X509Certificate userCert = CertUtil.loadCertificate(userCertFile.getInputStream());
         OpenSSLKey key =  new BouncyCastleOpenSSLKey(userKeyFile.getInputStream());
 
-        if (key.isEncrypted()) {
-                try {
-                        key.decrypt(userKeyPass);
-                } catch(GeneralSecurityException e) {
-                        throw new Exception("Wrong password or other security error");
-                }
+        if(key.isEncrypted()) {
+            try {
+                    key.decrypt(userKeyPass);
+            } catch(GeneralSecurityException e) {
+                    throw new Exception("Wrong password or other security error");
+            }
         }
 
         PrivateKey userKey = key.getPrivateKey();
         GlobusCredential credential = factory.createCredential(new X509Certificate[] {userCert},
                         userKey,
-                        512,
+                        2048,
                         3600, GSIConstants.GSI_2_PROXY, null);
         ByteArrayOutputStream out = new ByteArrayOutputStream();
 		credential.save(out);
