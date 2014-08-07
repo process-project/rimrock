@@ -49,7 +49,7 @@ public class RunController {
 		}
 		
 		try {
-			RunResults results = runner.run(runRequest.getHost(), runRequest.getProxy(), runRequest.getCommand());
+			RunResults results = runner.run(runRequest.getHost(), runRequest.getProxy(), runRequest.getCommand(), -1);
 			
 			if(results.isTimeoutOccured()) {
 				return new ResponseEntity<RunResponse>(

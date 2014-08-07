@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
@@ -31,14 +32,27 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import pl.cyfronet.rimrock.controllers.rest.RestHelper;
+import pl.cyfronet.rimrock.services.GsisshRunner;
+import pl.cyfronet.rimrock.services.RunResults;
 import pl.cyfronet.rimrock.services.filemanager.FileManager;
 import pl.cyfronet.rimrock.services.filemanager.FileManagerFactory;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Controller
 public class JobsController {
 	private static final Logger log = LoggerFactory.getLogger(JobsController.class);
 	
-	@Autowired private FileManagerFactory fileManagerFactory;
+	private FileManagerFactory fileManagerFactory;
+	private GsisshRunner runner;
+	private ObjectMapper mapper;
+
+	@Autowired
+	public JobsController(FileManagerFactory fileManagerFactory, GsisshRunner runner, ObjectMapper mapper) {
+		this.fileManagerFactory = fileManagerFactory;
+		this.runner = runner;
+		this.mapper = mapper;
+	}
 	
 	@RequestMapping(value = "/api/jobs", method = POST, consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
 	public ResponseEntity<SubmitResponse> submit(
@@ -52,13 +66,27 @@ public class JobsController {
 		
 		try {
 			FileManager fileManager = fileManagerFactory.get(submitRequest.getProxy());
-			fileManager.cp(buildPath(submitRequest, "script.sh"), new ByteArrayResource(submitRequest.getScript().getBytes()));
+			String rootPath = buildRootPath(submitRequest);
+			fileManager.cp(rootPath + "script.sh", new ByteArrayResource(submitRequest.getScript().getBytes()));
+			fileManager.cp(rootPath + "start", new ClassPathResource("scripts/start"));
 			
-			return new ResponseEntity<SubmitResponse>(new SubmitResponse("status", null, "jobId"), OK);
+			RunResults result = runner.run(submitRequest.getHost(), submitRequest.getProxy(), "cd " + rootPath + "; chmod +x start; ./start script.sh", 60000);
+			
+			if(result.isTimeoutOccured() || result.getExitCode() != 0) {
+				return new ResponseEntity<SubmitResponse>(new SubmitResponse("ERROR", result.getError(), null), INTERNAL_SERVER_ERROR);
+			} else {
+				SubmitResult submitResult = mapper.readValue(result.getOutput(), SubmitResult.class);
+				
+				if("OK".equals(submitResult.getResult())) {
+					return new ResponseEntity<SubmitResponse>(new SubmitResponse(submitResult.getResult(), null, submitResult.getJobId()), OK);
+				} else {
+					return new ResponseEntity<SubmitResponse>(new SubmitResponse(submitResult.getResult(), submitResult.getErrorMessage(), null), INTERNAL_SERVER_ERROR);
+				}
+			}
 		} catch(Throwable e) {
 			log.error("Job submit error", e);
 			
-			return new ResponseEntity<SubmitResponse>(new SubmitResponse(null, e.getMessage(), null), INTERNAL_SERVER_ERROR);
+			return new ResponseEntity<SubmitResponse>(new SubmitResponse("ERROR", e.getMessage(), null), INTERNAL_SERVER_ERROR);
 		}
 	}
 	
@@ -76,10 +104,10 @@ public class JobsController {
 		return new ResponseEntity<OutputResponse>(new OutputResponse(), OK);
 	}
 	
-	private String buildPath(SubmitRequest submitRequest, String fileName) throws CredentialException, GSSException {
+	private String buildRootPath(SubmitRequest submitRequest) throws CredentialException, GSSException {
 		String rootPath = submitRequest.getWorkingDirectory() == null ? getRootPath(submitRequest) : submitRequest.getWorkingDirectory();
 		
-		return rootPath + fileName;
+		return rootPath;
 	}
 
 	private String getRootPath(SubmitRequest submitRequest) throws CredentialException, GSSException {

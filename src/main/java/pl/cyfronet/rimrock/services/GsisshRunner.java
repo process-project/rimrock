@@ -37,7 +37,11 @@ public class GsisshRunner {
 		int exitCode;
 	}
 	
-	public RunResults run(String host, String proxyValue, String command) throws CredentialException, GSSException, IOException, InvalidStateException, InterruptedException {
+	/**
+	 * Runs the given command on the host. Authentication uses the given proxy. If given timeout
+	 * is greater than 0 it is used, otherwise a default value is used. 
+	 */
+	public RunResults run(String host, String proxyValue, String command, int timeout) throws CredentialException, GSSException, IOException, InvalidStateException, InterruptedException {
 		X509Credential proxy = new X509Credential(new ByteArrayInputStream(proxyValue.getBytes()));
 		GSSCredential gsscredential = new GlobusGSSCredentialImpl(proxy, GSSCredential.INITIATE_ONLY);
 		proxy.verify();
@@ -86,7 +90,7 @@ public class GsisshRunner {
 					Thread timeoutThread = new Thread() {
 						public void run() {
 							try {
-								Thread.sleep(1000);
+								Thread.sleep(timeout > 0 ? timeout : runTimeoutMillis);
 							} catch (InterruptedException e) {
 								return;
 							}
