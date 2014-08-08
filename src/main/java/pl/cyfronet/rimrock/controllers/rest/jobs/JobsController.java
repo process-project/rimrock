@@ -9,22 +9,16 @@ import static org.springframework.web.bind.annotation.RequestMethod.DELETE;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
 import org.globus.gsi.CredentialException;
-import org.globus.gsi.X509Credential;
-import org.globus.gsi.gssapi.GlobusGSSCredentialImpl;
-import org.ietf.jgss.GSSCredential;
 import org.ietf.jgss.GSSException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,6 +35,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import pl.cyfronet.rimrock.controllers.rest.RestHelper;
 import pl.cyfronet.rimrock.domain.Job;
+import pl.cyfronet.rimrock.gsi.ProxyHelper;
 import pl.cyfronet.rimrock.repositories.JobRepository;
 import pl.cyfronet.rimrock.services.GsisshRunner;
 import pl.cyfronet.rimrock.services.RunResults;
@@ -59,14 +54,16 @@ public class JobsController {
 	private GsisshRunner runner;
 	private ObjectMapper mapper;
 	private JobRepository jobRepository;
+	private ProxyHelper proxyHelper;
 
 	@Autowired
 	public JobsController(FileManagerFactory fileManagerFactory, GsisshRunner runner, ObjectMapper mapper,
-			JobRepository jobRepository) {
+			JobRepository jobRepository, ProxyHelper proxyHelper) {
 		this.fileManagerFactory = fileManagerFactory;
 		this.runner = runner;
 		this.mapper = mapper;
 		this.jobRepository = jobRepository;
+		this.proxyHelper = proxyHelper;
 	}
 	
 	@RequestMapping(value = "/api/jobs", method = POST, consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
@@ -91,7 +88,7 @@ public class JobsController {
 				SubmitResult submitResult = mapper.readValue(result.getOutput(), SubmitResult.class);
 				
 				if("OK".equals(submitResult.getResult())) {
-					jobRepository.save(new Job(submitResult.getJobId(), submitResult.getStandardOutputLocation(), submitResult.getStandardErrorLocation(), getUserLogin(proxy), submitRequest.getHost()));
+					jobRepository.save(new Job(submitResult.getJobId(), submitResult.getStandardOutputLocation(), submitResult.getStandardErrorLocation(), proxyHelper.getUserLogin(proxy), submitRequest.getHost()));
 					
 					return new ResponseEntity<SubmitResponse>(new SubmitResponse(submitResult.getResult(), null, submitResult.getJobId()), OK);
 				} else {
@@ -117,7 +114,7 @@ public class JobsController {
 			}
 			
 			StatusResult statusResult = getStatusResult(RestHelper.decodeProxy(proxy), job.getHost());
-			String statusValue = findStatusValue(jobId, statusResult.getStatuses(), getUserLogin(proxy));
+			String statusValue = findStatusValue(jobId, statusResult.getStatuses(), proxyHelper.getUserLogin(RestHelper.decodeProxy(proxy)));
 			
 			if(statusValue == null) {
 				return new ResponseEntity<StatusResponse>(new StatusResponse(jobId, "ERROR", "A job with the given job id could not be found"), NOT_FOUND);
@@ -147,7 +144,8 @@ public class JobsController {
 				statuses.addAll(statusResult.getStatuses());
 			}
 
-			return new ResponseEntity<GlobalStatusResponse>(new GlobalStatusResponse("OK", null, mapStatuses(mergeStatuses(statuses, getUserLogin(proxy)), getUserLogin(proxy))), OK);
+			String userLogin = proxyHelper.getUserLogin(RestHelper.decodeProxy(proxy));
+			return new ResponseEntity<GlobalStatusResponse>(new GlobalStatusResponse("OK", null, mapStatuses(mergeStatuses(statuses, userLogin), userLogin)), OK);
 		} catch (Throwable e) {
 			log.error("Job status retrieval error", e);
 			
@@ -263,23 +261,9 @@ public class JobsController {
 		switch(host.trim()) {
 			case "zeus.cyfronet.pl":
 			case "ui.cyfronet.pl":
-				return "/people/" + getUserLogin(proxy) + "/";
+				return "/people/" + proxyHelper.getUserLogin(proxy) + "/";
 			default:
 				throw new IllegalArgumentException("Without submitting a working directory only zeus.cyfronet.pl host is supported");
-		}
-	}
-
-	private String getUserLogin(String proxyValue) throws CredentialException, GSSException {
-		X509Credential proxy = new X509Credential(new ByteArrayInputStream(proxyValue.getBytes()));
-		GSSCredential gsscredential = new GlobusGSSCredentialImpl(proxy, GSSCredential.INITIATE_ONLY);
-		String dn = gsscredential.getName().toString();
-		Pattern pattern = Pattern.compile(".*=(.*)$");
-		Matcher matcher = pattern.matcher(dn);
-		
-		if(matcher.matches()) {
-			return matcher.group(1);
-		} else {
-			throw new IllegalArgumentException("Could not extract user name from the supplied user proxy");
 		}
 	}
 }

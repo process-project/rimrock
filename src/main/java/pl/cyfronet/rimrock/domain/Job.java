@@ -26,6 +26,7 @@ public class Job implements Serializable {
 		this.standardOutputLocation = standardOutputLocation;
 		this.standardErrorLocation = standardErrorLocation;
 		this.user = user;
+		this.host = host;
 	}
 	
 	public Long getId() {

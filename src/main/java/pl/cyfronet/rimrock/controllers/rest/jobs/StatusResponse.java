@@ -11,7 +11,6 @@ public class StatusResponse {
 		this.jobId = jobId;
 		this.status = status;
 		this.errorMessage = errorMessage;
-		
 	}
 	
 	public String getJobId() {
