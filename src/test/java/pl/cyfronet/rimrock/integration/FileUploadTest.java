@@ -28,6 +28,7 @@ public class FileUploadTest {
 	@Autowired private ProxyFactory proxyFactory;
 	
 	@Test
+//	@Ignore
 	public void shouldUploadFile() throws Exception {			
 		String uploadPath = getHomedir() + "/upload_test.xml";
 		getFileManager().cp(uploadPath, new FileSystemResource(new File("pom.xml")));

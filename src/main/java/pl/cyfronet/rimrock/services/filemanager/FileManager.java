@@ -2,6 +2,7 @@ package pl.cyfronet.rimrock.services.filemanager;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.Base64;
 
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpEntity;
@@ -50,11 +51,10 @@ public class FileManager {
 		rm(path, values);
 	}
 	
-	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private void rm(String path, MultiValueMap<String, Object> values) throws FileManagerException {
 		HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(values, getHeders());
 		try {
-			restTemplate.exchange(rmUrl(path), HttpMethod.DELETE, request, (Class)null);
+			restTemplate.exchange(rmUrl(path), HttpMethod.DELETE, request, String.class);
 		} catch(HttpClientErrorException e) {		
 			throw new FileManagerException(e.getResponseBodyAsString());
 		}
@@ -62,7 +62,6 @@ public class FileManager {
 	
 	private MultiValueMap<String, Object> getFormDataWithProxyAndLang() {
 		MultiValueMap<String, Object> values = new LinkedMultiValueMap<>();
-		values.add("proxy", proxyPayload);
 		values.add("locale", "en");
 		
 		return values;
@@ -72,6 +71,7 @@ public class FileManager {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.MULTIPART_FORM_DATA);
 		headers.setAccept(Arrays.asList(MediaType.ALL));
+		headers.add("PROXY", Base64.getEncoder().encodeToString(proxyPayload.getBytes()));
 		
 		return headers;
 	}
