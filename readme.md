@@ -14,10 +14,10 @@ Fix the path above accordingly (you can get the jar with the help of maven: `mvn
 
 After the application is started you can fetch the user proxy (e.g. from DataNet), save it to a file and use the following commands to execute something on the UI machine:
 
-	proxy="`cat /home/daniel/temp/user-proxy.pem | awk 1 ORS='\\\n'`"
-	message="{\"host\":\"zeus.cyfronet.pl\", \"command\":\"pwd\", \"proxy\":\"$proxy\"}"
+	proxy="`cat {path-to-proxy-file} | base64 | tr -d '\n'`"
+	message="{\"host\":\"zeus.cyfronet.pl\", \"command\":\"pwd\"}"
 	echo $message > message.txt
-	curl -X GET --data-binary @message.txt --header "Content-Type:application/json" http://localhost:8080/api/process
+	curl -X GET --data-binary @message.txt --header "Content-Type:application/json" --header "PROXY:$proxy" http://localhost:8080/api/process
 
 ## Configuring proxy generation for integration tests
 
@@ -31,6 +31,6 @@ After the application is started you can fetch the user proxy (e.g. from DataNet
 
     test.user.key.pass = [user_key_pass]
 
-* Put `usercert.pem` and `userkey.pem` files in the `src/main/resources` directory
+* Put `usercert.pem` and `userkey.pem` files in the `src/test/resources` directory
 
 Note that all these resources are ignored so no private data leaks through git.

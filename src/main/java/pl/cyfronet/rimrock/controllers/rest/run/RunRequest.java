@@ -7,8 +7,6 @@ public class RunRequest {
 	@NotNull
 	private String host;
 	private String command;
-	@NotNull
-	private String proxy;
 
 	public String getHost() {
 		return host;
@@ -22,16 +20,9 @@ public class RunRequest {
 	public void setCommand(String command) {
 		this.command = command;
 	}
-	public String getProxy() {
-		return proxy;
-	}
-	public void setProxy(String proxy) {
-		this.proxy = proxy;
-	}
 	
 	@Override
 	public String toString() {
-		return "RunRequest [host=" + host + ", command=" + command + ", proxy="
-				+ proxy + "]";
+		return "RunRequest [host=" + host + ", command=" + command + "]";
 	}
 }

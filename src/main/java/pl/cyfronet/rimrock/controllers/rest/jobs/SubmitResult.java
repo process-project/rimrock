@@ -3,15 +3,12 @@ package pl.cyfronet.rimrock.controllers.rest.jobs;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class SubmitResult {
+	@JsonProperty("job_id") private String jobId;
+	@JsonProperty("standard_output") private String standardOutputLocation;
+	@JsonProperty("standard_error") private String standardErrorLocation;
+	@JsonProperty("error_message") private String errorMessage;
 	private String result;
-	@JsonProperty("job_id")
-	private String jobId;
-	@JsonProperty("standard_output")
-	private String standardOutputLocation;
-	@JsonProperty("standard_error")
-	private String standardErrorLocation;
-	@JsonProperty("error_message")
-	private String errorMessage;
+	
 	public String getResult() {
 		return result;
 	}
