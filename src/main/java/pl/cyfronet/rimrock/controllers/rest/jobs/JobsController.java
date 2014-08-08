@@ -13,8 +13,11 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
@@ -37,6 +40,8 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import pl.cyfronet.rimrock.controllers.rest.RestHelper;
+import pl.cyfronet.rimrock.domain.Job;
+import pl.cyfronet.rimrock.repositories.JobRepository;
 import pl.cyfronet.rimrock.services.GsisshRunner;
 import pl.cyfronet.rimrock.services.RunResults;
 import pl.cyfronet.rimrock.services.filemanager.FileManager;
@@ -53,12 +58,15 @@ public class JobsController {
 	private FileManagerFactory fileManagerFactory;
 	private GsisshRunner runner;
 	private ObjectMapper mapper;
+	private JobRepository jobRepository;
 
 	@Autowired
-	public JobsController(FileManagerFactory fileManagerFactory, GsisshRunner runner, ObjectMapper mapper) {
+	public JobsController(FileManagerFactory fileManagerFactory, GsisshRunner runner, ObjectMapper mapper,
+			JobRepository jobRepository) {
 		this.fileManagerFactory = fileManagerFactory;
 		this.runner = runner;
 		this.mapper = mapper;
+		this.jobRepository = jobRepository;
 	}
 	
 	@RequestMapping(value = "/api/jobs", method = POST, consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
@@ -83,6 +91,8 @@ public class JobsController {
 				SubmitResult submitResult = mapper.readValue(result.getOutput(), SubmitResult.class);
 				
 				if("OK".equals(submitResult.getResult())) {
+					jobRepository.save(new Job(submitResult.getJobId(), submitResult.getStandardOutputLocation(), submitResult.getStandardErrorLocation(), getUserLogin(proxy), submitRequest.getHost()));
+					
 					return new ResponseEntity<SubmitResponse>(new SubmitResponse(submitResult.getResult(), null, submitResult.getJobId()), OK);
 				} else {
 					return new ResponseEntity<SubmitResponse>(new SubmitResponse(submitResult.getResult(), submitResult.getErrorMessage(), null), INTERNAL_SERVER_ERROR);
@@ -100,9 +110,14 @@ public class JobsController {
 		log.debug("Processing status request for job with id {}", jobId);
 		
 		try {
-			StatusResult statusResult = getStatusResult(RestHelper.decodeProxy(proxy));
+			Job job = jobRepository.findOneByJobId(jobId);
 			
-			String statusValue = findStatusValue(jobId, statusResult.getStatuses());
+			if(job == null) {
+				return new ResponseEntity<StatusResponse>(new StatusResponse(null, "ERROR", "Job with id " + jobId + " does not exist"), NOT_FOUND);
+			}
+			
+			StatusResult statusResult = getStatusResult(RestHelper.decodeProxy(proxy), job.getHost());
+			String statusValue = findStatusValue(jobId, statusResult.getStatuses(), getUserLogin(proxy));
 			
 			if(statusValue == null) {
 				return new ResponseEntity<StatusResponse>(new StatusResponse(jobId, "ERROR", "A job with the given job id could not be found"), NOT_FOUND);
@@ -119,13 +134,20 @@ public class JobsController {
 	@RequestMapping(value = "/api/jobs", method = GET, produces = APPLICATION_JSON_VALUE)
 	public ResponseEntity<GlobalStatusResponse> globalStatus(@RequestHeader("PROXY") String proxy) {
 		try {
-			StatusResult statusResult = getStatusResult(RestHelper.decodeProxy(proxy));
+			List<String> hosts = jobRepository.getHosts();
+			List<Status> statuses = new ArrayList<Status>();
 			
-			if(statusResult.getErrorMessage() != null) {
-				return new ResponseEntity<GlobalStatusResponse>(new GlobalStatusResponse("ERROR", statusResult.getErrorMessage(), null), INTERNAL_SERVER_ERROR);
-			} else {
-				return new ResponseEntity<GlobalStatusResponse>(new GlobalStatusResponse("OK", null, mapStatuses(statusResult.getStatuses())), OK);
+			for(String host: hosts) {
+				StatusResult statusResult = getStatusResult(RestHelper.decodeProxy(proxy), host);
+				
+				if(statusResult.getErrorMessage() != null) {
+					return new ResponseEntity<GlobalStatusResponse>(new GlobalStatusResponse("ERROR", statusResult.getErrorMessage(), null), INTERNAL_SERVER_ERROR);
+				}
+				
+				statuses.addAll(statusResult.getStatuses());
 			}
+
+			return new ResponseEntity<GlobalStatusResponse>(new GlobalStatusResponse("OK", null, mapStatuses(mergeStatuses(statuses, getUserLogin(proxy)), getUserLogin(proxy))), OK);
 		} catch (Throwable e) {
 			log.error("Job status retrieval error", e);
 			
@@ -135,8 +157,13 @@ public class JobsController {
 
 	@RequestMapping(value = "/api/jobs/{jobId:.+}", method = DELETE, produces = APPLICATION_JSON_VALUE)
 	public ResponseEntity<StopResponse> deleteJob(@RequestHeader("PROXY") String proxy, @PathVariable String jobId) throws CredentialException, GSSException, FileManagerException {
-		//TODO(DH): obtain host from db
-		String host = "zeus.cyfronet.pl";
+		Job job = jobRepository.findOneByJobId(jobId);
+		
+		if(job == null) {
+			return new ResponseEntity<StopResponse>(new StopResponse("ERROR", "Job with id " + jobId + " does not exist"), NOT_FOUND);
+		}
+		
+		String host = job.getHost();
 		FileManager fileManager = fileManagerFactory.get(RestHelper.decodeProxy(proxy));
 		String rootPath = getRootPath(host, RestHelper.decodeProxy(proxy));
 		fileManager.cp(rootPath + ".rimrock/stop", new ClassPathResource("scripts/stop"));
@@ -163,20 +190,22 @@ public class JobsController {
 		return new ResponseEntity<OutputResponse>(new OutputResponse(), OK);
 	}
 	
-	private List<StatusResponse> mapStatuses(List<Status> statuses) {
+	private List<StatusResponse> mapStatuses(List<Status> statuses, String user) {
 		List<StatusResponse> result = new ArrayList<>();
+		List<Status> mergedStatuses = mergeStatuses(statuses, user);
 
-		//TODO(DH): merge with DB
-		for(Status status : statuses) {
+		for(Status status : mergedStatuses) {
 			result.add(new StatusResponse(status.getJobId(), status.getStatus(), status.getErrorMessage()));
 		}
 		
 		return result;
 	}
-	
-	private String findStatusValue(String jobId, List<Status> statuses) {
+
+	private String findStatusValue(String jobId, List<Status> statuses, String user) {
 		if(statuses != null) {
-			for(Status status : statuses) {
+			List<Status> mergedStatuses = mergeStatuses(statuses, user);
+			
+			for(Status status : mergedStatuses) {
 				if(status.getJobId() != null && status.getJobId().equals(jobId)) {
 					return status.getStatus();
 				}
@@ -186,10 +215,28 @@ public class JobsController {
 		return null;
 	}
 	
-	private StatusResult getStatusResult(String proxy) throws CredentialException, InvalidStateException, GSSException, IOException, InterruptedException, FileManagerException {
-		//TODO(DH): obtain host from db
-		String host = "zeus.cyfronet.pl";
+	private List<Status> mergeStatuses(List<Status> statuses, String user) {
+		List<Job> dbJobs = jobRepository.findByUser(user);
+		Map<String, Status> mappedStatusJobIds = statuses
+				.stream()
+				.collect(Collectors.toMap(Status::getJobId, Function.<Status>identity()));
+		List<Status> result = new ArrayList<Status>();
 		
+		for(Job dbJob : dbJobs) {
+			if(!mappedStatusJobIds.keySet().contains(dbJob.getJobId())) {
+				Status status = new Status();
+				status.setJobId(dbJob.getJobId());
+				status.setStatus("FINISHED");
+				result.add(status);
+			} else {
+				result.add(mappedStatusJobIds.get(dbJob.getJobId()));
+			}
+		}
+		
+		return result;
+	}
+	
+	private StatusResult getStatusResult(String proxy, String host) throws CredentialException, InvalidStateException, GSSException, IOException, InterruptedException, FileManagerException {
 		FileManager fileManager = fileManagerFactory.get(proxy);
 		String rootPath = getRootPath(host, proxy);
 		fileManager.cp(rootPath + ".rimrock/status", new ClassPathResource("scripts/status"));
