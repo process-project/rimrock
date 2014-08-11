@@ -1,7 +1,6 @@
 package pl.cyfronet.rimrock.unit;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.when;
 
@@ -54,10 +53,16 @@ public class JobMergingTest {
 		String host = "zeus.cyfronet.pl";
 		String expected = "RUNNING";
 		String jobId = "firstJobId";
+		String user = "plguser";
 		
 		when(fileManagerFactory.get("proxy")).thenReturn(fileManager);
-		when(proxyHelper.getUserLogin("proxy")).thenReturn("plguser");
-		when(jobRepository.findOneByJobId(Mockito.eq(jobId))).thenReturn(new Job(jobId, "out", "error", "plguser", host));
+		when(proxyHelper.getUserLogin("proxy")).thenReturn(user);
+		
+		Job job = new Job(jobId, "out", "error", user, host);
+		List<Job> dbJobs = new ArrayList<Job>();
+		dbJobs.add(job);
+		when(jobRepository.findOneByJobId(Mockito.eq(jobId))).thenReturn(job);
+		when(jobRepository.findByUser(user)).thenReturn(dbJobs);
 		when(runner.run(Mockito.eq(host), Mockito.eq("proxy"), Mockito.anyString(), Mockito.anyInt())).thenReturn(new RunResults());
 		
 		StatusResult result = new StatusResult();

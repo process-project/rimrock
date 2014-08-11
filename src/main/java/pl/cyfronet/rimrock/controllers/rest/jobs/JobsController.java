@@ -88,7 +88,8 @@ public class JobsController {
 				SubmitResult submitResult = mapper.readValue(result.getOutput(), SubmitResult.class);
 				
 				if("OK".equals(submitResult.getResult())) {
-					jobRepository.save(new Job(submitResult.getJobId(), submitResult.getStandardOutputLocation(), submitResult.getStandardErrorLocation(), proxyHelper.getUserLogin(proxy), submitRequest.getHost()));
+					jobRepository.save(new Job(submitResult.getJobId(), submitResult.getStandardOutputLocation(),
+							submitResult.getStandardErrorLocation(), proxyHelper.getUserLogin(RestHelper.decodeProxy(proxy)), submitRequest.getHost()));
 					
 					return new ResponseEntity<SubmitResponse>(new SubmitResponse(submitResult.getResult(), null, submitResult.getJobId()), OK);
 				} else {

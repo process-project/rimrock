@@ -66,7 +66,7 @@ public class RunControllerMvcTest {
 				
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.status", is("ok")))
+				.andExpect(jsonPath("$.status", is("OK")))
 				.andExpect(jsonPath("$.exit_code", is(0)))
 				.andExpect(jsonPath("$.standard_output", startsWith("/people")));
 	}
@@ -88,7 +88,7 @@ public class RunControllerMvcTest {
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.exit_code", is(1)))
-				.andExpect(jsonPath("$.status", is("ok")))
+				.andExpect(jsonPath("$.status", is("OK")))
 				.andExpect(jsonPath("$.standard_output", startsWith("error")));
 	}
 	
@@ -96,6 +96,7 @@ public class RunControllerMvcTest {
 	public void testNotNullValidation() throws JsonProcessingException, Exception {
 		RunRequest runRequest = new RunRequest();
 		mockMvc.perform(get("/api/process")
+				.header("PROXY", RestHelper.encodeProxy(proxyFactory.getProxy()))
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(mapper.writeValueAsBytes(runRequest)))
 				
@@ -105,8 +106,7 @@ public class RunControllerMvcTest {
 				.andExpect(status().isUnprocessableEntity())
 				.andExpect(jsonPath("$.exit_code", is(-1)))
 				.andExpect(jsonPath("$.standard_output", is(equalTo(null))))
-				.andExpect(jsonPath("$.status", is("error")))
-				.andExpect(jsonPath("$.error_message", containsString("proxy:")))
+				.andExpect(jsonPath("$.status", is("ERROR")))
 				.andExpect(jsonPath("$.error_message", containsString("host:")));
 	}
 	
@@ -125,7 +125,7 @@ public class RunControllerMvcTest {
 				
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.status", is("ok")))
+				.andExpect(jsonPath("$.status", is("OK")))
 				.andExpect(jsonPath("$.exit_code", is(0)))
 				.andExpect(jsonPath("$.standard_output", is("hello1\nhello2\nhello3")));
 	}
@@ -145,7 +145,7 @@ public class RunControllerMvcTest {
 				
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isRequestTimeout())
-				.andExpect(jsonPath("$.status", is("error")))
+				.andExpect(jsonPath("$.status", is("ERROR")))
 				.andExpect(jsonPath("$.exit_code", is(-1)))
 				.andExpect(jsonPath("$.standard_output", is("going to sleep")))
 				.andExpect(jsonPath("$.error_message", startsWith("timeout")));

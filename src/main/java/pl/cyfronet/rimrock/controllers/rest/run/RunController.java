@@ -30,9 +30,9 @@ import pl.cyfronet.rimrock.services.RunResults;
 public class RunController {
 	private static final Logger log = LoggerFactory.getLogger(RunController.class);
 	
-	private GsisshRunner runner;
+	@Value("${run.timeout.millis}") private int runTimeoutMillis;
 	
-	@Value("${run.timeout.millis}") int runTimeoutMillis;
+	private GsisshRunner runner;
 
 	@Autowired
 	public RunController(GsisshRunner runner) {
