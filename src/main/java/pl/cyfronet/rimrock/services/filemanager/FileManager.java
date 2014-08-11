@@ -31,6 +31,7 @@ public class FileManager {
 	public void cp(String filePath, Resource file) throws FileManagerException {
 		MultiValueMap<String, Object> values = getFormDataWithProxyAndLang();		
 		values.add("file", getFileEntity(filePath, file));
+		values.add("recursive", true);
 		
 		HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(values, getHeders());
 		try {
