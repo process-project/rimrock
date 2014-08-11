@@ -9,7 +9,7 @@ import pl.cyfronet.rimrock.domain.Job;
 
 
 public interface JobRepository extends CrudRepository<Job, Long> {
-	@Query("select distinct job.host from Job job") List<String> getHosts();
+	@Query("select distinct job.host from pl.cyfronet.rimrock.domain.Job job") List<String> getHosts();
 	List<Job> findByUser(String user);
 	Job findOneByJobId(String jobId);
 }

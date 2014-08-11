@@ -6,8 +6,10 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.util.Scanner;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
+@Ignore
 public class ProcessWrapperTest {
 	@Test
 	public void testProcessWrapper() throws IOException, InterruptedException {
