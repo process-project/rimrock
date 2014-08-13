@@ -1,4 +1,4 @@
-## Running the rimrock application
+## Running the rimrock application in development mode
 
 * Checkout the project
 * Right-click `pl.cyfronet.rimrock.RimrockApplication` and run as Java application
@@ -34,3 +34,8 @@ After the application is started you can fetch the user proxy (e.g. from DataNet
 * Put `usercert.pem` and `userkey.pem` files in the `src/test/resources` directory
 
 Note that all these resources are ignored so no private data leaks through git.
+
+##Running the rimrock application in production
+
+* Build the final jar with `mvn clean package`.
+* Copy the jar file to a production server and run `java -jar {jar-file-path}` (no tomcat required).
