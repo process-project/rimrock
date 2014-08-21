@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+	<title layout:title-pattern="$DECORATOR_TITLE - $CONTENT_TITLE">RIMROCK</title>	
+	
+	<link rel="stylesheet" th:href="@{/css/bootstrap.min.css}"/>        
+    <!-- Custom styles for this template -->
+    <link rel="stylesheet" th:href="@{/css/main.css}"/>
+    
+    <script type="text/javascript" th:src="@{/js/jquery.min.js}"></script>
+    <script type="text/javascript" th:src="@{/js/hover.zoom.js}"></script>
+    <script type="text/javascript" th:src="@{/js/hover.zoom.conf.js}"></script>
+</head>
+<body>
+	<!-- Static navbar -->
+    <div class="navbar navbar-inverse navbar-static-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" th:href="@{/}">RIMROCK</a>
+        </div>
+        <div class="navbar-collapse collapse">
+          <ul class="nav navbar-nav navbar-right">
+            <li><a th:href="@{/processes}">Processes</a></li>
+            <li><a th:href="@{/iprocesses}">IProcesses</a></li>
+            <li><a th:href="@{/jobs}">Jobs</a></li>
+            <li><a th:href="@{/news}">News</a></li>
+            <li><a th:href="@{/team}">Team</a></li>
+            <li><a th:href="@{/contact}">Contact</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+	<section layout:fragment="content"></section>	
+	
+	<div id="footer">
+		<div class="container">
+			<div class="row">
+				<div class="col-lg-4">
+					<h4>Our Bunker</h4>
+					<p>
+						ul. Gramatyka 8a room 414,<br/>
+						+48 617 43 41, <br/>
+						Cracow, Poland.
+					</p>
+				</div>				
+				<div class="col-lg-4">
+					<h4>My Links</h4>
+					<p>
+						<a href="http://dice.cyfronet.pl/">Dice team</a><br/>
+						<a href="http://www.cyfronet.krakow.pl/en">Cyfronet</a><br/>
+						<a href="http://www.agh.edu.pl/en">AGH</a>
+					</p>
+				</div>
+				
+				<div class="col-lg-4">
+					<h4>About Dice Team</h4>
+					<p>We participate in numerous national and international interdisciplinary research projects, where we seek the synergy between the academia and industry. </p>
+				</div>			
+			</div>		
+		</div>
+	</div>
+</body>
+</html>

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorator="layout">
+
+<body>
+	<div id="wrapper" layout:fragment="content">
+		<div id="grey">
+			<div class="container">
+				<div class="row">
+					<div class="col-lg-8 col-lg-offset-2">
+						<p>
+							<img th:src="@{/img/team/mk.png}" width="50px" height="50px" />
+							<ba>Marek Kasztelnik</ba>
+						</p>
+						<p>
+							<bd>August 21, 2014</bd>
+						</p>
+						<h4>Rimrok main web page</h4>
+						<p>Huray rimrock starting from today has nice welcome web
+							page, where you can find service documentation, team and contact
+							details.</p>
+					</div>
+
+				</div>
+			</div>
+		</div>
+
+		<div id="white">
+			<div class="container">
+				<div class="row">
+					<div class="col-lg-8 col-lg-offset-2">
+						<p>
+							<img th:src="@{/img/team/dh.png}" width="50px" height="50px" />
+							<ba>Daniel Harężlak</ba>
+						</p>
+						<p>
+							<bd>August 14, 2014</bd>
+						</p>
+						<h4>Rimrok first prototype</h4>
+						<p>Today we finished first prototype of rimrock service. Now
+							you can execute simple command on PL-Grid infrastructure using
+							REST API.</p>
+					</div>
+
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+</html>

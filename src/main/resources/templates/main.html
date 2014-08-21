@@ -1,130 +1,52 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
-  <head>
-    <meta charset="utf-8"/>
-    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <title>rimrock main page</title>
-    <link rel="stylesheet" href="css/bootstrap.min.css"/>
-    <link rel="stylesheet" href="css/bootstrap-theme.min.css"/>
-  </head>
-  <body>
-  	<div class="container">
-  		<h1>rimrock job submitter</h1>
-  		<div class="lead">
-  			Allows for easy and robust process (including local jobs) management
-  			via a REST interface with user proxy certificate delegation.
-  		</div>
-  		<h2>Basic command execution</h2>
-  		<p>
-  			Executes a single command on a remote machine and returns its exit code
-  			and standard output. The execution time is limited to 1000 ms.
-  		</p>
-  		<table class="table table-bordered">
-  			<tr>
-  				<th>Title</th>
-  				<td>Execute command</td>
-  			</tr>
-  			<tr>
-  				<th>URL</th>
-  				<td><code>/api/process</code></td>
-  			</tr>
-  			<tr>
-  				<th>Method</th>
-  				<td><span class="label label-primary">GET</span></td>
-  			</tr>
-  			<tr>
-  				<th>URL Params</th>
-  				<td><em>None</em></td>
-  			</tr>
-  			<tr>
-  				<th>Data Params</th>
-  				<td>
-  					<p><strong>JSON:</strong></p>
-  					<pre>
-{
-  "host": [string (required)],
-  "command": [string (required)],
-  "proxy": [string (required)]
-}
-  					</pre>
-  					<p><strong>Example:</strong></p>
-  					<pre>
-{
-  "host": "zeus.cyfronet.pl",
-  "command": "date",
-  "proxy": "-----BEGIN CERTIFICATE-----
-            MIIDfzCCAmegAwIBAgII
-            ...
-            uXBa+dITjblqY+DhMGizcG7ul62mQ==
-            -----END CERTIFICATE-----"
-}
-  					</pre>
-  				</td>
-  			</tr>
-  			<tr class="success">
-  				<th>Success Response</th>
-  				<td>
-  					<p><strong>Code:</strong> <em>200</em></p>
-  					<p><strong>Example:</strong></p>
-  					<pre>
-{
-  "status":"ok",
-  "exit_code":0,
-  "standard_output":"Fri Aug  1 14:33:55 CEST 2014",
-  "error_output":"",
-  "error_message":null
-}
-  					</pre>
-  				</td>
-  			</tr>
-  			<tr class="danger">
-  				<th>Error Response</th>
-  				<td>
-  				<p><strong>Code:</strong> <em>408</em> | <em>422</em> | <em>500</em></p>
-  					<p><strong>Example:</strong></p>
-  					<pre>
-{
-  "status":"error",
-  "exit_code":-1,
-  "standard_output":"whatever was printed before timeout",
-  "error_output":"",
-  "error_message":"timeout occurred..."
-}
-  					</pre>
-  				</td>
-  			</tr>
-  			<tr>
-  				<th>Sample Call</th>
-  				<td>
-  					<p><strong>Bash (with base64, tr and curl):</strong></p>
-  					<pre>
-proxy="`cat {path-to-proxy-file} | base64 | tr -d '\n'`"
-message="{\"host\":\"zeus.cyfronet.pl\", \"command\":\"pwd\"}"
-echo $message > message.txt
-curl -X GET --data-binary @message.txt --header "Content-Type:application/json" --header "PROXY:$proxy" http://localhost:8080/api/process
-  					</pre>
-  				</td>
-  			</tr>
-  			<tr>
-  				<th>Notes</th>
-  				<td><em>None</em></td>
-  			</tr>
-  		</table>
-  		
-  		<h2>Interactive command execution</h2>
-  		<p>
-  			Manages execution of an interactive process by fetching output and feeding input
-  			via subsequent REST calls.
-  		</p>
-  		
-  		<h2>Job submission</h2>
-  		<p>
-  			Manages an entire life-cicle of jobs via a set of REST methods.
-  		</p>
-  	</div>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorator="layout">
 
-    <script src="js/jquery.min.js"></script>
-    <script src="js/bootstrap.min.js"></script>
-  </body>
+<body>
+	<div id="wrapper" layout:fragment="content">
+		<!-- +++++ Welcome Section +++++ -->
+		<div id="ww">
+			<div class="container">
+				<div class="row">
+					<div class="col-lg-8 col-lg-offset-2 centered">
+						<img th:src="@{/img/rimrock.png}" alt="rimrock" />
+						<h1>Robust Remote Process Controller</h1>
+						<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit,
+							sed do eiusmod tempor incididunt ut labore et dolore magna
+							aliqua. Ut enim ad minim veniam, quis nostrud exercitation
+							ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis
+							aute irure dolor in reprehenderit in voluptate velit esse cillum
+							dolore eu fugiat nulla pariatur. Excepteur sint occaecat
+							cupidatat non proident, sunt in culpa qui officia deserunt mollit
+							anim id est laborum.</p>
+
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- +++++ Projects Section +++++ -->
+		<div class="container pt">
+			<div class="row mt centered">
+				<div class="col-lg-4">
+					<a class="zoom green" th:href="@{/processes}"><img
+						class="img-responsive" th:src="@{/img/portfolio/processes.jpg}" alt="" /></a>
+					<p>PROCESSES</p>
+				</div>
+				<div class="col-lg-4">
+					<a class="zoom green" th:href="@{/iprocesses}"><img
+						class="img-responsive" th:src="@{/img/portfolio/iprocesses.jpg}" alt="" /></a>
+					<p>IPROCESSES</p>
+				</div>
+				<div class="col-lg-4">
+					<a class="zoom green" th:href="@{/jobs}"><img class="img-responsive"
+						th:src="@{/img/portfolio/jobs.jpg}" alt="" /></a>
+					<p>JOBS</p>
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
 </html>
