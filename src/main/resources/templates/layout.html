@@ -21,16 +21,16 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" th:href="@{/}">RIMROCK</a>
+          <a class="navbar-brand" th:href="@{/}" th:text="#{rimrock.name}"></a>
         </div>
         <div class="navbar-collapse collapse">
           <ul class="nav navbar-nav navbar-right">
-            <li><a th:href="@{/processes}">Processes</a></li>
-            <li><a th:href="@{/iprocesses}">IProcesses</a></li>
-            <li><a th:href="@{/jobs}">Jobs</a></li>
-            <li><a th:href="@{/news}">News</a></li>
-            <li><a th:href="@{/team}">Team</a></li>
-            <li><a th:href="@{/contact}">Contact</a></li>
+            <li><a th:href="@{/processes}" th:text="#{processes.title}"></a></li>
+            <li><a th:href="@{/iprocesses}" th:text="#{iprocesses.title}"></a></li>
+            <li><a th:href="@{/jobs}" th:text="#{jobs.title}"></a></li>
+            <li><a th:href="@{/news}" th:text="#{news.title}"></a></li>
+            <li><a th:href="@{/team}" th:text="#{team.title}"></a></li>
+            <li><a th:href="@{/contact}" th:text="#{contact.title}"></a></li>
           </ul>
         </div>
       </div>
@@ -42,25 +42,21 @@
 		<div class="container">
 			<div class="row">
 				<div class="col-lg-4">
-					<h4>Our Bunker</h4>
-					<p>
-						ul. Gramatyka 8a room 414,<br/>
-						+48 617 43 41, <br/>
-						Cracow, Poland.
-					</p>
+					<h4 th:text="#{contact.bunker}"></h4>
+					<p th:utext="#{contact.address}"></p>
 				</div>				
 				<div class="col-lg-4">
-					<h4>My Links</h4>
+					<h4 th:text="#{links}"></h4>
 					<p>
-						<a href="http://dice.cyfronet.pl/">Dice team</a><br/>
-						<a href="http://www.cyfronet.krakow.pl/en">Cyfronet</a><br/>
-						<a href="http://www.agh.edu.pl/en">AGH</a>
+						<a th:href="#{dice.homepage}" th:text="#{dice.name}"></a><br/>
+						<a th:href="#{cyfronet.homepage}" th:text="#{cyfronet.name}"></a><br/>
+						<a th:href="#{agh.homepage}" th:text="#{agh.name}"></a>
 					</p>
 				</div>
 				
 				<div class="col-lg-4">
-					<h4>About Dice Team</h4>
-					<p>We participate in numerous national and international interdisciplinary research projects, where we seek the synergy between the academia and industry. </p>
+					<h4 th:text="#{dice.about.title}"></h4>
+					<p th:text="#{dice.about.credo}"></p>
 				</div>			
 			</div>		
 		</div>

@@ -9,9 +9,9 @@
 		<div class="container pt">
 			<div class="row mt">
 				<div class="col-lg-6 col-lg-offset-3 centered">
-					<h3>CONTACT US</h3>
+					<h3 th:text="#{contact_us.title}"></h3>
 					<hr />
-					<p>If you have any problem with rimrock please let us know!.</p>
+					<p th:text="#{contact_us.description}"></p>
 				</div>
 			</div>
 			<div class="row mt">
@@ -19,20 +19,20 @@
 					<form role="form">
 						<div class="form-group">
 							<input type="name" class="form-control" id="NameInputEmail1"
-								placeholder="Your Name" /> <br />
+								th:placeholder="#{contact_us.form.message}" /> <br />
 						</div>
 						<div class="form-group">
 							<input type="email" class="form-control" id="exampleInputEmail1"
-								placeholder="Enter email" /> <br />
+								th:placeholder="#{contact_us.form.email}" /> <br />
 						</div>
 						<div class="form-group">
 							<input type="email" class="form-control" id="subjectEmail1"
-								placeholder="Subject" /> <br />
+								th:placeholder="#{contact_us.form.subject}" /> <br />
 						</div>
 						<textarea class="form-control" rows="6"
-							placeholder="Enter your text here"></textarea>
+							th:placeholder="#{contact_us.form.message}"></textarea>
 						<br/>
-						<button type="submit" class="btn btn-success">SUBMIT</button>
+						<button type="submit" class="btn btn-success" th:text="#{contact_us.form.submit}"></button>
 					</form>
 				</div>
 			</div>
