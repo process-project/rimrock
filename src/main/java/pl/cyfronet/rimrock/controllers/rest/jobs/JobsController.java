@@ -1,8 +1,12 @@
 package pl.cyfronet.rimrock.controllers.rest.jobs;
 
+import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
+import static org.springframework.http.HttpStatus.REQUEST_TIMEOUT;
 import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.web.bind.annotation.RequestMethod.DELETE;
@@ -10,10 +14,8 @@ import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.validation.Valid;
@@ -23,248 +25,138 @@ import org.ietf.jgss.GSSException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.ClassPathResource;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import pl.cyfronet.rimrock.controllers.rest.RestHelper;
+import pl.cyfronet.rimrock.controllers.rest.RunResponse;
 import pl.cyfronet.rimrock.domain.Job;
-import pl.cyfronet.rimrock.gsi.ProxyHelper;
 import pl.cyfronet.rimrock.repositories.JobRepository;
-import pl.cyfronet.rimrock.services.GsisshRunner;
-import pl.cyfronet.rimrock.services.RunResults;
-import pl.cyfronet.rimrock.services.filemanager.FileManager;
 import pl.cyfronet.rimrock.services.filemanager.FileManagerException;
-import pl.cyfronet.rimrock.services.filemanager.FileManagerFactory;
+import pl.cyfronet.rimrock.services.job.RunException;
+import pl.cyfronet.rimrock.services.job.UserJobs;
+import pl.cyfronet.rimrock.services.job.UserJobsFactory;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sshtools.j2ssh.util.InvalidStateException;
 
 @Controller
 public class JobsController {
 	private static final Logger log = LoggerFactory.getLogger(JobsController.class);
 	
-	private FileManagerFactory fileManagerFactory;
-	private GsisshRunner runner;
-	private ObjectMapper mapper;
 	private JobRepository jobRepository;
-	private ProxyHelper proxyHelper;
-
+	
+	private UserJobsFactory userJobsFactory;
+	
+	@Value("${plgridData.url}")
+	private String plgDataUrl;
+	
 	@Autowired
-	public JobsController(FileManagerFactory fileManagerFactory, GsisshRunner runner, ObjectMapper mapper,
-			JobRepository jobRepository, ProxyHelper proxyHelper) {
-		this.fileManagerFactory = fileManagerFactory;
-		this.runner = runner;
-		this.mapper = mapper;
+	public JobsController(JobRepository jobRepository, UserJobsFactory userJobsFactory) {
 		this.jobRepository = jobRepository;
-		this.proxyHelper = proxyHelper;
+		this.userJobsFactory = userJobsFactory;
 	}
 	
 	@RequestMapping(value = "/api/jobs", method = POST, consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
-	public ResponseEntity<SubmitResponse> submit(@RequestHeader("PROXY") String proxy, @Valid @RequestBody SubmitRequest submitRequest, BindingResult errors) {
-		log.debug("Processing run request {}", submitRequest);
+	public ResponseEntity<JobInfo> submit(@RequestHeader("PROXY") String proxy,
+			@Valid @RequestBody SubmitRequest submitRequest,
+			BindingResult errors) throws CredentialException, GSSException,
+			FileManagerException, RunException {
 		
-		if(errors.hasErrors()) {
-			return new ResponseEntity<SubmitResponse>(new SubmitResponse(null, RestHelper.convertErrors(errors), null), UNPROCESSABLE_ENTITY);
+		if (errors.hasErrors()) {
+			throw new ValidationException(RestHelper.convertErrors(errors));
 		}
-		
-		try {
-			FileManager fileManager = fileManagerFactory.get(RestHelper.decodeProxy(proxy));
-			String rootPath = buildRootPath(submitRequest.getHost(), submitRequest.getWorkingDirectory(), RestHelper.decodeProxy(proxy));
-			fileManager.cp(rootPath + "script.sh", new ByteArrayResource(submitRequest.getScript().getBytes()));
-			fileManager.cp(rootPath + "start", new ClassPathResource("scripts/start"));
-			
-			RunResults result = runner.run(submitRequest.getHost(), RestHelper.decodeProxy(proxy), "cd " + rootPath + "; chmod +x start; ./start script.sh", 60000);
-			
-			if(result.isTimeoutOccured() || result.getExitCode() != 0) {
-				return new ResponseEntity<SubmitResponse>(new SubmitResponse("ERROR", result.getError(), null), INTERNAL_SERVER_ERROR);
-			} else {
-				SubmitResult submitResult = mapper.readValue(result.getOutput(), SubmitResult.class);
-				
-				if("OK".equals(submitResult.getResult())) {
-					jobRepository.save(new Job(submitResult.getJobId(), submitResult.getStandardOutputLocation(),
-							submitResult.getStandardErrorLocation(), proxyHelper.getUserLogin(RestHelper.decodeProxy(proxy)), submitRequest.getHost()));
-					
-					return new ResponseEntity<SubmitResponse>(new SubmitResponse(submitResult.getResult(), null, submitResult.getJobId()), OK);
-				} else {
-					return new ResponseEntity<SubmitResponse>(new SubmitResponse(submitResult.getResult(), submitResult.getErrorMessage(), null), INTERNAL_SERVER_ERROR);
-				}
-			}
-		} catch(Throwable e) {
-			log.error("Job submit error", e);
-			
-			return new ResponseEntity<SubmitResponse>(new SubmitResponse("ERROR", e.getMessage(), null), INTERNAL_SERVER_ERROR);
-		}
+
+		UserJobs manager = userJobsFactory.get(RestHelper.decodeProxy(proxy));
+
+		Job job = manager.submit(submitRequest.getHost(),
+				submitRequest.getWorkingDirectory(), submitRequest.getScript());
+
+		return new ResponseEntity<JobInfo>(new JobInfo(job, plgDataUrl), CREATED);
 	}
 	
 	@RequestMapping(value = "/api/jobs/{jobId:.+}", method = GET, produces = APPLICATION_JSON_VALUE)
-	public ResponseEntity<StatusResponse> status(@RequestHeader("PROXY") String proxy, @PathVariable String jobId) {
+	public ResponseEntity<JobInfo> jobInfo(@RequestHeader("PROXY") String proxy, @PathVariable String jobId) 
+			throws JobNotFoundException, CredentialException, GSSException, 
+			InvalidStateException, FileManagerException, IOException, InterruptedException {
 		log.debug("Processing status request for job with id {}", jobId);
 		
-		try {
-			Job job = jobRepository.findOneByJobId(jobId);
-			
-			if(job == null) {
-				return new ResponseEntity<StatusResponse>(new StatusResponse(null, "ERROR", "Job with id " + jobId + " does not exist"), NOT_FOUND);
-			}
-			
-			StatusResult statusResult = getStatusResult(RestHelper.decodeProxy(proxy), job.getHost());
-			String statusValue = findStatusValue(jobId, statusResult.getStatuses(), proxyHelper.getUserLogin(RestHelper.decodeProxy(proxy)));
-			
-			if(statusValue == null) {
-				return new ResponseEntity<StatusResponse>(new StatusResponse(jobId, "ERROR", "A job with the given job id could not be found"), NOT_FOUND);
-			} else {
-				return new ResponseEntity<StatusResponse>(new StatusResponse(jobId, statusValue, null), OK);
-			}
-		} catch (Throwable e) {
-			log.error("Job status for job with id " + jobId + " retrieval error", e);
-			
-			return new ResponseEntity<StatusResponse>(new StatusResponse(jobId, "ERROR", e.getMessage()), INTERNAL_SERVER_ERROR);
-		}
-	}
-
-	@RequestMapping(value = "/api/jobs", method = GET, produces = APPLICATION_JSON_VALUE)
-	public ResponseEntity<GlobalStatusResponse> globalStatus(@RequestHeader("PROXY") String proxy) {
-		try {
-			List<String> hosts = jobRepository.getHosts();
-			List<Status> statuses = new ArrayList<Status>();
-			
-			for(String host: hosts) {
-				StatusResult statusResult = getStatusResult(RestHelper.decodeProxy(proxy), host);
-				
-				if(statusResult.getErrorMessage() != null) {
-					return new ResponseEntity<GlobalStatusResponse>(new GlobalStatusResponse("ERROR", statusResult.getErrorMessage(), null), INTERNAL_SERVER_ERROR);
-				}
-				
-				statuses.addAll(statusResult.getStatuses());
-			}
-
-			String userLogin = proxyHelper.getUserLogin(RestHelper.decodeProxy(proxy));
-			return new ResponseEntity<GlobalStatusResponse>(new GlobalStatusResponse("OK", null, mapStatuses(mergeStatuses(statuses, userLogin), userLogin)), OK);
-		} catch (Throwable e) {
-			log.error("Job status retrieval error", e);
-			
-			return new ResponseEntity<GlobalStatusResponse>(new GlobalStatusResponse("ERROR", e.getMessage(), null), INTERNAL_SERVER_ERROR);
-		}
-	}
-
-	@RequestMapping(value = "/api/jobs/{jobId:.+}", method = DELETE, produces = APPLICATION_JSON_VALUE)
-	public ResponseEntity<StopResponse> deleteJob(@RequestHeader("PROXY") String proxy, @PathVariable String jobId) throws CredentialException, GSSException, FileManagerException {
 		Job job = jobRepository.findOneByJobId(jobId);
 		
 		if(job == null) {
-			return new ResponseEntity<StopResponse>(new StopResponse("ERROR", "Job with id " + jobId + " does not exist"), NOT_FOUND);
+			throw new JobNotFoundException(jobId);
 		}
 		
-		String host = job.getHost();
-		FileManager fileManager = fileManagerFactory.get(RestHelper.decodeProxy(proxy));
-		String rootPath = getRootPath(host, RestHelper.decodeProxy(proxy));
-		fileManager.cp(rootPath + ".rimrock/stop", new ClassPathResource("scripts/stop"));
+		UserJobs manager = userJobsFactory.get(RestHelper.decodeProxy(proxy));
+		manager.update(Arrays.asList(job.getHost()));
 		
-		try {
-			RunResults result = runner.run(host, RestHelper.decodeProxy(proxy), "cd " + rootPath + ".rimrock; chmod +x stop; ./stop " + jobId, -1);
-			
-			if(result.isTimeoutOccured() || result.getExitCode() != 0) {
-				return new ResponseEntity<StopResponse>(new StopResponse("ERROR", result.getError()), INTERNAL_SERVER_ERROR);
-			} else {
-				StopResult stopResult = mapper.readValue(result.getOutput(), StopResult.class);
-				
-				return new ResponseEntity<StopResponse>(new StopResponse(stopResult.getResult(), stopResult.getErrorMessage()), OK);
-			}
-		} catch (Throwable e) {
-			log.error("Stopping job with id " + jobId + " failed", e);
-			
-			return new ResponseEntity<StopResponse>(new StopResponse("ERROR", e.getMessage()), INTERNAL_SERVER_ERROR);
-		}
-	}
-	
-	@RequestMapping(value = "/api/jobs/{jobId}/output", method = GET, produces = APPLICATION_JSON_VALUE)
-	public ResponseEntity<OutputResponse> output(@RequestHeader("PROXY") String proxy, @PathVariable String jobId) {
-		return new ResponseEntity<OutputResponse>(new OutputResponse(), OK);
-	}
-	
-	private List<StatusResponse> mapStatuses(List<Status> statuses, String user) {
-		List<StatusResponse> result = new ArrayList<>();
-		List<Status> mergedStatuses = mergeStatuses(statuses, user);
-
-		for(Status status : mergedStatuses) {
-			result.add(new StatusResponse(status.getJobId(), status.getStatus(), status.getErrorMessage()));
-		}
+		job = jobRepository.findOneByJobId(jobId);
 		
-		return result;
+		return new ResponseEntity<JobInfo>(new JobInfo(job, plgDataUrl), OK);
 	}
 
-	private String findStatusValue(String jobId, List<Status> statuses, String user) {
-		if(statuses != null) {
-			List<Status> mergedStatuses = mergeStatuses(statuses, user);
-			
-			for(Status status : mergedStatuses) {
-				if(status.getJobId() != null && status.getJobId().equals(jobId)) {
-					return status.getStatus();
-				}
-			}
-		}
+	@RequestMapping(value = "/api/jobs", method = GET, produces = APPLICATION_JSON_VALUE)
+	public ResponseEntity<List<JobInfo>> globalStatus(@RequestHeader("PROXY") String proxy) 
+			throws CredentialException, InvalidStateException, GSSException, FileManagerException, 
+			IOException, InterruptedException {
 		
-		return null;
-	}
-	
-	private List<Status> mergeStatuses(List<Status> statuses, String user) {
-		List<Job> dbJobs = jobRepository.findByUser(user);
-		Map<String, Status> mappedStatusJobIds = statuses
-				.stream()
-				.collect(Collectors.toMap(Status::getJobId, Function.<Status>identity()));
-		List<Status> result = new ArrayList<Status>();
+		List<String> hosts = jobRepository.getHosts();
+		UserJobs manager = userJobsFactory.get(RestHelper.decodeProxy(proxy));
+		List<Job> jobs = manager.update(hosts);
+		List<JobInfo> infos = jobs.stream()
+				.map(job -> new JobInfo(job, plgDataUrl))
+				.collect(Collectors.toList());
 		
-		for(Job dbJob : dbJobs) {
-			if(!mappedStatusJobIds.keySet().contains(dbJob.getJobId())) {
-				Status status = new Status();
-				status.setJobId(dbJob.getJobId());
-				status.setStatus("FINISHED");
-				result.add(status);
-			} else {
-				result.add(mappedStatusJobIds.get(dbJob.getJobId()));
-			}
-		}
-		
-		return result;
-	}
-	
-	private StatusResult getStatusResult(String proxy, String host) throws CredentialException, InvalidStateException, GSSException, IOException, InterruptedException, FileManagerException {
-		FileManager fileManager = fileManagerFactory.get(proxy);
-		String rootPath = getRootPath(host, proxy);
-		fileManager.cp(rootPath + ".rimrock/status", new ClassPathResource("scripts/status"));
-		RunResults result = runner.run(host, proxy, "cd " + rootPath + ".rimrock; chmod +x status; ./status", -1);
-		
-		if(result.isTimeoutOccured() || result.getExitCode() != 0) {
-			StatusResult statusResult = new StatusResult();
-			statusResult.setResult("ERROR");
-			statusResult.setErrorMessage(result.getError());
-			
-			return statusResult;
-		} else {
-			return mapper.readValue(result.getOutput(), StatusResult.class);
-		}
-	}
-	
-	private String buildRootPath(String host, String workingDirectory, String proxy) throws CredentialException, GSSException {
-		String rootPath = workingDirectory == null ? getRootPath(host, proxy) : workingDirectory;
-		
-		return rootPath;
+		return new ResponseEntity<List<JobInfo>>(infos, OK);
 	}
 
-	private String getRootPath(String host, String proxy) throws CredentialException, GSSException {
-		switch(host.trim()) {
-			case "zeus.cyfronet.pl":
-			case "ui.cyfronet.pl":
-				return "/people/" + proxyHelper.getUserLogin(proxy) + "/";
-			default:
-				throw new IllegalArgumentException("Without submitting a working directory only zeus.cyfronet.pl host is supported");
-		}
+	@RequestMapping(value = "/api/jobs/{jobId:.+}", method = DELETE, produces = APPLICATION_JSON_VALUE)
+	public ResponseEntity<Void> deleteJob(@RequestHeader("PROXY") String proxy, @PathVariable String jobId) 
+			throws CredentialException, GSSException, FileManagerException, JobNotFoundException {
+		
+		UserJobs manager = userJobsFactory.get(RestHelper.decodeProxy(proxy));
+		manager.delete(jobId);
+		
+		return new ResponseEntity<Void>(NO_CONTENT);
+	}
+
+	@ExceptionHandler(CredentialException.class)
+	private ResponseEntity<RunResponse> handleCredentialsError(CredentialException e) {
+		return new ResponseEntity<RunResponse>(new RunResponse(e.getMessage()), FORBIDDEN);
+	}
+	
+	@ExceptionHandler(JobNotFoundException.class)
+	private ResponseEntity<RunResponse> handleJobNotFoundError(JobNotFoundException e) {
+		return new ResponseEntity<RunResponse>(new RunResponse(e.getMessage()), NOT_FOUND);
+	}
+	
+	@ExceptionHandler(ValidationException.class)
+	private ResponseEntity<RunResponse> handleValidationError(CredentialException e) {
+		return new ResponseEntity<RunResponse>(new RunResponse(e.getMessage()), UNPROCESSABLE_ENTITY);
+	}
+	
+	@ExceptionHandler({FileManagerException.class, 
+		InvalidStateException.class, GSSException.class, 
+		IOException.class, InterruptedException.class})
+	private ResponseEntity<RunResponse> handleRunCmdError(Exception e) {
+		return new ResponseEntity<RunResponse>(new RunResponse(e.getMessage()), INTERNAL_SERVER_ERROR);
+	}
+
+	@ExceptionHandler(RunException.class)
+	private ResponseEntity<RunResponse> handleRunError(RunException e) {
+		HttpStatus status = e.isTimeoutOccured() ? REQUEST_TIMEOUT : INTERNAL_SERVER_ERROR; 
+		return new ResponseEntity<RunResponse>(new RunResponse(e), status);
+	}
+	
+	@ExceptionHandler(Exception.class)
+	private ResponseEntity<RunResponse> handleError(Exception e) {
+		return new ResponseEntity<RunResponse>(new RunResponse(e.getMessage()), INTERNAL_SERVER_ERROR);
 	}
 }

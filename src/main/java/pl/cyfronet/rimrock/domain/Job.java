@@ -17,12 +17,18 @@ public class Job implements Serializable {
 	@Column(nullable = false) private String standardErrorLocation;
 	@Column(nullable = false) private String user;
 	@Column(nullable = false) private String host;
+	@Column(nullable = false) private String status;
 
 	protected Job() {
 	}
 	
-	public Job(String jobId, String standardOutputLocation, String standardErrorLocation, String user, String host) {
+	public Job(String jobId, String status, 
+			String standardOutputLocation, 
+			String standardErrorLocation, 
+			String user, String host) {
+		
 		this.jobId = jobId;
+		this.status = status;
 		this.standardOutputLocation = standardOutputLocation;
 		this.standardErrorLocation = standardErrorLocation;
 		this.user = user;
@@ -67,5 +73,13 @@ public class Job implements Serializable {
 
 	public void setHost(String host) {
 		this.host = host;
+	}
+	
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
 	}
 }

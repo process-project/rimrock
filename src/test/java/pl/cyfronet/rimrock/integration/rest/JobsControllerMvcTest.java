@@ -27,8 +27,8 @@ import org.springframework.web.context.WebApplicationContext;
 import pl.cyfronet.rimrock.ProxyFactory;
 import pl.cyfronet.rimrock.RimrockApplication;
 import pl.cyfronet.rimrock.controllers.rest.RestHelper;
+import pl.cyfronet.rimrock.controllers.rest.jobs.JobInfo;
 import pl.cyfronet.rimrock.controllers.rest.jobs.SubmitRequest;
-import pl.cyfronet.rimrock.controllers.rest.jobs.SubmitResponse;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -66,11 +66,11 @@ public class JobsControllerMvcTest {
 				.andDo(print())
 				
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
-				.andExpect(status().isOk())
+				.andExpect(status().isCreated())
 				.andReturn();
 		
 		String body = result.getResponse().getContentAsString();
-		SubmitResponse submitResult = mapper.readValue(body, SubmitResponse.class);
+		JobInfo submitResult = mapper.readValue(body, JobInfo.class);
 		String jobId = submitResult.getJobId();
 		log.info("Checking job status for job id {}", jobId);
 		
@@ -104,7 +104,6 @@ public class JobsControllerMvcTest {
 				.andDo(print())
 				
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
-				.andExpect(jsonPath("$.status", is("OK")))
 				.andExpect(status().isOk());
 	}
 	
@@ -124,11 +123,11 @@ public class JobsControllerMvcTest {
 				.andDo(print())
 				
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
-				.andExpect(status().isOk())
+				.andExpect(status().isCreated())
 				.andReturn();
 		
 		String body = result.getResponse().getContentAsString();
-		SubmitResponse submitResult = mapper.readValue(body, SubmitResponse.class);
+		JobInfo submitResult = mapper.readValue(body, JobInfo.class);
 		String jobId = submitResult.getJobId();
 		log.info("Stopping job for job id {}", jobId);
 		
@@ -137,7 +136,6 @@ public class JobsControllerMvcTest {
 				
 				.andDo(print())
 				
-				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isOk());
 	}
 }

@@ -1,9 +1,12 @@
-package pl.cyfronet.rimrock.controllers.rest.jobs;
+package pl.cyfronet.rimrock.services.job;
+
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class StopResult {
+public class StatusResult {
 	@JsonProperty("error_message") private String errorMessage;
+	private List<Status> statuses;
 	private String result;
 	
 	public String getErrorMessage() {
@@ -11,6 +14,12 @@ public class StopResult {
 	}
 	public void setErrorMessage(String errorMessage) {
 		this.errorMessage = errorMessage;
+	}
+	public List<Status> getStatuses() {
+		return statuses;
+	}
+	public void setStatuses(List<Status> statuses) {
+		this.statuses = statuses;
 	}
 	public String getResult() {
 		return result;

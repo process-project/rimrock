@@ -22,7 +22,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import pl.cyfronet.rimrock.controllers.rest.RestHelper;
-import pl.cyfronet.rimrock.controllers.rest.run.RunResponse.Status;
+import pl.cyfronet.rimrock.controllers.rest.RunResponse;
+import pl.cyfronet.rimrock.controllers.rest.RunResponse.Status;
 import pl.cyfronet.rimrock.services.GsisshRunner;
 import pl.cyfronet.rimrock.services.RunResults;
 
