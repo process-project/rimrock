@@ -30,7 +30,7 @@
 				</tr>
 				<tr>
 					<th th:text="#{example.method}"></th>
-					<td><span class="label label-primary">GET</span></td>
+					<td><span class="label label-info">GET</span></td>
 				</tr>
 				<tr>
 					<th th:text="#{example.url_params}"></th>
@@ -97,12 +97,13 @@
 					<th th:text="#{example.sample}"></th>
 					<td>
 						<p>
-							<strong th:text="#{processes.example.sample_call.title}"></strong>
+							<strong th:text="#{example.sample_call.title}"></strong>
 						</p> <pre>
 proxy="`cat {path-to-proxy-file} | base64 | tr -d '\n'`"
 message="{\"host\":\"zeus.cyfronet.pl\", \"command\":\"pwd\"}"
 echo $message > message.txt
-curl -X GET --data-binary @message.txt --header "Content-Type:application/json" --header "PROXY:$proxy" http://localhost:8080/api/process
+curl -X GET --data-binary @message.txt --header "Content-Type:application/json" \
+--header "PROXY:$proxy" http://localhost:8080/api/process
   					</pre>
 					</td>
 				</tr>
