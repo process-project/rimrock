@@ -31,8 +31,8 @@ fi
 
 job_id=$(echo "$output" | tail -n 1)
 
-#ask for job details (lets hope it doesn't end so fast)
-output=$(qstat -f $job_id 2>&1)
+#ask for job details (lets hope it doesn't end too fast)
+output=$(qstat -xf $job_id 2>&1)
 
 if [ $? -ne 0 ]
 then
@@ -40,8 +40,8 @@ then
 	exit 3
 fi
 
-outline=$(echo "$output" | grep Output_Path)
-errline=$(echo "$output" | grep Error_Path)
+outline=$(echo "$output" | xmllint --format - | grep -oPm1 "(?<=<Output_Path>)[^<]+")
+errline=$(echo "$output" | xmllint --format - | grep -oPm1 "(?<=<Error_Path>)[^<]+")
 
 out=$(echo $outline | cut -f 2 -d ":")
 err=$(echo $errline | cut -f 2 -d ":")
