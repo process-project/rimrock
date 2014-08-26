@@ -99,6 +99,17 @@ a:after {
 	border-color: #16a085;
 }
 
+.navbar-fixed-top {
+	-webkit-transition: padding 0.3s;
+    -moz-transition: padding 0.3s;
+    transition: padding 0.3s;
+}
+
+.navbar-shrink {
+	padding-bottom: 0px;
+	padding-top: 0px;
+}
+
 .navbar-inverse .navbar-nav > li > a {
 	color: white;
 }
@@ -241,19 +252,7 @@ bt {
 	color: #1abc9c;
 }
 
-/* rounded avatar */
-.avatar {
-	width: 150px;
-	height: 150px;
-	-webkit-border-radius: 90px; /* Saf3+, Chrome */
-	border-radius: 90px; /* Opera 10.5, IE 9 */
-	/*-moz-border-radius: 90px;  Disabled for FF1+ */
-}
-
-.avatar-sm {
-	width: 50px;
-	height: 50px;
-	-webkit-border-radius: 30px; /* Saf3+, Chrome */
-	border-radius: 30px; /* Opera 10.5, IE 9 */
-	/*-moz-border-radius: 30px;  Disabled for FF1+ */
-}
+#under_navbar {
+	height: 190px;
+	background-color: #f2f2f2;
+} 
