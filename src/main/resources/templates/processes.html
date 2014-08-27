@@ -100,9 +100,10 @@
 							<strong th:text="#{example.sample_call.title}"></strong>
 						</p> <pre>
 proxy="`cat {path-to-proxy-file} | base64 | tr -d '\n'`"
-message="{\"host\":\"zeus.cyfronet.pl\", \"command\":\"pwd\"}"
-echo $message > message.txt
-curl -X GET --data-binary @message.txt --header "Content-Type:application/json" \
+
+echo '{"host": "zeus.cyfronet.pl", "command": "pwd"}' > runcmd.json
+
+curl -X GET --data-binary @runcmd.json --header "Content-Type:application/json" \
 --header "PROXY:$proxy" http://localhost:8080/api/process
   					</pre>
 					</td>

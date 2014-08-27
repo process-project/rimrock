@@ -105,8 +105,7 @@
 								</p> <pre>
 proxy="`cat {path-to-proxy-file} | base64 | tr -d '\n'`"
 
-requires="{\"host\":\"zeus.cyfronet.pl\", \"script\":\"#!/bin/bash\necho hello\nexit 0\"}"
-echo $request > request.json
+echo '{"host":"zeus.cyfronet.pl", "script":"#!/bin/bash\\necho hello\\nexit 0"}' > request.json
 
 curl -X POST --data-binary @request.json --header "Content-Type:application/json" \ 
 --header "PROXY:$proxy" http://localhost:8080/api/jobs
