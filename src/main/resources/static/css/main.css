@@ -252,6 +252,22 @@ bt {
 	color: #1abc9c;
 }
 
+/* rounded avatar */
+.avatar {
+	height: 150px;
+	-webkit-border-radius: 90px; /* Saf3+, Chrome */
+	border-radius: 90px; /* Opera 10.5, IE 9 */
+	/*-moz-border-radius: 90px;  Disabled for FF1+ */
+}
+
+.avatar-sm {
+	width: 50px;
+	height: 50px;
+	-webkit-border-radius: 30px; /* Saf3+, Chrome */
+	border-radius: 30px; /* Opera 10.5, IE 9 */
+	/*-moz-border-radius: 30px;  Disabled for FF1+ */
+ }
+
 #under_navbar {
 	height: 190px;
 	background-color: #f2f2f2;
