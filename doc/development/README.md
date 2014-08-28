@@ -1,4 +1,4 @@
-## Running the rimrock application in development mode
+## Running the rimrock application in development mode using IDE
 
 * Checkout the project
 * Right-click `pl.cyfronet.rimrock.RimrockApplication` and run as Java application

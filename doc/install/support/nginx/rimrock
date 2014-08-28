@@ -1,0 +1,36 @@
+upstream rimrock {
+  server 127.0.0.1:8080;
+}
+
+server {
+  listen   80;
+  server_tokens off;
+
+  server_name CHANGE_ME;
+
+  location / {
+    rewrite ^ https://$host$request_uri permanent;
+  }
+}
+
+
+server {
+  listen 443;
+  server_tokens off;
+        
+  server_name CHANGE_ME;
+
+  ssl on;
+  ssl_certificate CHANGE_ME_PATH_TO_HOST_CERT;
+  ssl_certificate_key CHANGE_ME_PATH_TO_HOST_KEY;
+
+  ssl_session_timeout 5m;
+
+  ssl_protocols SSLv3 TLSv1;
+  ssl_ciphers ALL:!ADH:!EXPORT56:RC4+RSA:+HIGH:+MEDIUM:+LOW:+SSLv3:+EXP;
+  ssl_prefer_server_ciphers on;
+
+  location / {
+    proxy_pass http://rimrock;
+  }
+}
