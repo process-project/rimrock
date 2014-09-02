@@ -1,0 +1,37 @@
+package pl.cyfronet.rimrock.services.job;
+
+import org.globus.gsi.CredentialException;
+import org.ietf.jgss.GSSException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import pl.cyfronet.rimrock.gsi.ProxyHelper;
+import pl.cyfronet.rimrock.repositories.JobRepository;
+import pl.cyfronet.rimrock.services.GsisshRunner;
+import pl.cyfronet.rimrock.services.filemanager.FileManagerFactory;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+@Service
+public class UserJobsFactory {
+
+	@Autowired
+	private FileManagerFactory fileManagerFactory;
+	
+	@Autowired
+	private GsisshRunner runner;
+	
+	@Autowired
+	private JobRepository jobRepository;
+	
+	@Autowired
+	private ProxyHelper proxyHelper;
+	
+	@Autowired
+	private ObjectMapper mapper;
+
+	public UserJobs get(String proxy) throws CredentialException, GSSException {
+		return new UserJobs(proxy, fileManagerFactory, runner, jobRepository,
+				proxyHelper, mapper);
+	}
+}

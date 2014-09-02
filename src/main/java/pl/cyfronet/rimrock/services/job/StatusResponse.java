@@ -1,4 +1,4 @@
-package pl.cyfronet.rimrock.controllers.rest.jobs;
+package pl.cyfronet.rimrock.services.job;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
