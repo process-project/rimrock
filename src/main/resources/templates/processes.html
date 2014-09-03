@@ -103,8 +103,8 @@ proxy="`cat {path-to-proxy-file} | base64 | tr -d '\n'`"
 
 echo '{"host": "zeus.cyfronet.pl", "command": "pwd"}' > runcmd.json
 
-curl -X GET --data-binary @runcmd.json --header "Content-Type:application/json" \
---header "PROXY:$proxy" http://localhost:8080/api/process
+curl -k -X GET --data-binary @runcmd.json --header "Content-Type:application/json" \
+--header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpServletRequest.serverName} + @{~/api/process}" />
   					</pre>
 					</td>
 				</tr>
