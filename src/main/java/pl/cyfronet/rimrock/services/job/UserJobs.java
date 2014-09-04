@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.ClassPathResource;
 
+import pl.cyfronet.rimrock.controllers.rest.PathHelper;
 import pl.cyfronet.rimrock.controllers.rest.jobs.JobNotFoundException;
 import pl.cyfronet.rimrock.domain.Job;
 import pl.cyfronet.rimrock.gsi.ProxyHelper;
@@ -29,7 +30,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sshtools.j2ssh.util.InvalidStateException;
 
 public class UserJobs {
-
 	private static final Logger log = LoggerFactory.getLogger(UserJobs.class);
 
 	private int timeout = 60000;
@@ -173,7 +173,7 @@ public class UserJobs {
 
 		if (!"FINISHED".equals(job.getStatus())) {
 			String host = job.getHost();
-			String rootPath = getRootPath(host);
+			String rootPath = PathHelper.getRootPath(host, userLogin);
 			fileManager.cp(rootPath + ".rimrock/stop", new ClassPathResource(
 					"scripts/stop"));
 
@@ -197,7 +197,7 @@ public class UserJobs {
 
 	private StatusResult getStatusResult(String host)
 			throws CredentialException, RunException, FileManagerException {
-		String rootPath = getRootPath(host);
+		String rootPath = PathHelper.getRootPath(host, userLogin);
 		fileManager.cp(rootPath + ".rimrock/status", new ClassPathResource(
 				"scripts/status"));
 		RunResults result = run(host, String.format(
@@ -226,7 +226,7 @@ public class UserJobs {
 
 	private String buildRootPath(String host, String workingDirectory,
 			String proxy) throws CredentialException {
-		String rootPath = workingDirectory == null ? getRootPath(host)
+		String rootPath = workingDirectory == null ? PathHelper.getRootPath(host, userLogin)
 				: workingDirectory;
 
 		if (!rootPath.endsWith("/")) {
@@ -234,17 +234,6 @@ public class UserJobs {
 		}
 
 		return rootPath;
-	}
-
-	private String getRootPath(String host) throws CredentialException {
-		switch (host.trim()) {
-		case "zeus.cyfronet.pl":
-		case "ui.cyfronet.pl":
-			return "/people/" + userLogin + "/";
-		default:
-			throw new IllegalArgumentException(
-					"Without submitting a working directory only zeus.cyfronet.pl host is supported");
-		}
 	}
 
 	private void processRunExceptions(RunResults result) {

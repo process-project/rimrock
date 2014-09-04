@@ -3,6 +3,7 @@ import threading
 import subprocess
 import time
 import json
+import sys
 
 class OutputThread(threading.Thread):
 	def __init__(self, outStream):
@@ -43,13 +44,16 @@ class RestThread(threading.Thread):
 			cmd = response.json()['input']
 			if cmd:
 				self.inputStream.write(cmd + '\n')
-			time.sleep(0.2)
+			time.sleep(0.5)
 
-process = subprocess.Popen(['bash'], stdin = subprocess.PIPE, stdout = subprocess.PIPE,
+url = sys.argv[1]
+command = sys.argv[2]
+
+process = subprocess.Popen([command], stdin = subprocess.PIPE, stdout = subprocess.PIPE,
 							stderr = subprocess.PIPE, universal_newlines = True)
 outThread = OutputThread(process.stdout)
 errThread = OutputThread(process.stderr)
-restThread = RestThread('http://localhost:8080/internal/update', process.stdin, outThread, errThread)
+restThread = RestThread(url, process.stdin, outThread, errThread)
 
 outThread.start()
 errThread.start()

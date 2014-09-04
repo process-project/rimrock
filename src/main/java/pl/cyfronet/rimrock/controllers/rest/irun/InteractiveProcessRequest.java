@@ -1,12 +1,11 @@
-package pl.cyfronet.rimrock.controllers.rest.run;
+package pl.cyfronet.rimrock.controllers.rest.irun;
 
 import javax.validation.constraints.NotNull;
 
-
-public class RunRequest {
+public class InteractiveProcessRequest {
 	@NotNull private String host;
-	private String command;
-
+	@NotNull private String command;
+	
 	public String getHost() {
 		return host;
 	}
@@ -18,10 +17,5 @@ public class RunRequest {
 	}
 	public void setCommand(String command) {
 		this.command = command;
-	}
-	
-	@Override
-	public String toString() {
-		return "RunRequest [host=" + host + ", command=" + command + "]";
 	}
 }
