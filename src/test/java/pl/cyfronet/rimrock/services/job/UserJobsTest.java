@@ -41,7 +41,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = RimrockApplication.class)
 public class UserJobsTest {
-
 	@Mock
 	private FileManagerFactory fileManagerFactory;
 
@@ -57,13 +56,12 @@ public class UserJobsTest {
 	@Autowired
 	private ObjectMapper mapper;
 
-	private String proxy = "proxy";
-	private String userLogin = "userLogin";
-
 	@Autowired
 	private JobRepository jobRepository;
 
 	private UserJobs userJobs;
+	private String proxy = "proxy";
+	private String userLogin = "userLogin";
 
 	@Before
 	public void setup() throws Exception {

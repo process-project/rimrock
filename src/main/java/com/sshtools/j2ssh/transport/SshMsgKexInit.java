@@ -24,6 +24,7 @@ package com.sshtools.j2ssh.transport;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 import java.util.StringTokenizer;
@@ -380,14 +381,22 @@ public class SshMsgKexInit
   }
 
   private List sortAlgorithmList(List list, String pref) {
-    if (list.contains(pref)) {
-      // Remove the prefered from the list wherever it may be
-      list.remove(pref);
+	  LinkedList copy = new LinkedList();
+	  Iterator iterator = list.iterator();
+	  String algorithm;
+	  
+	  while (iterator.hasNext()) {
+	  	algorithm = (String)iterator.next();
+	  	
+	  	if(!algorithm.equals(pref)) {
+	  		copy.add(algorithm);
+	  	}
+	  }
+	  
+	  if(list.contains(pref)) {
+	     copy.addFirst(pref);
+	  }
 
-      // Add it to the beginning of the list
-      list.add(0, pref);
-    }
-
-    return list;
+	  return copy;
   }
 }

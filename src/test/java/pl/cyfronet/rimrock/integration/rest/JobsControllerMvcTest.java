@@ -26,9 +26,9 @@ import org.springframework.web.context.WebApplicationContext;
 
 import pl.cyfronet.rimrock.ProxyFactory;
 import pl.cyfronet.rimrock.RimrockApplication;
-import pl.cyfronet.rimrock.controllers.rest.RestHelper;
 import pl.cyfronet.rimrock.controllers.rest.jobs.JobInfo;
 import pl.cyfronet.rimrock.controllers.rest.jobs.SubmitRequest;
+import pl.cyfronet.rimrock.gsi.ProxyHelper;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -42,6 +42,7 @@ public class JobsControllerMvcTest {
 	@Autowired private WebApplicationContext wac;
 	@Autowired private ObjectMapper mapper;
 	@Autowired private ProxyFactory proxyFactory;
+	@Autowired private ProxyHelper proxyHelper;
 	
 	private MockMvc mockMvc;
 	
@@ -59,7 +60,7 @@ public class JobsControllerMvcTest {
 				+ "exit 0");
 		
 		MvcResult result = mockMvc.perform(post("/api/jobs")
-				.header("PROXY", RestHelper.encodeProxy(proxyFactory.getProxy()))
+				.header("PROXY", proxyHelper.encodeProxy(proxyFactory.getProxy()))
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(mapper.writeValueAsBytes(submitRequest)))
 				
@@ -75,7 +76,7 @@ public class JobsControllerMvcTest {
 		log.info("Checking job status for job id {}", jobId);
 		
 		mockMvc.perform(get("/api/jobs/" + jobId)
-				.header("PROXY", RestHelper.encodeProxy(proxyFactory.getProxy()))
+				.header("PROXY", proxyHelper.encodeProxy(proxyFactory.getProxy()))
 				.contentType(MediaType.APPLICATION_JSON))
 				
 				.andDo(print())
@@ -87,7 +88,7 @@ public class JobsControllerMvcTest {
 	@Test
 	public void testStatusRetrievalForInvalidJobId() throws Exception {
 		mockMvc.perform(get("/api/jobs/nonexisting_id")
-				.header("PROXY", RestHelper.encodeProxy(proxyFactory.getProxy())))
+				.header("PROXY", proxyHelper.encodeProxy(proxyFactory.getProxy())))
 				
 				.andDo(print())
 				
@@ -99,7 +100,7 @@ public class JobsControllerMvcTest {
 	@Test
 	public void testGlobalStatusRetrievalForInvalidJobId() throws Exception {
 		mockMvc.perform(get("/api/jobs")
-				.header("PROXY", RestHelper.encodeProxy(proxyFactory.getProxy())))
+				.header("PROXY", proxyHelper.encodeProxy(proxyFactory.getProxy())))
 				
 				.andDo(print())
 				
@@ -116,7 +117,7 @@ public class JobsControllerMvcTest {
 				+ "exit 0");
 		
 		MvcResult result = mockMvc.perform(post("/api/jobs")
-				.header("PROXY", RestHelper.encodeProxy(proxyFactory.getProxy()))
+				.header("PROXY", proxyHelper.encodeProxy(proxyFactory.getProxy()))
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(mapper.writeValueAsBytes(submitRequest)))
 				
@@ -132,7 +133,7 @@ public class JobsControllerMvcTest {
 		log.info("Stopping job for job id {}", jobId);
 		
 		mockMvc.perform(delete("/api/jobs/" + jobId)
-				.header("PROXY", RestHelper.encodeProxy(proxyFactory.getProxy())))
+				.header("PROXY", proxyHelper.encodeProxy(proxyFactory.getProxy())))
 				
 				.andDo(print())
 				

@@ -26,6 +26,7 @@ import pl.cyfronet.rimrock.ProxyFactory;
 import pl.cyfronet.rimrock.RimrockApplication;
 import pl.cyfronet.rimrock.controllers.rest.RestHelper;
 import pl.cyfronet.rimrock.controllers.rest.run.RunRequest;
+import pl.cyfronet.rimrock.gsi.ProxyHelper;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -43,6 +44,7 @@ public class RunControllerMvcTest {
 	@Autowired private WebApplicationContext wac;
 	@Autowired private ObjectMapper mapper;
 	@Autowired private ProxyFactory proxyFactory;
+	@Autowired private ProxyHelper proxyHelper;
 	
 	private MockMvc mockMvc;
 	
@@ -58,7 +60,7 @@ public class RunControllerMvcTest {
 		runRequest.setHost("zeus.cyfronet.pl");
 		
 		mockMvc.perform(get("/api/process")
-				.header("PROXY", RestHelper.encodeProxy(proxyFactory.getProxy()))
+				.header("PROXY", proxyHelper.encodeProxy(proxyFactory.getProxy()))
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(mapper.writeValueAsBytes(runRequest)))
 				
@@ -79,7 +81,7 @@ public class RunControllerMvcTest {
 		runRequest.setHost("zeus.cyfronet.pl");
 		
 		mockMvc.perform(get("/api/process")
-				.header("PROXY", RestHelper.encodeProxy(proxyFactory.getProxy()))
+				.header("PROXY", proxyHelper.encodeProxy(proxyFactory.getProxy()))
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(mapper.writeValueAsBytes(runRequest)))
 				
@@ -96,7 +98,7 @@ public class RunControllerMvcTest {
 	public void testNotNullValidation() throws JsonProcessingException, Exception {
 		RunRequest runRequest = new RunRequest();
 		mockMvc.perform(get("/api/process")
-				.header("PROXY", RestHelper.encodeProxy(proxyFactory.getProxy()))
+				.header("PROXY", proxyHelper.encodeProxy(proxyFactory.getProxy()))
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(mapper.writeValueAsBytes(runRequest)))
 				
@@ -117,7 +119,7 @@ public class RunControllerMvcTest {
 		runRequest.setHost("zeus.cyfronet.pl");
 		
 		mockMvc.perform(get("/api/process")
-				.header("PROXY", RestHelper.encodeProxy(proxyFactory.getProxy()))
+				.header("PROXY", proxyHelper.encodeProxy(proxyFactory.getProxy()))
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(mapper.writeValueAsBytes(runRequest)))
 				
@@ -137,7 +139,7 @@ public class RunControllerMvcTest {
 		runRequest.setHost("zeus.cyfronet.pl");
 		
 		mockMvc.perform(get("/api/process")
-				.header("PROXY", RestHelper.encodeProxy(proxyFactory.getProxy()))
+				.header("PROXY", proxyHelper.encodeProxy(proxyFactory.getProxy()))
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(mapper.writeValueAsBytes(runRequest)))
 				

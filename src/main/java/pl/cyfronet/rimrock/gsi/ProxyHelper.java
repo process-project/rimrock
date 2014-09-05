@@ -1,6 +1,8 @@
 package pl.cyfronet.rimrock.gsi;
 
 import java.io.ByteArrayInputStream;
+import java.nio.charset.Charset;
+import java.util.Base64;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -25,5 +27,13 @@ public class ProxyHelper {
 		} else {
 			throw new IllegalArgumentException("Could not extract user name from the supplied user proxy");
 		}
+	}
+	
+	public String decodeProxy(String proxy) {
+		return new String(Base64.getDecoder().decode(proxy), Charset.forName("utf-8"));
+	}
+
+	public String encodeProxy(String proxy) {
+		return Base64.getEncoder().encodeToString(proxy.replaceAll("\n", "\n").getBytes());
 	}
 }

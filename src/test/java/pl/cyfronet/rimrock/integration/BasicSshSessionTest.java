@@ -1,16 +1,25 @@
 package pl.cyfronet.rimrock.integration;
 
-import java.io.IOException;
+import static java.lang.Thread.sleep;
+
+import java.io.ByteArrayInputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.globus.gsi.CredentialException;
 import org.globus.gsi.X509Credential;
 import org.globus.gsi.gssapi.GlobusGSSCredentialImpl;
 import org.ietf.jgss.GSSCredential;
-import org.ietf.jgss.GSSException;
-import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import pl.cyfronet.rimrock.ProxyFactory;
+import pl.cyfronet.rimrock.RimrockApplication;
+import pl.cyfronet.rimrock.services.GsisshRunner;
 
 import com.sshtools.j2ssh.SshClient;
 import com.sshtools.j2ssh.authentication.AuthenticationProtocolState;
@@ -19,19 +28,23 @@ import com.sshtools.j2ssh.configuration.SshConnectionProperties;
 import com.sshtools.j2ssh.connection.ChannelState;
 import com.sshtools.j2ssh.io.IOStreamConnector;
 import com.sshtools.j2ssh.session.SessionChannelClient;
-import com.sshtools.j2ssh.util.InvalidStateException;
 
-@Ignore("This test blocks and awaits stdin. Only run manually.")
+//@Ignore("This test blocks and awaits stdin. Only run manually.")
+@RunWith(SpringJUnit4ClassRunner.class)
+@SpringApplicationConfiguration(classes = RimrockApplication.class)
 public class BasicSshSessionTest {
 	private static final String HOST = "zeus.cyfronet.pl";
+	
+	@Autowired ProxyFactory proxyFactory;
+	@Autowired GsisshRunner runner;
 
 	@Test
-	public void testBasicSshSession() throws IOException, InvalidStateException, InterruptedException, CredentialException, GSSException {
+	public void testBasicSshSession() throws Exception {
 		SshClient ssh = new SshClient();
 		SshConnectionProperties properties = new SshConnectionProperties();
 		properties.setHost(HOST);
 		
-		X509Credential proxy = new X509Credential("/home/daniel/temp/user-proxy.pem");
+		X509Credential proxy = new X509Credential(new ByteArrayInputStream(proxyFactory.getProxy().getBytes()));
 		GSSCredential gsscredential = new GlobusGSSCredentialImpl(proxy, GSSCredential.INITIATE_ONLY);
 		proxy.verify();
 		properties.setUserProxy(gsscredential);
@@ -65,6 +78,30 @@ public class BasicSshSessionTest {
 			}
 
 			ssh.disconnect();
+		}
+	}
+	
+	@Test
+	public void testMultipleSessions() throws InterruptedException {
+		List<Thread> threads = new ArrayList<>();
+		
+		for(int i = 0; i < 20; i++) {
+			int index = i;
+			
+			Thread t = new Thread(() -> {
+				try {
+					runner.run("zeus.cyfronet.pl", proxyFactory.getProxy(), "sleep 2; echo " + index , 20000);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			});
+			threads.add(t);
+			t.start();
+			sleep(100);
+		}
+		
+		for(Thread t : threads) {
+			t.join();
 		}
 	}
 

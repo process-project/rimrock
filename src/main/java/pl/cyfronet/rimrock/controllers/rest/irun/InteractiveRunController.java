@@ -80,7 +80,7 @@ public class InteractiveRunController {
 		}
 		
 		try {
-			String decodedProxy = RestHelper.decodeProxy(proxy);
+			String decodedProxy = proxyHelper.decodeProxy(proxy);
 			FileManager fileManager = fileManagerFactory.get(decodedProxy);
 			fileManager.cp(PathHelper.getRootPath(request.getHost(), proxyHelper.getUserLogin(decodedProxy)) + ".rimrock/iwrapper.py", new ClassPathResource("scripts/iwrapper.py"));
 			RunResults runResults = runner.run(request.getHost(), decodedProxy,
