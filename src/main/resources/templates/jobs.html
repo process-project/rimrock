@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorator="layout">
+
+<body>
+	<div id="wrapper" layout:fragment="content">
+		<div id="ww">
+			<div class="container">
+				<div class="row">
+					<div class="col-lg-6 col-lg-offset-3 centered">
+						<h3 th:text="#{jobs.long_title}"></h3>
+						<hr />
+						<p th:text="#{jobs.description}"></p>
+					</div>
+				</div>
+			</div>
+		</div>
+
+
+		<div class="container pt">
+			<ul class="nav nav-tabs" role="tablist">
+				<li class="active"><a href="#submit" role="tab" data-toggle="tab" th:text="#{jobs.post.title}"></a></li>
+				<li><a href="#list_all" role="tab" data-toggle="tab" th:text="#{jobs.get_all.title}"></a></li>
+				<li><a href="#list_one" role="tab" data-toggle="tab" th:text="#{jobs.get.title}"></a></li>				
+				<li><a href="#delete" role="tab" data-toggle="tab" th:text="#{jobs.delete.title}"></a></li>
+			</ul>
+
+			<div class="tab-content">
+				<div class="tab-pane fade in active" id="submit">
+					<br />
+					<table class="table table-bordered">
+						<tr>
+							<th th:text="#{example.url}"></th>
+							<td><code>/api/jobs</code></td>
+						</tr>
+						<tr>
+							<th th:text="#{example.method}"></th>
+							<td><span class="label label-success">POST</span></td>
+						</tr>
+						<tr>
+							<th th:text="#{example.url_params}"></th>
+							<td><em th:text="#{jobs.post.url_params}"></em></td>
+						</tr>
+						<tr>
+							<th th:text="#{example.data_params}"></th>
+							<td>
+								<p>
+									<strong th:text="|#{example.json}:|"></strong>
+								</p><pre th:text="#{jobs.post.data_params}"></pre><p>
+									<strong th:text="|#{example.example}:|"></strong>
+								</p> <pre>
+{
+  "host": "zeus.cyfronet.pl",
+  "working_directory": "/people/username/testjob",
+  "script": "#!/bin/bash\necho hello\nexit 0"
+}
+  						</pre>
+							</td>
+						</tr>
+						<tr class="success">
+							<th th:text="#{example.success}"></th>
+							<td>
+								<p>
+									<strong th:text="|#{example.code}:|"></strong> <em>201</em>
+								</p>
+								<p>
+									<strong th:text="|#{example.example}:|"></strong>
+								</p> <pre>
+{
+  "job_id":"50463091.batch.grid.cyf-kr.edu.pl",
+  "stdout_path":"https://data.plgrid.pl/download//stdout/path",
+  "stderr_path":"https://data.plgrid.pl/download//stderr/path",
+  "status":"QUEUED"
+}
+  					</pre>
+							</td>
+						</tr>
+						<tr class="danger">
+							<th th:text="#{example.error}"></th>
+							<td>
+								<p>
+									<strong th:text="|#{example.error}:|"></strong> <em>408</em> |
+									<em>422</em> | <em>500</em>
+								</p>
+								<p>
+									<strong th:text="|#{example.example}:|"></strong>
+								</p> <pre>
+{
+  "status":"error",
+  "exit_code":-1,
+  "standard_output":"whatever was printed before timeout",
+  "error_output":"",
+  "error_message":"timeout occurred..."
+}
+  					</pre>
+							</td>
+						</tr>
+						<tr>
+							<th th:text="#{example.sample}"></th>
+							<td>
+								<p>
+									<strong th:text="#{example.sample_call.title}"></strong>
+								</p> <pre>
+proxy="`cat {path-to-proxy-file} | base64 | tr -d '\n'`"
+
+echo '{"host":"zeus.cyfronet.pl", "script":"#!/bin/bash\\necho hello\\nexit 0"}' > request.json
+
+curl -k -X POST --data-binary @request.json --header "Content-Type:application/json" \ 
+--header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpServletRequest.serverName} + @{~/api/jobs}" />
+  					</pre>
+							</td>
+						</tr>
+						<tr>
+							<th th:text="#{example.notes}"></th>
+							<td><em th:text="#{jobs.post.notes}"></em></td>
+						</tr>
+					</table>
+				</div>
+
+				<div class="tab-pane fade" id="list_all">
+					<br />
+					<table class="table table-bordered">
+						<tr>
+							<th th:text="#{example.url}"></th>
+							<td><code>/api/jobs</code></td>
+						</tr>
+						<tr>
+							<th th:text="#{example.method}"></th>
+							<td><span class="label label-info">GET</span></td>
+						</tr>
+						<tr>
+							<th th:text="#{example.url_params}"></th>
+							<td><em th:text="#{jobs.get_all.url_params}"></em></td>
+						</tr>
+						<tr>
+							<th th:text="#{example.data_params}"></th>
+							<td><em th:text="#{jobs.get_all.data_params}"></em></td>
+						</tr>
+						<tr class="success">
+							<th th:text="#{example.success}"></th>
+							<td>
+								<p>
+									<strong th:text="|#{example.code}:|"></strong> <em>200</em>
+								</p>
+								<p>
+									<strong th:text="|#{example.example}:|"></strong>
+								</p> <pre>
+[
+  {
+    "job_id":"50463091.batch.grid.cyf-kr.edu.pl",
+    "stdout_path":"https://data.plgrid.pl/download//stdout/path",
+    "stderr_path":"https://data.plgrid.pl/download//stderr/path",
+    "status":"QUEUED"
+  }, {
+    "job_id":"61473291.batch.grid.cyf-kr.edu.pl",
+    "stdout_path":"https://data.plgrid.pl/download//stdout/path",
+    "stderr_path":"https://data.plgrid.pl/download//stderr/path",
+    "status":"FINISHED"
+  }
+]
+  					</pre>
+							</td>
+						</tr>
+						<tr class="danger">
+							<th th:text="#{example.error}"></th>
+							<td>
+								<p>
+									<strong th:text="|#{example.error}:|"></strong> <em>408</em> |
+									<em>404</em> | <em>500</em>
+								</p>
+								<p>
+									<strong th:text="|#{example.example}:|"></strong>
+								</p> <pre>
+{
+  "status": "error",
+  "exit_code": 0,
+  "standard_output": "",
+  "error_output": "",
+  "error_message": "Job with 1234.batch.grid.cyf-kr.edu.pl not found"
+}
+  					</pre>
+							</td>
+						</tr>
+						<tr>
+							<th th:text="#{example.sample}"></th>
+							<td>
+								<p>
+									<strong th:text="#{example.sample_call.title}"></strong>
+								</p> <pre>
+proxy="`cat {path-to-proxy-file} | base64 | tr -d '\n'`"
+
+curl -k -X GET --data-binary @request.json --header "Content-Type:application/json" \ 
+--header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpServletRequest.serverName} + @{~/api/jobs/50463091.batch.grid.cyf-kr.edu.pl}" />
+  					</pre>
+							</td>
+						</tr>
+						<tr>
+							<th th:text="#{example.notes}"></th>
+							<td><em th:text="#{jobs.get_all.notes}"></em></td>
+						</tr>
+					</table>
+				</div>
+
+				<div class="tab-pane fade" id="list_one">
+					<br />
+					<table class="table table-bordered">
+						<tr>
+							<th th:text="#{example.url}"></th>
+							<td><code>/api/jobs/{job_id}</code></td>
+						</tr>
+						<tr>
+							<th th:text="#{example.method}"></th>
+							<td><span class="label label-info">GET</span></td>
+						</tr>
+						<tr>
+							<th th:text="#{example.url_params}"></th>
+							<td><em>job_id</em> - <span th:text="#{jobs.get.job_id}"></span></td>
+							
+						</tr>
+						<tr>
+							<th th:text="#{example.data_params}"></th>
+							<td><em th:text="#{jobs.get.data_params}"></em></td>
+						</tr>
+						<tr class="success">
+							<th th:text="#{example.success}"></th>
+							<td>
+								<p>
+									<strong th:text="|#{example.code}:|"></strong> <em>200</em>
+								</p>
+								<p>
+									<strong th:text="|#{example.example}:|"></strong>
+								</p> <pre>
+{
+  "job_id":"50463091.batch.grid.cyf-kr.edu.pl",
+  "stdout_path":"https://data.plgrid.pl/download//stdout/path",
+  "stderr_path":"https://data.plgrid.pl/download//stderr/path",
+  "status":"QUEUED"
+}
+  					</pre>
+							</td>
+						</tr>
+						<tr class="danger">
+							<th th:text="#{example.error}"></th>
+							<td>
+								<p>
+									<strong th:text="|#{example.error}:|"></strong> <em>408</em> |
+									<em>404</em> | <em>500</em>
+								</p>
+								<p>
+									<strong th:text="|#{example.example}:|"></strong>
+								</p> <pre>
+{
+  "status": "error",
+  "exit_code": 0,
+  "standard_output": "",
+  "error_output": "",
+  "error_message": "Job with 1234.batch.grid.cyf-kr.edu.pl not found"
+}
+  					</pre>
+							</td>
+						</tr>
+						<tr>
+							<th th:text="#{example.sample}"></th>
+							<td>
+								<p>
+									<strong th:text="#{example.sample_call.title}"></strong>
+								</p> <pre>
+proxy="`cat {path-to-proxy-file} | base64 | tr -d '\n'`"
+
+curl -k -X GET --data-binary @request.json --header "Content-Type:application/json" \ 
+--header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpServletRequest.serverName} + @{~/api/jobs/50463091.batch.grid.cyf-kr.edu.pl}" />
+  					</pre>
+							</td>
+						</tr>
+						<tr>
+							<th th:text="#{example.notes}"></th>
+							<td><em>None</em></td>
+						</tr>
+					</table>
+				</div>
+
+				<div class="tab-pane fade" id="delete">
+					<br />
+					<table class="table table-bordered">
+						<tr>
+							<th th:text="#{example.url}"></th>
+							<td><code>/api/jobs/{job_id}</code></td>
+						</tr>
+						<tr>
+							<th th:text="#{example.method}"></th>
+							<td><span class="label label-danger">DELETE</span></td>
+						</tr>
+						<tr>
+							<th th:text="#{example.url_params}"></th>
+							<td><em>job_id</em> - <span th:text="#{jobs.delete.job_id}"></span></td>
+						</tr>
+						<tr>
+							<th th:text="#{example.data_params}"></th>
+							<td><em th:text="#{jobs.delete.data_params}"></em></td>
+						</tr>
+						<tr class="success">
+							<th th:text="#{example.success}"></th>
+							<td><strong th:text="|#{example.code}:|"></strong> <em>204</em>
+							</td>
+						</tr>
+						<tr class="danger">
+							<th th:text="#{example.error}"></th>
+							<td>
+								<p>
+									<strong th:text="|#{example.error}:|"></strong> <em>408</em> |
+									<em>404</em> | <em>500</em>
+								</p>
+								<p>
+									<strong th:text="|#{example.example}:|"></strong>
+								</p> <pre>
+{
+  "status": "error",
+  "exit_code": 0,
+  "standard_output": "",
+  "error_output": "",
+  "error_message": "Job with 1234.batch.grid.cyf-kr.edu.pl not found"
+}
+  					</pre>
+							</td>
+						</tr>
+						<tr>
+							<th th:text="#{example.sample}"></th>
+							<td>
+								<p>
+									<strong th:text="#{example.sample_call.title}"></strong>
+								</p> <pre>
+proxy="`cat {path-to-proxy-file} | base64 | tr -d '\n'`"
+
+curl -k -X DELETE --data-binary @request.json --header "Content-Type:application/json" \ 
+--header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpServletRequest.serverName} + @{~/api/jobs/50463091.batch.grid.cyf-kr.edu.pl}" />
+  					</pre>
+							</td>
+						</tr>
+						<tr>
+							<th th:text="#{example.notes}"></th>
+							<td><em th:text="#{jobs.delete.notes}"></em></td>
+						</tr>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+</html>

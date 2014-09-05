@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorator="layout">
+
+<body>
+	<div id="wrapper" layout:fragment="content">
+		<div id="ww">
+			<div class="container">
+				<div class="row">
+					<div class="col-lg-6 col-lg-offset-3 centered">
+						<h3 th:text="#{processes.long_title}"></h3>
+						<hr />
+						<p th:text="#{processes.description}"></p>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="container pt">
+			<table class="table table-bordered">
+				<tr>
+					<th th:text="#{example.title}"></th>
+					<td th:text="#{processes.example.title}"></td>
+				</tr>
+				<tr>
+					<th th:text="#{example.url}"></th>
+					<td><code>/api/process</code></td>
+				</tr>
+				<tr>
+					<th th:text="#{example.method}"></th>
+					<td><span class="label label-info">GET</span></td>
+				</tr>
+				<tr>
+					<th th:text="#{example.url_params}"></th>
+					<td><em th:text="#{processes.example.url_params}"></em></td>
+				</tr>
+				<tr>
+					<th th:text="#{example.data_params}"></th>
+					<td>
+						<p><strong th:text="|#{example.json}:|"></strong></p> 
+						<pre th:text="#{processes.example.data_params}"></pre>
+						<p><strong th:text="|#{example.example}:|"></strong></p> 
+						<pre>
+{
+  "host": "zeus.cyfronet.pl",
+  "command": "date",
+  "proxy": "-----BEGIN CERTIFICATE-----
+            MIIDfzCCAmegAwIBAgII
+            ...
+            uXBa+dITjblqY+DhMGizcG7ul62mQ==
+            -----END CERTIFICATE-----"
+}
+  						</pre>
+					</td>
+				</tr>
+				<tr class="success">
+					<th th:text="#{example.success}"></th>
+					<td>
+						<p>
+							<strong th:text="|#{example.code}:|"></strong> <em>200</em>
+						</p>
+						<p>
+							<strong th:text="|#{example.example}:|"></strong>
+						</p> <pre>
+{
+  "status":"ok",
+  "exit_code":0,
+  "standard_output":"Fri Aug  1 14:33:55 CEST 2014",
+  "error_output":"",
+  "error_message":null
+}
+  					</pre>
+					</td>
+				</tr>
+				<tr class="danger">
+					<th th:text="#{example.error}"></th>
+					<td>
+						<p>
+							<strong th:text="|#{example.error}:|"></strong> <em>408</em> | <em>422</em> | <em>500</em>
+						</p>
+						<p>
+							<strong th:text="|#{example.example}:|"></strong>
+						</p> <pre>
+{
+  "status":"error",
+  "exit_code":-1,
+  "standard_output":"whatever was printed before timeout",
+  "error_output":"",
+  "error_message":"timeout occurred..."
+}
+  					</pre>
+					</td>
+				</tr>
+				<tr>
+					<th th:text="#{example.sample}"></th>
+					<td>
+						<p>
+							<strong th:text="#{example.sample_call.title}"></strong>
+						</p> <pre>
+proxy="`cat {path-to-proxy-file} | base64 | tr -d '\n'`"
+
+echo '{"host": "zeus.cyfronet.pl", "command": "pwd"}' > runcmd.json
+
+curl -k -X GET --data-binary @runcmd.json --header "Content-Type:application/json" \
+--header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpServletRequest.serverName} + @{~/api/process}" />
+  					</pre>
+					</td>
+				</tr>
+				<tr>
+					<th th:text="#{example.notes}"></th>
+					<td><em th:text="#{processes.example.notes}"></em></td>
+				</tr>
+			</table>
+		</div>
+	</div>
+</body>
+</html>

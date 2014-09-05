@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorator="layout">
+
+<body>
+	<div id="wrapper" layout:fragment="content">
+		<div id="ww">
+			<div class="container">
+				<div class="row">
+					<div class="col-lg-6 col-lg-offset-3 centered">
+						<h3 th:text="#{iprocesses.long_title}"></h3>
+						<hr />
+						<p th:text="#{iprocesses.description}"></p>
+					</div>
+				</div>
+			</div>
+		</div>
+
+
+		<div class="container pt"><span class="label label-warning">Work in progress</span></div>
+	</div>
+</body>
+</html>
