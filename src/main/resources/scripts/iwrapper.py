@@ -27,9 +27,10 @@ class OutputThread(threading.Thread):
 		return len(self.outputChunks) > 0 or self.is_alive()
 
 class RestThread(threading.Thread):
-	def __init__(self, url, inputStream, outputThread, errorThread):
+	def __init__(self, url, processId, inputStream, outputThread, errorThread):
 		super(RestThread, self).__init__()
 		self.url = url
+		self.processId = processId
 		self.inputStream = inputStream
 		self.outputThread = outputThread
 		self.errorThread = errorThread
@@ -38,22 +39,28 @@ class RestThread(threading.Thread):
 		while self.outputThread.available() or self.errorThread.available():
 			output = self.outputThread.getAvailableBytes()
 			error = self.errorThread.getAvailableBytes()
-			payload = {'standard_output': output, 'standard_error': error}
+			payload = {'standard_output': output, 'standard_error': error, 'process_id': self.processId}
 			headers = {'content-type': 'application/json'}
 			response = requests.post(self.url, data = json.dumps(payload), headers = headers)
 			cmd = response.json()['input']
 			if cmd:
 				self.inputStream.write(cmd + '\n')
 			time.sleep(0.5)
+		output = self.outputThread.getAvailableBytes()
+		error = self.errorThread.getAvailableBytes()
+		payload = {'standard_output': output, 'standard_error': error, 'process_id': self.processId, 'finished': True}
+		headers = {'content-type': 'application/json'}
+		response = requests.post(self.url, data = json.dumps(payload), headers = headers)
 
 url = sys.argv[1]
-command = sys.argv[2]
+processId = sys.argv[2]
+command = sys.argv[3]
 
 process = subprocess.Popen([command], stdin = subprocess.PIPE, stdout = subprocess.PIPE,
 							stderr = subprocess.PIPE, universal_newlines = True)
 outThread = OutputThread(process.stdout)
 errThread = OutputThread(process.stderr)
-restThread = RestThread(url, process.stdin, outThread, errThread)
+restThread = RestThread(url, processId, process.stdin, outThread, errThread)
 
 outThread.start()
 errThread.start()

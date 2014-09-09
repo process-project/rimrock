@@ -48,7 +48,7 @@ public class JobsControllerMvcTest {
 	
 	@Before
     public void setup() {
-        this.mockMvc = MockMvcBuilders.webAppContextSetup(this.wac).build();
+        mockMvc = MockMvcBuilders.webAppContextSetup(wac).build();
     }
 	
 	@Test

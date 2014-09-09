@@ -8,6 +8,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 import static org.springframework.web.bind.annotation.RequestMethod.PUT;
+import static org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder.on;
 import static pl.cyfronet.rimrock.controllers.rest.irun.InteractiveProcessResponse.Status.ERROR;
 
 import java.util.UUID;
@@ -19,12 +20,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
 import pl.cyfronet.rimrock.controllers.rest.PathHelper;
@@ -38,7 +39,7 @@ import pl.cyfronet.rimrock.services.RunResults;
 import pl.cyfronet.rimrock.services.filemanager.FileManager;
 import pl.cyfronet.rimrock.services.filemanager.FileManagerFactory;
 
-@Controller
+@RestController
 public class InteractiveRunController {
 	private static final Logger log = LoggerFactory.getLogger(InteractiveRunController.class);
 	
@@ -55,7 +56,7 @@ public class InteractiveRunController {
 		this.proxyHelper = proxyHelper;
 	}
 	
-	@RequestMapping(value = "/internal/update", method = POST, consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
+	@RequestMapping(value = "/api/internal/update", method = POST, consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
 	public ResponseEntity<InternalUpdateResponse> update(@Valid @RequestBody InternalUpdateRequest updateRequest) {
 		log.info("Processing internal update request with body {}", updateRequest);
 		
@@ -64,6 +65,9 @@ public class InteractiveRunController {
 		if(process != null) {
 			String input = process.getPendingInput();
 			process.setPendingInput("");
+			process.setFinished(updateRequest.isFinished());
+			process.setOutput((process.getOutput() == null ? "" : process.getOutput()) + updateRequest.getStandardOutput());
+			process.setError((process.getError() == null ? "" : process.getError()) + updateRequest.getStandardError());
 			processRepository.save(process);
 			
 			return new ResponseEntity<InternalUpdateResponse>(new InternalUpdateResponse(input), OK);
@@ -72,7 +76,7 @@ public class InteractiveRunController {
 		}
 	}
 	
-	@RequestMapping(value = "/iprocess", method = POST, consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
+	@RequestMapping(value = "/api/iprocess", method = POST, consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
 	public ResponseEntity<InteractiveProcessResponse> startInteractiveProcess(@RequestHeader("PROXY") String proxy,
 			@Valid @RequestBody InteractiveProcessRequest request, BindingResult errors) {
 		if(errors.hasErrors()) {
@@ -83,20 +87,24 @@ public class InteractiveRunController {
 			String decodedProxy = proxyHelper.decodeProxy(proxy);
 			FileManager fileManager = fileManagerFactory.get(decodedProxy);
 			fileManager.cp(PathHelper.getRootPath(request.getHost(), proxyHelper.getUserLogin(decodedProxy)) + ".rimrock/iwrapper.py", new ClassPathResource("scripts/iwrapper.py"));
+			
+			String processId = UUID.randomUUID().toString();
 			RunResults runResults = runner.run(request.getHost(), decodedProxy,
-					String.format("module load plgrid/tools/python/3.3.2; nohup python3 .rimrock/iwrapper.py %s %s &",
-							MvcUriComponentsBuilder.fromMethod(InteractiveRunController.class.getMethod("update", InternalUpdateRequest.class)).build().toUriString(),
-							request.getCommand()), -1);
+					String.format("module load plgrid/tools/python/3.3.2; (nohup python3 .rimrock/iwrapper.py %s %s %s &)",
+							MvcUriComponentsBuilder.fromMethodCall(on(InteractiveRunController.class).update(null)).build().toUriString(),
+							processId, request.getCommand()), -1);
 			
 			if(runResults.isTimeoutOccured() || runResults.getExitCode() != 0) {
 				return new ResponseEntity<InteractiveProcessResponse>(new InteractiveProcessResponse(Status.ERROR, "Interactive process could not be properly executed"), INTERNAL_SERVER_ERROR);
 			} else {
-				String processId = UUID.randomUUID().toString();
 				InteractiveProcess interactiveProcess = new InteractiveProcess();
 				interactiveProcess.setProcessId(processId);
 				processRepository.save(interactiveProcess);
 				
-				return new ResponseEntity<InteractiveProcessResponse>(new InteractiveProcessResponse(Status.OK, null), OK);
+				InteractiveProcessResponse response = new InteractiveProcessResponse(Status.OK, null);
+				response.setProcessId(processId);
+				
+				return new ResponseEntity<InteractiveProcessResponse>(response, OK);
 			}
 		} catch(Throwable e) {
 			log.error("Error", e);
@@ -105,7 +113,7 @@ public class InteractiveRunController {
 		}
 	}
 	
-	@RequestMapping(value = "/iprocess/{processId}", method = GET, produces = APPLICATION_JSON_VALUE)
+	@RequestMapping(value = "/api/iprocess/{processId}", method = GET, produces = APPLICATION_JSON_VALUE)
 	public ResponseEntity<InteractiveProcessResponse> getInteractiveProcessStatus(@RequestHeader("PROXY") String proxy, @PathVariable String processId) {
 		InteractiveProcess process = processRepository.findByProcessId(processId);
 		
@@ -123,12 +131,13 @@ public class InteractiveRunController {
 			response.setStandardOutput(output);
 			response.setStandardError(error);
 			response.setFinished(process.isFinished());
+			response.setProcessId(processId);
 			
 			return new ResponseEntity<InteractiveProcessResponse>(response, OK);
 		}
 	}
 	
-	@RequestMapping(value = "/iprocess/{processId}", method = PUT, consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
+	@RequestMapping(value = "/api/iprocess/{processId}", method = PUT, consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
 	public ResponseEntity<InteractiveProcessResponse> processInteractiveProcessInput(@RequestHeader("PROXY") String proxy, @PathVariable String processId,
 			@Valid @RequestBody InteractiveProcessInputRequest request, BindingResult errors) {
 		InteractiveProcess process = processRepository.findByProcessId(processId);
@@ -148,6 +157,7 @@ public class InteractiveRunController {
 			response.setStandardOutput(output);
 			response.setStandardError(error);
 			response.setFinished(process.isFinished());
+			response.setProcessId(processId);
 			
 			return new ResponseEntity<InteractiveProcessResponse>(response, OK);
 		}

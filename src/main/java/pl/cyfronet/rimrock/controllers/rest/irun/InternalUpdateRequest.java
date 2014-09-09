@@ -5,8 +5,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class InternalUpdateRequest {
 	@JsonProperty("standard_output") private String standardOutput;
 	@JsonProperty("standard_error") private String standardError;
+	@JsonProperty("process_id") private String processId;
 	private boolean finished;
-	private String processId;
 	
 	public String getStandardOutput() {
 		return standardOutput;

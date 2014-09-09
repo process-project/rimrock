@@ -15,6 +15,9 @@ public class InteractiveProcessResponse {
 		ERROR
 	}
 	
+	public InteractiveProcessResponse() {
+	}
+	
 	public InteractiveProcessResponse(Status status, String errorMessage) {
 		this.status = status;
 		this.errorMessage = errorMessage;
