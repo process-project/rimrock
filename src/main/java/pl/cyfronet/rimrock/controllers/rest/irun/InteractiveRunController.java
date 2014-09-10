@@ -92,7 +92,7 @@ public class InteractiveRunController {
 			RunResults runResults = runner.run(request.getHost(), decodedProxy,
 					String.format("module load plgrid/tools/python/3.3.2; (nohup python3 .rimrock/iwrapper.py %s %s %s &)",
 							MvcUriComponentsBuilder.fromMethodCall(on(InteractiveRunController.class).update(null)).build().toUriString(),
-							processId, request.getCommand()), -1);
+							processId, request.getCommand()), 5000);
 			
 			if(runResults.isTimeoutOccured() || runResults.getExitCode() != 0) {
 				return new ResponseEntity<InteractiveProcessResponse>(new InteractiveProcessResponse(Status.ERROR, "Interactive process could not be properly executed"), INTERNAL_SERVER_ERROR);
@@ -114,12 +114,15 @@ public class InteractiveRunController {
 	}
 	
 	@RequestMapping(value = "/api/iprocess/{processId}", method = GET, produces = APPLICATION_JSON_VALUE)
-	public ResponseEntity<InteractiveProcessResponse> getInteractiveProcessStatus(@RequestHeader("PROXY") String proxy, @PathVariable String processId) {
+	public ResponseEntity<InteractiveProcessResponse> getInteractiveProcessStatus(@RequestHeader("PROXY") String proxy, @PathVariable("processId") String processId) {
 		InteractiveProcess process = processRepository.findByProcessId(processId);
 		
 		if(process == null) {
-			return new ResponseEntity<InteractiveProcessResponse>(new InteractiveProcessResponse(Status.ERROR,
-					String.format("Interactive process with id %s cannot be  found", processId)), NOT_FOUND);
+			InteractiveProcessResponse response = new InteractiveProcessResponse(Status.ERROR,
+					String.format("Interactive process with id %s cannot be  found", processId));
+			response.setProcessId(processId);
+			
+			return new ResponseEntity<InteractiveProcessResponse>(response, NOT_FOUND);
 		} else {
 			String output = process.getOutput();
 			String error = process.getError();
@@ -138,7 +141,7 @@ public class InteractiveRunController {
 	}
 	
 	@RequestMapping(value = "/api/iprocess/{processId}", method = PUT, consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
-	public ResponseEntity<InteractiveProcessResponse> processInteractiveProcessInput(@RequestHeader("PROXY") String proxy, @PathVariable String processId,
+	public ResponseEntity<InteractiveProcessResponse> processInteractiveProcessInput(@RequestHeader("PROXY") String proxy, @PathVariable("processId") String processId,
 			@Valid @RequestBody InteractiveProcessInputRequest request, BindingResult errors) {
 		InteractiveProcess process = processRepository.findByProcessId(processId);
 		

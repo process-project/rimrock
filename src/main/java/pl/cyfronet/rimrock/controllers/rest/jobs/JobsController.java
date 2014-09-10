@@ -85,7 +85,7 @@ public class JobsController {
 	}
 	
 	@RequestMapping(value = "/api/jobs/{jobId:.+}", method = GET, produces = APPLICATION_JSON_VALUE)
-	public ResponseEntity<JobInfo> jobInfo(@RequestHeader("PROXY") String proxy, @PathVariable String jobId) 
+	public ResponseEntity<JobInfo> jobInfo(@RequestHeader("PROXY") String proxy, @PathVariable("jobId") String jobId) 
 			throws JobNotFoundException, CredentialException, GSSException, 
 			InvalidStateException, FileManagerException, IOException, InterruptedException {
 		log.debug("Processing status request for job with id {}", jobId);
@@ -120,7 +120,7 @@ public class JobsController {
 	}
 
 	@RequestMapping(value = "/api/jobs/{jobId:.+}", method = DELETE, produces = APPLICATION_JSON_VALUE)
-	public ResponseEntity<Void> deleteJob(@RequestHeader("PROXY") String proxy, @PathVariable String jobId) 
+	public ResponseEntity<Void> deleteJob(@RequestHeader("PROXY") String proxy, @PathVariable("jobId") String jobId) 
 			throws CredentialException, GSSException, FileManagerException, JobNotFoundException {
 		
 		UserJobs manager = userJobsFactory.get(proxyHelper.decodeProxy(proxy));
