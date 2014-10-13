@@ -89,10 +89,12 @@ public class InteractiveRunController {
 			fileManager.cp(PathHelper.getRootPath(request.getHost(), proxyHelper.getUserLogin(decodedProxy)) + ".rimrock/iwrapper.py", new ClassPathResource("scripts/iwrapper.py"));
 			
 			String processId = UUID.randomUUID().toString();
+			String internalUrl = MvcUriComponentsBuilder.fromMethodCall(on(InteractiveRunController.class).update(null)).build().toUriString();
+			log.info("Attempting to start new interactive process with id {} and reporting URL {}", processId, internalUrl);
+			
 			RunResults runResults = runner.run(request.getHost(), decodedProxy,
 					String.format("module load plgrid/tools/python/3.3.2; (nohup python3 .rimrock/iwrapper.py %s %s %s &)",
-							MvcUriComponentsBuilder.fromMethodCall(on(InteractiveRunController.class).update(null)).build().toUriString(),
-							processId, request.getCommand()), 5000);
+							internalUrl, processId, request.getCommand()), 5000);
 			
 			if(runResults.isTimeoutOccured() || runResults.getExitCode() != 0) {
 				return new ResponseEntity<InteractiveProcessResponse>(new InteractiveProcessResponse(Status.ERROR, "Interactive process could not be properly executed"), INTERNAL_SERVER_ERROR);
