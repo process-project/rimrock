@@ -98,14 +98,13 @@
 					<td>
 						<p>
 							<strong th:text="#{example.sample_call.title}"></strong>
-						</p> <pre>
+						</p>
+						<pre>
 proxy="`cat {path-to-proxy-file} | base64 | tr -d '\n'`"
 
-echo '{"host": "zeus.cyfronet.pl", "command": "pwd"}' > runcmd.json
-
-curl -k -X GET --data-binary @runcmd.json --header "Content-Type:application/json" \
---header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpServletRequest.serverName} + @{~/api/process}" />
-  					</pre>
+curl -k -X POST --data '{"host": "zeus.cyfronet.pl", "command": "pwd"}' \
+--header "Content-Type:application/json" --header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpServletRequest.serverName} + @{~/api/process}"/>
+  						</pre>
 					</td>
 				</tr>
 				<tr>

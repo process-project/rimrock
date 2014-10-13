@@ -108,10 +108,8 @@
 								</p> <pre>
 proxy="`cat {path-to-proxy-file} | base64 | tr -d '\n'`"
 
-echo '{"host":"zeus.cyfronet.pl", "script":"#!/bin/bash\\necho hello\\nexit 0"}' > request.json
-
-curl -k -X POST --data-binary @request.json --header "Content-Type:application/json" \ 
---header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpServletRequest.serverName} + @{~/api/jobs}" />
+curl -k -X POST --data '{"host":"zeus.cyfronet.pl", "script":"#!/bin/bash\\necho hello\\nexit 0"}' \
+--header "Content-Type:application/json" --header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpServletRequest.serverName} + @{~/api/jobs}" />
   					</pre>
 							</td>
 						</tr>
@@ -196,8 +194,7 @@ curl -k -X POST --data-binary @request.json --header "Content-Type:application/j
 								</p> <pre>
 proxy="`cat {path-to-proxy-file} | base64 | tr -d '\n'`"
 
-curl -k -X GET --header "Content-Type:application/json" \ 
---header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpServletRequest.serverName} + @{~/api/jobs/50463091.batch.grid.cyf-kr.edu.pl}" />
+curl -k -X GET --header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpServletRequest.serverName} + @{~/api/jobs/50463091.batch.grid.cyf-kr.edu.pl}" />
   					</pre>
 							</td>
 						</tr>
@@ -276,8 +273,7 @@ curl -k -X GET --header "Content-Type:application/json" \
 								</p> <pre>
 proxy="`cat {path-to-proxy-file} | base64 | tr -d '\n'`"
 
-curl -k -X GET --header "Content-Type:application/json" \ 
---header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpServletRequest.serverName} + @{~/api/jobs/50463091.batch.grid.cyf-kr.edu.pl}" />
+curl -k -X GET --header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpServletRequest.serverName} + @{~/api/jobs/50463091.batch.grid.cyf-kr.edu.pl}" />
   					</pre>
 							</td>
 						</tr>
@@ -343,8 +339,7 @@ curl -k -X GET --header "Content-Type:application/json" \
 								</p> <pre>
 proxy="`cat {path-to-proxy-file} | base64 | tr -d '\n'`"
 
-curl -k -X DELETE --data-binary @request.json --header "Content-Type:application/json" \ 
---header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpServletRequest.serverName} + @{~/api/jobs/50463091.batch.grid.cyf-kr.edu.pl}" />
+curl -k -X DELETE --header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpServletRequest.serverName} + @{~/api/jobs/50463091.batch.grid.cyf-kr.edu.pl}" />
   					</pre>
 							</td>
 						</tr>

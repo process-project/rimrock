@@ -105,14 +105,13 @@
 							<td>
 								<p>
 									<strong th:text="#{example.sample_call.title}"></strong>
-								</p> <pre>
+								</p>
+								<pre>
 proxy="`cat {path-to-proxy-file} | base64 | tr -d '\n'`"
 
-echo '{"host":"zeus.cyfronet.pl", "script":"#!/bin/bash\\necho hello\\nexit 0"}' > request.json
-
-curl -k -X POST --data-binary @request.json --header "Content-Type:application/json" \
---header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpServletRequest.serverName} + @{~/api/iprocess}"/>
-  					</pre>
+curl -k -X POST --data '{"host":"zeus.cyfronet.pl", "command":"bash"}' \
+--header "Content-Type:application/json" --header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpServletRequest.serverName} + @{~/api/iprocess}"/>
+  								</pre>
 							</td>
 						</tr>
 						<tr>
@@ -282,9 +281,7 @@ curl -k -X GET --header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpSe
 								</p> <pre>
 proxy="`cat {path-to-proxy-file} | base64 | tr -d '\n'`"
 
-echo '{"standard_input":"echo hello"}' > request.json
-
-curl -k -X PUT --data-binary @request.json --header "Content-Type:application/json" \
+curl -k -X PUT --data '{"standard_input":"echo hello"}' --header "Content-Type:application/json" \
 --header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpServletRequest.serverName} + @{~/api/iprocess/25a6b082-7ef0-4ec7-8349-c3beb9b341a4}"/>
   					</pre>
 							</td>
