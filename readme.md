@@ -35,6 +35,14 @@ After the application is started you can fetch the user proxy (e.g. from DataNet
 
 Note that all these resources are ignored so no private data leaks through git.
 
+## Running gatling-based integration tests
+
+To run gatling-based tests which are defined in the `src/test/scala/test/RimrocTestSimulation.scala` file run the following command:
+
+	mvn gatling:execute
+
+The detailed test results are stored in `target/gatling/results` directory.
+
 ##Running the rimrock application in production
 
 * Build the final jar with `mvn clean package`.
