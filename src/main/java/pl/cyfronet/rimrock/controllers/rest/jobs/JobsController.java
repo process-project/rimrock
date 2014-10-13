@@ -39,6 +39,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import pl.cyfronet.rimrock.controllers.rest.RestHelper;
 import pl.cyfronet.rimrock.controllers.rest.RunResponse;
 import pl.cyfronet.rimrock.domain.Job;
+import pl.cyfronet.rimrock.gsi.ProxyHelper;
 import pl.cyfronet.rimrock.repositories.JobRepository;
 import pl.cyfronet.rimrock.services.filemanager.FileManagerException;
 import pl.cyfronet.rimrock.services.job.RunException;
@@ -51,17 +52,18 @@ import com.sshtools.j2ssh.util.InvalidStateException;
 public class JobsController {
 	private static final Logger log = LoggerFactory.getLogger(JobsController.class);
 	
+	@Value("${plgridData.url}")	private String plgDataUrl;
+	
 	private JobRepository jobRepository;
-	
 	private UserJobsFactory userJobsFactory;
+	private ProxyHelper proxyHelper;
 	
-	@Value("${plgridData.url}")
-	private String plgDataUrl;
 	
 	@Autowired
-	public JobsController(JobRepository jobRepository, UserJobsFactory userJobsFactory) {
+	public JobsController(JobRepository jobRepository, UserJobsFactory userJobsFactory, ProxyHelper proxyHelper) {
 		this.jobRepository = jobRepository;
 		this.userJobsFactory = userJobsFactory;
+		this.proxyHelper = proxyHelper;
 	}
 	
 	@RequestMapping(value = "/api/jobs", method = POST, consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
@@ -74,7 +76,7 @@ public class JobsController {
 			throw new ValidationException(RestHelper.convertErrors(errors));
 		}
 
-		UserJobs manager = userJobsFactory.get(RestHelper.decodeProxy(proxy));
+		UserJobs manager = userJobsFactory.get(proxyHelper.decodeProxy(proxy));
 
 		Job job = manager.submit(submitRequest.getHost(),
 				submitRequest.getWorkingDirectory(), submitRequest.getScript());
@@ -83,7 +85,7 @@ public class JobsController {
 	}
 	
 	@RequestMapping(value = "/api/jobs/{jobId:.+}", method = GET, produces = APPLICATION_JSON_VALUE)
-	public ResponseEntity<JobInfo> jobInfo(@RequestHeader("PROXY") String proxy, @PathVariable String jobId) 
+	public ResponseEntity<JobInfo> jobInfo(@RequestHeader("PROXY") String proxy, @PathVariable("jobId") String jobId) 
 			throws JobNotFoundException, CredentialException, GSSException, 
 			InvalidStateException, FileManagerException, IOException, InterruptedException {
 		log.debug("Processing status request for job with id {}", jobId);
@@ -94,7 +96,7 @@ public class JobsController {
 			throw new JobNotFoundException(jobId);
 		}
 		
-		UserJobs manager = userJobsFactory.get(RestHelper.decodeProxy(proxy));
+		UserJobs manager = userJobsFactory.get(proxyHelper.decodeProxy(proxy));
 		manager.update(Arrays.asList(job.getHost()));
 		
 		job = jobRepository.findOneByJobId(jobId);
@@ -108,7 +110,7 @@ public class JobsController {
 			IOException, InterruptedException {
 		
 		List<String> hosts = jobRepository.getHosts();
-		UserJobs manager = userJobsFactory.get(RestHelper.decodeProxy(proxy));
+		UserJobs manager = userJobsFactory.get(proxyHelper.decodeProxy(proxy));
 		List<Job> jobs = manager.update(hosts);
 		List<JobInfo> infos = jobs.stream()
 				.map(job -> new JobInfo(job, plgDataUrl))
@@ -118,10 +120,10 @@ public class JobsController {
 	}
 
 	@RequestMapping(value = "/api/jobs/{jobId:.+}", method = DELETE, produces = APPLICATION_JSON_VALUE)
-	public ResponseEntity<Void> deleteJob(@RequestHeader("PROXY") String proxy, @PathVariable String jobId) 
+	public ResponseEntity<Void> deleteJob(@RequestHeader("PROXY") String proxy, @PathVariable("jobId") String jobId) 
 			throws CredentialException, GSSException, FileManagerException, JobNotFoundException {
 		
-		UserJobs manager = userJobsFactory.get(RestHelper.decodeProxy(proxy));
+		UserJobs manager = userJobsFactory.get(proxyHelper.decodeProxy(proxy));
 		manager.delete(jobId);
 		
 		return new ResponseEntity<Void>(NO_CONTENT);

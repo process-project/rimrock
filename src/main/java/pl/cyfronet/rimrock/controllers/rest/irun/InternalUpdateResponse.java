@@ -1,9 +1,9 @@
 package pl.cyfronet.rimrock.controllers.rest.irun;
 
-public class UpdateResponse {
+public class InternalUpdateResponse {
 	private String input;
 	
-	public UpdateResponse(String input) {
+	public InternalUpdateResponse(String input) {
 		this.input = input;
 	}
 

@@ -2,9 +2,11 @@ package pl.cyfronet.rimrock.controllers.rest.irun;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class UpdateRequest {
+public class InternalUpdateRequest {
 	@JsonProperty("standard_output") private String standardOutput;
 	@JsonProperty("standard_error") private String standardError;
+	@JsonProperty("process_id") private String processId;
+	private boolean finished;
 	
 	public String getStandardOutput() {
 		return standardOutput;
@@ -21,5 +23,17 @@ public class UpdateRequest {
 	@Override
 	public String toString() {
 		return "UpdateRequest [standardOutput=" + standardOutput + ", standardError=" + standardError + "]";
+	}
+	public boolean isFinished() {
+		return finished;
+	}
+	public void setFinished(boolean finished) {
+		this.finished = finished;
+	}
+	public String getProcessId() {
+		return processId;
+	}
+	public void setProcessId(String processId) {
+		this.processId = processId;
 	}
 }

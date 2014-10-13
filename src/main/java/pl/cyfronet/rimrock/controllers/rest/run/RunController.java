@@ -5,7 +5,7 @@ import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.http.HttpStatus.REQUEST_TIMEOUT;
 import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
-import static org.springframework.web.bind.annotation.RequestMethod.GET;
+import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 import javax.validation.Valid;
 
@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import pl.cyfronet.rimrock.controllers.rest.RestHelper;
 import pl.cyfronet.rimrock.controllers.rest.RunResponse;
 import pl.cyfronet.rimrock.controllers.rest.RunResponse.Status;
+import pl.cyfronet.rimrock.gsi.ProxyHelper;
 import pl.cyfronet.rimrock.services.GsisshRunner;
 import pl.cyfronet.rimrock.services.RunResults;
 
@@ -34,13 +35,15 @@ public class RunController {
 	@Value("${run.timeout.millis}") private int runTimeoutMillis;
 	
 	private GsisshRunner runner;
+	private ProxyHelper proxyHelper;
 
 	@Autowired
-	public RunController(GsisshRunner runner) {
+	public RunController(GsisshRunner runner, ProxyHelper proxyHelper) {
 		this.runner = runner;
+		this.proxyHelper = proxyHelper;
 	}
 	
-	@RequestMapping(value = "/api/process", method = GET, consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
+	@RequestMapping(value = "/api/process", method = POST, consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
 	@ResponseBody
 	public ResponseEntity<RunResponse> run(@RequestHeader("PROXY") String proxy, @Valid @RequestBody RunRequest runRequest, BindingResult errors) {
 		log.debug("Processing run request {}", runRequest);
@@ -51,7 +54,7 @@ public class RunController {
 		}
 		
 		try {
-			RunResults results = runner.run(runRequest.getHost(), RestHelper.decodeProxy(proxy), runRequest.getCommand(), -1);
+			RunResults results = runner.run(runRequest.getHost(), proxyHelper.decodeProxy(proxy), runRequest.getCommand(), -1);
 			
 			if(results.isTimeoutOccured()) {
 				return new ResponseEntity<RunResponse>(

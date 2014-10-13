@@ -17,6 +17,8 @@
 				</div>
 			</div>
 		</div>
+		
+		<div class="container" th:include="proxyInfo::proxyInfo"></div>
 
 		<div class="container pt">
 			<table class="table table-bordered">
@@ -30,7 +32,7 @@
 				</tr>
 				<tr>
 					<th th:text="#{example.method}"></th>
-					<td><span class="label label-info">GET</span></td>
+					<td><span class="label label-primary">POST</span></td>
 				</tr>
 				<tr>
 					<th th:text="#{example.url_params}"></th>
@@ -45,21 +47,17 @@
 						<pre>
 {
   "host": "zeus.cyfronet.pl",
-  "command": "date",
-  "proxy": "-----BEGIN CERTIFICATE-----
-            MIIDfzCCAmegAwIBAgII
-            ...
-            uXBa+dITjblqY+DhMGizcG7ul62mQ==
-            -----END CERTIFICATE-----"
+  "command": "date"
 }
   						</pre>
 					</td>
 				</tr>
-				<tr class="success">
+				<tr>
 					<th th:text="#{example.success}"></th>
 					<td>
 						<p>
-							<strong th:text="|#{example.code}:|"></strong> <em>200</em>
+							<strong th:text="|#{example.code}:|"></strong>
+							<em class="label label-success">200</em>
 						</p>
 						<p>
 							<strong th:text="|#{example.example}:|"></strong>
@@ -74,11 +72,13 @@
   					</pre>
 					</td>
 				</tr>
-				<tr class="danger">
+				<tr>
 					<th th:text="#{example.error}"></th>
 					<td>
 						<p>
-							<strong th:text="|#{example.error}:|"></strong> <em>408</em> | <em>422</em> | <em>500</em>
+							<strong th:text="|#{example.error}:|"></strong> <em class="label label-danger">408</em> |
+							<em class="label label-danger">422</em> |
+							<em class="label label-danger">500</em>
 						</p>
 						<p>
 							<strong th:text="|#{example.example}:|"></strong>
@@ -103,8 +103,8 @@ proxy="`cat {path-to-proxy-file} | base64 | tr -d '\n'`"
 
 echo '{"host": "zeus.cyfronet.pl", "command": "pwd"}' > runcmd.json
 
-curl -X GET --data-binary @runcmd.json --header "Content-Type:application/json" \
---header "PROXY:$proxy" http://localhost:8080/api/process
+curl -k -X GET --data-binary @runcmd.json --header "Content-Type:application/json" \
+--header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpServletRequest.serverName} + @{~/api/process}" />
   					</pre>
 					</td>
 				</tr>

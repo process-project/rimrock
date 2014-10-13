@@ -1,16 +1,12 @@
 package pl.cyfronet.rimrock.domain;
 
-import java.io.Serializable;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
 @Entity
-public class Job implements Serializable {
-	private static final long serialVersionUID = -7439503207454120594L;
-	
+public class Job {
 	@Id	@GeneratedValue	private Long id;
 	@Column(nullable = false) private String jobId;
 	@Column(nullable = false) private String standardOutputLocation;

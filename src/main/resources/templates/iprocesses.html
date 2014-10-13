@@ -18,8 +18,285 @@
 			</div>
 		</div>
 
+		<div class="container" th:include="proxyInfo::proxyInfo"></div>
 
-		<div class="container pt"><span class="label label-warning">Work in progress</span></div>
+		<div class="container pt">
+			<ul class="nav nav-tabs" role="tablist">
+				<li class="active"><a href="#start" role="tab" data-toggle="tab" th:text="#{iprocess.start.title}"></a></li>
+				<li><a href="#status" role="tab" data-toggle="tab" th:text="#{iprocess.status.title}"></a></li>
+				<li><a href="#input" role="tab" data-toggle="tab" th:text="#{iprocess.input.title}"></a></li>				
+			</ul>
+			<div class="tab-content">
+				<div class="tab-pane fade in active" id="start">
+					<table class="table table-bordered">
+						<tr>
+							<th th:text="#{example.url}"></th>
+							<td><code>/api/iprocess</code></td>
+						</tr>
+						<tr>
+							<th th:text="#{example.method}"></th>
+							<td><span class="label label-primary">POST</span></td>
+						</tr>
+						<tr>
+							<th th:text="#{example.url_params}"></th>
+							<td><em th:text="#{example.url_params.none}"></em></td>
+						</tr>
+						<tr>
+							<th th:text="#{example.data_params}"></th>
+							<td>
+								<p>
+									<strong th:text="|#{example.json}:|"></strong>
+								</p><pre th:text="#{iprocess.start.data_params}"></pre><p>
+									<strong th:text="|#{example.example}:|"></strong>
+								</p> <pre>
+{
+  "host": "zeus.cyfronet.pl",
+  "command": "bash"
+}
+  						</pre>
+							</td>
+						</tr>
+						<tr>
+							<th th:text="#{example.success}"></th>
+							<td>
+								<p>
+									<strong th:text="|#{example.code}:|"></strong>
+									<em class="label label-success">201</em>
+								</p>
+								<p>
+									<strong th:text="|#{example.example}:|"></strong>
+								</p> <pre>
+{
+  "process_id":"25a6b082-7ef0-4ec7-8349-c3beb9b341a4",
+  "status":"OK",
+  "finished":false,
+  "standard_output":null,
+  "standard_error":null,
+  "error_message":null
+}
+  					</pre>
+							</td>
+						</tr>
+						<tr>
+							<th th:text="#{example.error}"></th>
+							<td>
+								<p>
+									<strong th:text="|#{example.error}:|"></strong>
+									<em class="label label-danger">408</em> |
+									<em class="label label-danger">422</em> |
+									<em class="label label-danger">500</em>
+								</p>
+								<p>
+									<strong th:text="|#{example.example}:|"></strong>
+								</p> <pre>
+{
+  "process_id":null,
+  "status":"ERROR",
+  "finished":false,
+  "standard_output":null,
+  "standard_error":null,
+  "error_message":"Timeout occurred"
+}
+  					</pre>
+							</td>
+						</tr>
+						<tr>
+							<th th:text="#{example.sample}"></th>
+							<td>
+								<p>
+									<strong th:text="#{example.sample_call.title}"></strong>
+								</p> <pre>
+proxy="`cat {path-to-proxy-file} | base64 | tr -d '\n'`"
+
+echo '{"host":"zeus.cyfronet.pl", "script":"#!/bin/bash\\necho hello\\nexit 0"}' > request.json
+
+curl -k -X POST --data-binary @request.json --header "Content-Type:application/json" \
+--header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpServletRequest.serverName} + @{~/api/iprocess}"/>
+  					</pre>
+							</td>
+						</tr>
+						<tr>
+							<th th:text="#{example.notes}"></th>
+							<td><em th:text="#{example.notes.none}"></em></td>
+						</tr>
+					</table>
+				</div>
+				
+				<div class="tab-pane fade in" id="status">
+					<table class="table table-bordered">
+						<tr>
+							<th th:text="#{example.url}"></th>
+							<td><code>/api/iprocess/{process_id}</code></td>
+						</tr>
+						<tr>
+							<th th:text="#{example.method}"></th>
+							<td><span class="label label-primary">GET</span></td>
+						</tr>
+						<tr>
+							<th th:text="#{example.url_params}"></th>
+							<td><em>process_id</em> - <span th:text="#{iprocess.status.param.process_id}"></span></td>
+						</tr>
+						<tr>
+							<th th:text="#{example.data_params}"></th>
+							<td><em th:text="#{example.data_params.none}"></em></td>
+						</tr>
+						<tr>
+							<th th:text="#{example.success}"></th>
+							<td>
+								<p>
+									<strong th:text="|#{example.code}:|"></strong>
+									<em class="label label-success">200</em>
+								</p>
+								<p>
+									<strong th:text="|#{example.example}:|"></strong>
+								</p> <pre>
+{
+  "process_id":"25a6b082-7ef0-4ec7-8349-c3beb9b341a4",
+  "status":"OK",
+  "finished":false,
+  "standard_output":"some output",
+  "standard_error":null,
+  "error_message":null
+}
+  					</pre>
+							</td>
+						</tr>
+						<tr>
+							<th th:text="#{example.error}"></th>
+							<td>
+								<p>
+									<strong th:text="|#{example.error}:|"></strong>
+									<em class="label label-danger">404</em> |
+									<em class="label label-danger">500</em>
+								</p>
+								<p>
+									<strong th:text="|#{example.example}:|"></strong>
+								</p> <pre>
+{
+  "process_id":"25a6b082-7ef0-4ec7-8349-c3beb9b341a4",
+  "status":"ERROR",
+  "finished":false,
+  "standard_output":null,
+  "standard_error":null,
+  "error_message":"Process with given id could not be found"
+}
+  					</pre>
+							</td>
+						</tr>
+						<tr>
+							<th th:text="#{example.sample}"></th>
+							<td>
+								<p>
+									<strong th:text="#{example.sample_call.title}"></strong>
+								</p> <pre>
+proxy="`cat {path-to-proxy-file} | base64 | tr -d '\n'`"
+
+curl -k -X GET --header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpServletRequest.serverName} + @{~/api/iprocess/25a6b082-7ef0-4ec7-8349-c3beb9b341a4}" />
+  					</pre>
+							</td>
+						</tr>
+						<tr>
+							<th th:text="#{example.notes}"></th>
+							<td><em th:text="#{example.notes.none}"></em></td>
+						</tr>
+					</table>
+				</div>
+				
+				<div class="tab-pane fade in" id="input">
+					<table class="table table-bordered">
+						<tr>
+							<th th:text="#{example.url}"></th>
+							<td><code>/api/iprocess/{process_id}</code></td>
+						</tr>
+						<tr>
+							<th th:text="#{example.method}"></th>
+							<td><span class="label label-primary">PUT</span></td>
+						</tr>
+						<tr>
+							<th th:text="#{example.url_params}"></th>
+							<td><em>process_id</em> - <span th:text="#{iprocess.status.param.process_id}"></span></td>
+						</tr>
+						<tr>
+							<th th:text="#{example.data_params}"></th>
+							<td>
+								<p>
+									<strong th:text="|#{example.json}:|"></strong>
+								</p><pre th:text="#{iprocess.input.data_params}"></pre><p>
+									<strong th:text="|#{example.example}:|"></strong>
+								</p> <pre>
+{
+  "standard_input": "echo hello"
+}
+  						</pre>
+							</td>
+						</tr>
+						<tr>
+							<th th:text="#{example.success}"></th>
+							<td>
+								<p>
+									<strong th:text="|#{example.code}:|"></strong>
+									<em class="label label-success">200</em>
+								</p>
+								<p>
+									<strong th:text="|#{example.example}:|"></strong>
+								</p> <pre>
+{
+  "process_id":"25a6b082-7ef0-4ec7-8349-c3beb9b341a4",
+  "status":"OK",
+  "finished":false,
+  "standard_output":null,
+  "standard_error":null,
+  "error_message":null
+}
+  					</pre>
+							</td>
+						</tr>
+						<tr>
+							<th th:text="#{example.error}"></th>
+							<td>
+								<p>
+									<strong th:text="|#{example.error}:|"></strong>
+									<em class="label label-danger">404</em> |
+									<em class="label label-danger">422</em> |
+									<em class="label label-danger">500</em>
+								</p>
+								<p>
+									<strong th:text="|#{example.example}:|"></strong>
+								</p> <pre>
+{
+  "process_id":"25a6b082-7ef0-4ec7-8349-c3beb9b341a4",
+  "status":"ERROR",
+  "finished":false,
+  "standard_output":null,
+  "standard_error":null,
+  "error_message":"Process with given id could not be found"
+}
+  					</pre>
+							</td>
+						</tr>
+						<tr>
+							<th th:text="#{example.sample}"></th>
+							<td>
+								<p>
+									<strong th:text="#{example.sample_call.title}"></strong>
+								</p> <pre>
+proxy="`cat {path-to-proxy-file} | base64 | tr -d '\n'`"
+
+echo '{"standard_input":"echo hello"}' > request.json
+
+curl -k -X PUT --data-binary @request.json --header "Content-Type:application/json" \
+--header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpServletRequest.serverName} + @{~/api/iprocess/25a6b082-7ef0-4ec7-8349-c3beb9b341a4}"/>
+  					</pre>
+							</td>
+						</tr>
+						<tr>
+							<th th:text="#{example.notes}"></th>
+							<td><em th:text="#{example.notes.none}"></em></td>
+						</tr>
+					</table>
+				</div>
+			</div>
+		</div>
 	</div>
 </body>
 </html>

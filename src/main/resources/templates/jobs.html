@@ -18,6 +18,7 @@
 			</div>
 		</div>
 
+		<div class="container" th:include="proxyInfo::proxyInfo"></div>
 
 		<div class="container pt">
 			<ul class="nav nav-tabs" role="tablist">
@@ -29,7 +30,6 @@
 
 			<div class="tab-content">
 				<div class="tab-pane fade in active" id="submit">
-					<br />
 					<table class="table table-bordered">
 						<tr>
 							<th th:text="#{example.url}"></th>
@@ -37,11 +37,11 @@
 						</tr>
 						<tr>
 							<th th:text="#{example.method}"></th>
-							<td><span class="label label-success">POST</span></td>
+							<td><span class="label label-primary">POST</span></td>
 						</tr>
 						<tr>
 							<th th:text="#{example.url_params}"></th>
-							<td><em th:text="#{jobs.post.url_params}"></em></td>
+							<td><em th:text="#{example.url_params.none}"></em></td>
 						</tr>
 						<tr>
 							<th th:text="#{example.data_params}"></th>
@@ -59,11 +59,12 @@
   						</pre>
 							</td>
 						</tr>
-						<tr class="success">
+						<tr>
 							<th th:text="#{example.success}"></th>
 							<td>
 								<p>
-									<strong th:text="|#{example.code}:|"></strong> <em>201</em>
+									<strong th:text="|#{example.code}:|"></strong>
+									<em class="label label-success">201</em>
 								</p>
 								<p>
 									<strong th:text="|#{example.example}:|"></strong>
@@ -77,12 +78,14 @@
   					</pre>
 							</td>
 						</tr>
-						<tr class="danger">
+						<tr>
 							<th th:text="#{example.error}"></th>
 							<td>
 								<p>
-									<strong th:text="|#{example.error}:|"></strong> <em>408</em> |
-									<em>422</em> | <em>500</em>
+									<strong th:text="|#{example.error}:|"></strong>
+									<em class="label label-danger">408</em> |
+									<em class="label label-danger">422</em> |
+									<em class="label label-danger">500</em>
 								</p>
 								<p>
 									<strong th:text="|#{example.example}:|"></strong>
@@ -107,8 +110,8 @@ proxy="`cat {path-to-proxy-file} | base64 | tr -d '\n'`"
 
 echo '{"host":"zeus.cyfronet.pl", "script":"#!/bin/bash\\necho hello\\nexit 0"}' > request.json
 
-curl -X POST --data-binary @request.json --header "Content-Type:application/json" \ 
---header "PROXY:$proxy" http://localhost:8080/api/jobs
+curl -k -X POST --data-binary @request.json --header "Content-Type:application/json" \ 
+--header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpServletRequest.serverName} + @{~/api/jobs}" />
   					</pre>
 							</td>
 						</tr>
@@ -120,7 +123,6 @@ curl -X POST --data-binary @request.json --header "Content-Type:application/json
 				</div>
 
 				<div class="tab-pane fade" id="list_all">
-					<br />
 					<table class="table table-bordered">
 						<tr>
 							<th th:text="#{example.url}"></th>
@@ -128,21 +130,22 @@ curl -X POST --data-binary @request.json --header "Content-Type:application/json
 						</tr>
 						<tr>
 							<th th:text="#{example.method}"></th>
-							<td><span class="label label-info">GET</span></td>
+							<td><span class="label label-primary">GET</span></td>
 						</tr>
 						<tr>
 							<th th:text="#{example.url_params}"></th>
-							<td><em th:text="#{jobs.get_all.url_params}"></em></td>
+							<td><em th:text="#{example.url_params.none}"></em></td>
 						</tr>
 						<tr>
 							<th th:text="#{example.data_params}"></th>
 							<td><em th:text="#{jobs.get_all.data_params}"></em></td>
 						</tr>
-						<tr class="success">
+						<tr>
 							<th th:text="#{example.success}"></th>
 							<td>
 								<p>
-									<strong th:text="|#{example.code}:|"></strong> <em>200</em>
+									<strong th:text="|#{example.code}:|"></strong>
+									<em class="label label-success">200</em>
 								</p>
 								<p>
 									<strong th:text="|#{example.example}:|"></strong>
@@ -163,12 +166,14 @@ curl -X POST --data-binary @request.json --header "Content-Type:application/json
   					</pre>
 							</td>
 						</tr>
-						<tr class="danger">
+						<tr>
 							<th th:text="#{example.error}"></th>
 							<td>
 								<p>
-									<strong th:text="|#{example.error}:|"></strong> <em>408</em> |
-									<em>404</em> | <em>500</em>
+									<strong th:text="|#{example.error}:|"></strong>
+									<em class="label label-danger">408</em> |
+									<em class="label label-danger">404</em> |
+									<em class="label label-danger">500</em>
 								</p>
 								<p>
 									<strong th:text="|#{example.example}:|"></strong>
@@ -191,8 +196,8 @@ curl -X POST --data-binary @request.json --header "Content-Type:application/json
 								</p> <pre>
 proxy="`cat {path-to-proxy-file} | base64 | tr -d '\n'`"
 
-curl -X GET --data-binary @request.json --header "Content-Type:application/json" \ 
---header "PROXY:$proxy" http://localhost:8080/api/jobs/50463091.batch.grid.cyf-kr.edu.pl
+curl -k -X GET --header "Content-Type:application/json" \ 
+--header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpServletRequest.serverName} + @{~/api/jobs/50463091.batch.grid.cyf-kr.edu.pl}" />
   					</pre>
 							</td>
 						</tr>
@@ -204,7 +209,6 @@ curl -X GET --data-binary @request.json --header "Content-Type:application/json"
 				</div>
 
 				<div class="tab-pane fade" id="list_one">
-					<br />
 					<table class="table table-bordered">
 						<tr>
 							<th th:text="#{example.url}"></th>
@@ -212,7 +216,7 @@ curl -X GET --data-binary @request.json --header "Content-Type:application/json"
 						</tr>
 						<tr>
 							<th th:text="#{example.method}"></th>
-							<td><span class="label label-info">GET</span></td>
+							<td><span class="label label-primary">GET</span></td>
 						</tr>
 						<tr>
 							<th th:text="#{example.url_params}"></th>
@@ -223,11 +227,12 @@ curl -X GET --data-binary @request.json --header "Content-Type:application/json"
 							<th th:text="#{example.data_params}"></th>
 							<td><em th:text="#{jobs.get.data_params}"></em></td>
 						</tr>
-						<tr class="success">
+						<tr>
 							<th th:text="#{example.success}"></th>
 							<td>
 								<p>
-									<strong th:text="|#{example.code}:|"></strong> <em>200</em>
+									<strong th:text="|#{example.code}:|"></strong>
+									<em class="label label-success">200</em>
 								</p>
 								<p>
 									<strong th:text="|#{example.example}:|"></strong>
@@ -241,12 +246,14 @@ curl -X GET --data-binary @request.json --header "Content-Type:application/json"
   					</pre>
 							</td>
 						</tr>
-						<tr class="danger">
+						<tr>
 							<th th:text="#{example.error}"></th>
 							<td>
 								<p>
-									<strong th:text="|#{example.error}:|"></strong> <em>408</em> |
-									<em>404</em> | <em>500</em>
+									<strong th:text="|#{example.error}:|"></strong>
+									<em class="label label-danger">408</em> |
+									<em class="label label-danger">404</em> |
+									<em class="label label-danger">500</em>
 								</p>
 								<p>
 									<strong th:text="|#{example.example}:|"></strong>
@@ -269,8 +276,8 @@ curl -X GET --data-binary @request.json --header "Content-Type:application/json"
 								</p> <pre>
 proxy="`cat {path-to-proxy-file} | base64 | tr -d '\n'`"
 
-curl -X GET --data-binary @request.json --header "Content-Type:application/json" \ 
---header "PROXY:$proxy" http://localhost:8080/api/jobs/50463091.batch.grid.cyf-kr.edu.pl
+curl -k -X GET --header "Content-Type:application/json" \ 
+--header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpServletRequest.serverName} + @{~/api/jobs/50463091.batch.grid.cyf-kr.edu.pl}" />
   					</pre>
 							</td>
 						</tr>
@@ -282,7 +289,6 @@ curl -X GET --data-binary @request.json --header "Content-Type:application/json"
 				</div>
 
 				<div class="tab-pane fade" id="delete">
-					<br />
 					<table class="table table-bordered">
 						<tr>
 							<th th:text="#{example.url}"></th>
@@ -290,7 +296,7 @@ curl -X GET --data-binary @request.json --header "Content-Type:application/json"
 						</tr>
 						<tr>
 							<th th:text="#{example.method}"></th>
-							<td><span class="label label-danger">DELETE</span></td>
+							<td><span class="label label-primary">DELETE</span></td>
 						</tr>
 						<tr>
 							<th th:text="#{example.url_params}"></th>
@@ -300,17 +306,21 @@ curl -X GET --data-binary @request.json --header "Content-Type:application/json"
 							<th th:text="#{example.data_params}"></th>
 							<td><em th:text="#{jobs.delete.data_params}"></em></td>
 						</tr>
-						<tr class="success">
+						<tr>
 							<th th:text="#{example.success}"></th>
-							<td><strong th:text="|#{example.code}:|"></strong> <em>204</em>
+							<td>
+								<strong th:text="|#{example.code}:|"></strong>
+								<em class="label label-success">204</em>
 							</td>
 						</tr>
-						<tr class="danger">
+						<tr>
 							<th th:text="#{example.error}"></th>
 							<td>
 								<p>
-									<strong th:text="|#{example.error}:|"></strong> <em>408</em> |
-									<em>404</em> | <em>500</em>
+									<strong th:text="|#{example.error}:|"></strong>
+									<em class="label label-danger">408</em> |
+									<em class="label label-danger">404</em> |
+									<em class="label label-danger">500</em>
 								</p>
 								<p>
 									<strong th:text="|#{example.example}:|"></strong>
@@ -333,8 +343,8 @@ curl -X GET --data-binary @request.json --header "Content-Type:application/json"
 								</p> <pre>
 proxy="`cat {path-to-proxy-file} | base64 | tr -d '\n'`"
 
-curl -X DELETE --data-binary @request.json --header "Content-Type:application/json" \ 
---header "PROXY:$proxy" http://localhost:8080/api/jobs/50463091.batch.grid.cyf-kr.edu.pl
+curl -k -X DELETE --data-binary @request.json --header "Content-Type:application/json" \ 
+--header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpServletRequest.serverName} + @{~/api/jobs/50463091.batch.grid.cyf-kr.edu.pl}" />
   					</pre>
 							</td>
 						</tr>

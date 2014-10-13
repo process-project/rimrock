@@ -415,6 +415,7 @@ public abstract class TransportProtocolCommon
     }
     catch (Throwable e) {
 	log.info("The Transport Protocol thread threw an exception", e);
+	e.printStackTrace();
       if (e instanceof IOException) {
 	  state.setLastError( (IOException) e);
       } else {
