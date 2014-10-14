@@ -12,6 +12,7 @@ public class InteractiveProcess {
 	private String error;
 	private String pendingInput;
 	private boolean finished;
+	private String userLogin;
 	
 	public Long getId() {
 		return id;
@@ -48,5 +49,11 @@ public class InteractiveProcess {
 	}
 	public void setFinished(boolean finished) {
 		this.finished = finished;
+	}
+	public String getUserLogin() {
+		return userLogin;
+	}
+	public void setUserLogin(String userLogin) {
+		this.userLogin = userLogin;
 	}
 }

@@ -11,6 +11,7 @@ import static org.springframework.web.bind.annotation.RequestMethod.PUT;
 import static org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder.on;
 import static pl.cyfronet.rimrock.controllers.rest.irun.InteractiveProcessResponse.Status.ERROR;
 
+import java.util.List;
 import java.util.UUID;
 
 import javax.validation.Valid;
@@ -101,6 +102,7 @@ public class InteractiveRunController {
 			} else {
 				InteractiveProcess interactiveProcess = new InteractiveProcess();
 				interactiveProcess.setProcessId(processId);
+				interactiveProcess.setUserLogin(proxyHelper.getUserLogin(decodedProxy));
 				processRepository.save(interactiveProcess);
 				
 				InteractiveProcessResponse response = new InteractiveProcessResponse(Status.OK, null);
@@ -112,6 +114,22 @@ public class InteractiveRunController {
 			log.error("Error", e);
 			
 			return new ResponseEntity<InteractiveProcessResponse>(new InteractiveProcessResponse(Status.ERROR, e.getMessage()), INTERNAL_SERVER_ERROR);
+		}
+	}
+	
+	@RequestMapping(value = "/api/iprocess", method = GET, produces = APPLICATION_JSON_VALUE)
+	@SuppressWarnings({"rawtypes", "unchecked"})
+	public ResponseEntity getInteractiveProcesseses(@RequestHeader("PROXY") String proxy) {
+		try {
+			String decodedProxy = proxyHelper.decodeProxy(proxy);
+			String userLogin = proxyHelper.getUserLogin(decodedProxy);
+			List<InteractiveProcess> processes = processRepository.findByUserLogin(userLogin);
+			
+			return new ResponseEntity(processes, OK);
+		} catch(Throwable e) {
+			log.error("Interactive process list retrieval error", e);
+			
+			return new ResponseEntity(new InteractiveProcessResponse(Status.ERROR, e.getMessage()), INTERNAL_SERVER_ERROR);
 		}
 	}
 	
