@@ -122,6 +122,7 @@ public class UserJobs {
 		}
 
 		List<Status> statuses = new ArrayList<Status>();
+		
 		for (String host : hosts) {
 			StatusResult statusResult = getStatusResult(host);
 
@@ -133,16 +134,16 @@ public class UserJobs {
 		}
 
 		List<Job> jobs = jobRepository.findByUserOnHosts(userLogin, hosts);
-
 		Map<String, Status> mappedStatusJobIds = statuses.stream()
-				.collect(
-						Collectors.toMap(Status::getJobId,
-								Function.<Status> identity()));
+				.collect(Collectors.toMap(Status::getJobId, Function.<Status> identity()));
 
 		for (Job job : jobs) {
 			Status status = mappedStatusJobIds.get(job.getJobId());
-			job.setStatus(status != null ? status.getStatus() : "FINISHED");
-			jobRepository.save(job);
+			
+			if(!Arrays.asList("FINISHED", "ABORTED").contains(job.getStatus())) {
+				job.setStatus(status != null ? status.getStatus() : "FINISHED");
+				jobRepository.save(job);
+			}
 		}
 
 		return jobs;
@@ -163,28 +164,24 @@ public class UserJobs {
 	 *             Thrown when there is not possible to transfer start job
 	 *             scripts.
 	 */
-	public void delete(String jobId) throws JobNotFoundException,
-			CredentialException, FileManagerException {
+	public void delete(String jobId) throws JobNotFoundException, CredentialException, FileManagerException {
 		Job job = jobRepository.findOneByJobId(jobId);
 
-		if (job == null) {
+		if(job == null) {
 			throw new JobNotFoundException(jobId);
 		}
 
-		if (!"FINISHED".equals(job.getStatus())) {
+		if(!"FINISHED".equals(job.getStatus())) {
 			String host = job.getHost();
 			String rootPath = PathHelper.getRootPath(host, userLogin);
-			fileManager.cp(rootPath + ".rimrock/stop", new ClassPathResource(
-					"scripts/stop"));
+			fileManager.cp(rootPath + ".rimrock/stop", new ClassPathResource("scripts/stop"));
 
-			RunResults result = run(host,
-					String.format("cd %s.rimrock; chmod +x stop; ./stop %s",
-							rootPath, jobId), -1);
-
+			RunResults result = run(host, String.format("cd %s.rimrock; chmod +x stop; ./stop %s", rootPath, jobId), timeout);
 			processRunExceptions(result);
 		}
 
-		jobRepository.delete(job);
+		job.setStatus("ABORTED");
+		jobRepository.save(job);
 	}
 
 	private <T> T readResult(String output, Class<T> klass) {
@@ -201,7 +198,7 @@ public class UserJobs {
 		fileManager.cp(rootPath + ".rimrock/status", new ClassPathResource(
 				"scripts/status"));
 		RunResults result = run(host, String.format(
-				"cd %s.rimrock; chmod +x status; ./status", rootPath), -1);
+				"cd %s.rimrock; chmod +x status; ./status", rootPath), timeout);
 
 		if (result.isTimeoutOccured() || result.getExitCode() != 0) {
 			StatusResult statusResult = new StatusResult();

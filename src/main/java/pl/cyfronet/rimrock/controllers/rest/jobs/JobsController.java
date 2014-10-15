@@ -71,7 +71,6 @@ public class JobsController {
 			@Valid @RequestBody SubmitRequest submitRequest,
 			BindingResult errors) throws CredentialException, GSSException,
 			FileManagerException, RunException {
-		
 		if (errors.hasErrors()) {
 			throw new ValidationException(RestHelper.convertErrors(errors));
 		}

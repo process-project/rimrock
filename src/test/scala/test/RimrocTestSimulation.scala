@@ -8,6 +8,7 @@ import io.gatling.jdbc.Predef._
 
 object ProcessSequence {
 	val process =
+		//sending single execution request
 		exec(http("Process request")
 			.post("/api/process")
 			.body(StringBody("""{"host": "zeus.cyfronet.pl", "command": "pwd"}""")).asJSON
@@ -17,7 +18,8 @@ object ProcessSequence {
 
 object IProcessSequence {
 	val iprocess =
-		exec(http("IProcess request 1")
+		//execution of interactive bash request
+		exec(http("IProcess start bash")
 			.post("/api/iprocess")
 			.body(StringBody("""{"host": "zeus.cyfronet.pl", "command": "bash"}""")).asJSON
 			.check(jsonPath("$.status").is("OK"), jsonPath("$.process_id").saveAs("processId"))
@@ -28,27 +30,42 @@ object IProcessSequence {
 			
 			session
 		}
-		.pause(1)
-		.exec(http("IProcess request 2")
+		//checking the execution status with direct GET request
+		.exec(http("IProcess direct GET")
 			.get("/api/iprocess/${processId}")
 			.check(jsonPath("$.status").is("OK"))
 		)
-		.pause(1)
-		.exec(http("IProcess request 3")
+		//checking the execution status with list (all user processes) GET request
+		.exec(http("IProcess list GET")
+			.get("/api/iprocess")
+			.check(jsonPath("$[*]").count.greaterThan(0))
+		)
+		//providing input which should close the process
+		.exec(http("IProcess input provision")
 			.put("/api/iprocess/${processId}")
 			.body(StringBody("""{"standard_input": "exit"}""")).asJSON
-			.check(jsonPath("$.status").is("OK"))
+			.check(jsonPath("$.status").is("OK"), jsonPath("$.finished").saveAs("finished"))
 		)
-		.pause(6)
-		.exec(http("IProcess request 4")
-			.get("/api/iprocess/${processId}")
-			.check(jsonPath("$.status").is("OK"), jsonPath("$.finished").ofType[Boolean].is(true))
-		)
+		//waiting until the process finishes
+		.asLongAs(session => !session("finished").as[String].equals("true")) {
+			exec(http("IProcess looping until finished")
+				.get("/api/iprocess/${processId}")
+				.check(jsonPath("$.status").is("OK"), jsonPath("$.finished").saveAs("finished"))
+			)
+			//printing the session to see the 'finished' value for debugging
+			.exec {session =>
+				println(session)
+			
+				session
+			}
+			.pause(1)
+		}
 }
 
 object JobSequence {
 	val job =
-		exec(http("Job request 1")
+		//submitting new job
+		exec(http("Job submission")
 			.post("/api/jobs")
 			.body(StringBody("""{"host": "zeus.cyfronet.pl", "script": "#!/bin/bash\necho hello\nexit 0"}""")).asJSON
 			.check(jsonPath("$.status").saveAs("status"), jsonPath("$.job_id").saveAs("jobId"))
@@ -59,9 +76,40 @@ object JobSequence {
 			
 			session
 		}
-		.pause(1)
+		//checking the job state with list (all user jobs) GET request
+		.exec(http("Job status with list GET")
+			.get("/api/jobs")
+			.check(jsonPath("$[*]").count.greaterThan(0))
+		)
+		//waiting until the job reaches finished or aborted state
 		.asLongAs(session => !session("status").as[String].equals("FINISHED")) {
-			exec(http("Job request 2")
+			exec(http("Job status check for finished")
+				.get("/api/jobs/${jobId}")
+				.check(jsonPath("$.status").saveAs("status"))
+			)
+			.exec {session =>
+				println(session)
+			
+				session
+			}
+			.pause(1)
+		}
+		//submitting another job to be aborted
+		.exec(http("Job submission to test aborting job")
+			.post("/api/jobs")
+			.body(StringBody("""{"host": "zeus.cyfronet.pl", "script": "#!/bin/bash\necho hello\nexit 0"}""")).asJSON
+			.check(jsonPath("$.status").saveAs("status"), jsonPath("$.job_id").saveAs("jobId"))
+		)
+		//waiting a little bit
+		.pause(1)
+		//aborting job
+		.exec(http("Job abort")
+			.delete("/api/jobs/${jobId}")
+			.check(status.is(204))
+		)
+		//waiting until job status is aborted
+		.asLongAs(session => !session("status").as[String].equals("ABORTED")) {
+			exec(http("Job status check for aborted")
 				.get("/api/jobs/${jobId}")
 				.check(jsonPath("$.status").saveAs("status"))
 			)
