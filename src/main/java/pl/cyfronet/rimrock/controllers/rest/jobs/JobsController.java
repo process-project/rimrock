@@ -88,17 +88,17 @@ public class JobsController {
 			throws JobNotFoundException, CredentialException, GSSException, 
 			InvalidStateException, FileManagerException, IOException, InterruptedException {
 		log.debug("Processing status request for job with id {}", jobId);
+	
+		UserJobs manager = userJobsFactory.get(proxyHelper.decodeProxy(proxy));
 		
-		Job job = jobRepository.findOneByJobId(jobId);
-		
+		Job job = manager.get(jobId);
 		if(job == null) {
 			throw new JobNotFoundException(jobId);
 		}
-		
-		UserJobs manager = userJobsFactory.get(proxyHelper.decodeProxy(proxy));
+			
 		manager.update(Arrays.asList(job.getHost()));
 		
-		job = jobRepository.findOneByJobId(jobId);
+		job = manager.get(jobId);
 		
 		return new ResponseEntity<JobInfo>(new JobInfo(job, plgDataUrl), OK);
 	}

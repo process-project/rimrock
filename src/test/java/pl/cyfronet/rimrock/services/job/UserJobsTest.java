@@ -219,6 +219,23 @@ public class UserJobsTest {
 						anyInt());
 		assertNull(jobRepository.findOneByJobId("to_delete"));
 	}
+
+	@Test
+	public void testGetUserJob() throws Exception {
+		Job userJob = createJob("user_job", userLogin, "zeus.cyfronet.pl");		
+		
+		Job job = userJobs.get(userJob.getJobId());
+		
+		assertEquals(userJob.getId(), job.getId());
+	}
+	
+	public void testNotGetOtherUserJob() throws Exception {
+		Job userJob = createJob("different_user_job", "different_user", "zeus.cyfronet.pl");
+		
+		Job job = userJobs.get(userJob.getJobId());
+		
+		assertNull(job);
+	}
 	
 	private Job createJob(String id, String username, String hostname) {
 		Job job = new Job(id, "QUEUED", "", "", username, hostname);
