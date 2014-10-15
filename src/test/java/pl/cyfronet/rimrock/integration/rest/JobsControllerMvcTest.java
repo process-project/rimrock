@@ -137,6 +137,6 @@ public class JobsControllerMvcTest {
 				
 				.andDo(print())
 				
-				.andExpect(status().isOk());
+				.andExpect(status().isNoContent());
 	}
 }

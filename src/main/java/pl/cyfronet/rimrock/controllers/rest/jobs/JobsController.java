@@ -35,6 +35,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 import pl.cyfronet.rimrock.controllers.rest.RestHelper;
 import pl.cyfronet.rimrock.controllers.rest.RunResponse;
@@ -124,6 +125,23 @@ public class JobsController {
 		
 		UserJobs manager = userJobsFactory.get(proxyHelper.decodeProxy(proxy));
 		manager.delete(jobId);
+		
+		return new ResponseEntity<Void>(NO_CONTENT);
+	}
+	
+	@RequestMapping(value = "/api/jobs/{jobId:.+}", method = RequestMethod.PUT, consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
+	public ResponseEntity<Void> processJobAction(@RequestHeader("PROXY") String proxy,
+			@Valid @RequestBody JobActionRequest actionRequest, BindingResult errors, @PathVariable("jobId") String jobId) 
+			throws CredentialException, GSSException, FileManagerException, JobNotFoundException {
+		
+		if(errors.hasErrors()) {
+			throw new ValidationException(RestHelper.convertErrors(errors));
+		}
+		
+		if(actionRequest.getAction().equalsIgnoreCase("abort")) {
+			UserJobs manager = userJobsFactory.get(proxyHelper.decodeProxy(proxy));
+			manager.delete(jobId);
+		}
 		
 		return new ResponseEntity<Void>(NO_CONTENT);
 	}

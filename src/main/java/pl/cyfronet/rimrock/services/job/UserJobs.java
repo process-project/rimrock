@@ -165,6 +165,17 @@ public class UserJobs {
 	 *             scripts.
 	 */
 	public void delete(String jobId) throws JobNotFoundException, CredentialException, FileManagerException {
+		Job job = abortJob(jobId);
+		jobRepository.delete(job);
+	}
+	
+	public void abort(String jobId) throws CredentialException, RunException, FileManagerException, JobNotFoundException {
+		Job job = abortJob(jobId);
+		job.setStatus("ABORTED");
+		jobRepository.save(job);
+	}
+
+	private Job abortJob(String jobId) throws JobNotFoundException, FileManagerException, CredentialException {
 		Job job = jobRepository.findOneByJobId(jobId);
 
 		if(job == null) {
@@ -179,9 +190,7 @@ public class UserJobs {
 			RunResults result = run(host, String.format("cd %s.rimrock; chmod +x stop; ./stop %s", rootPath, jobId), timeout);
 			processRunExceptions(result);
 		}
-
-		job.setStatus("ABORTED");
-		jobRepository.save(job);
+		return job;
 	}
 
 	private <T> T readResult(String output, Class<T> klass) {
