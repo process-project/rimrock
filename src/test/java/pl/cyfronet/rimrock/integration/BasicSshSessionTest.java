@@ -11,6 +11,7 @@ import java.util.regex.Pattern;
 import org.globus.gsi.X509Credential;
 import org.globus.gsi.gssapi.GlobusGSSCredentialImpl;
 import org.ietf.jgss.GSSCredential;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +30,7 @@ import com.sshtools.j2ssh.connection.ChannelState;
 import com.sshtools.j2ssh.io.IOStreamConnector;
 import com.sshtools.j2ssh.session.SessionChannelClient;
 
-//@Ignore("This test blocks and awaits stdin. Only run manually.")
+@Ignore("This test blocks and awaits stdin. Only run manually.")
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = RimrockApplication.class)
 public class BasicSshSessionTest {
