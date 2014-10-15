@@ -4,6 +4,7 @@ import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -26,6 +27,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 import pl.cyfronet.rimrock.ProxyFactory;
 import pl.cyfronet.rimrock.RimrockApplication;
+import pl.cyfronet.rimrock.controllers.rest.jobs.JobActionRequest;
 import pl.cyfronet.rimrock.controllers.rest.jobs.JobInfo;
 import pl.cyfronet.rimrock.controllers.rest.jobs.SubmitRequest;
 import pl.cyfronet.rimrock.domain.Job;
@@ -79,8 +81,7 @@ public class JobsControllerMvcTest {
 		log.info("Checking job status for job id {}", jobId);
 		
 		mockMvc.perform(get("/api/jobs/" + jobId)
-				.header("PROXY", proxyHelper.encodeProxy(proxyFactory.getProxy()))
-				.contentType(MediaType.APPLICATION_JSON))
+				.header("PROXY", proxyHelper.encodeProxy(proxyFactory.getProxy())))
 				
 				.andDo(print())
 				
@@ -122,7 +123,7 @@ public class JobsControllerMvcTest {
 	}
 	
 	@Test
-	public void testJobCancelling() throws JsonProcessingException, Exception {
+	public void testJobDeleting() throws JsonProcessingException, Exception {
 		SubmitRequest submitRequest = new SubmitRequest();
 		submitRequest.setHost("zeus.cyfronet.pl");
 		submitRequest.setScript("#!/bin/bash\n"
@@ -151,5 +152,49 @@ public class JobsControllerMvcTest {
 				.andDo(print())
 				
 				.andExpect(status().isNoContent());
+	}
+	
+	@Test
+	public void testJobAborting() throws JsonProcessingException, Exception {
+		SubmitRequest submitRequest = new SubmitRequest();
+		submitRequest.setHost("zeus.cyfronet.pl");
+		submitRequest.setScript("#!/bin/bash\n"
+				+ "echo hello\n"
+				+ "exit 0");
+		
+		MvcResult result = mockMvc.perform(post("/api/jobs")
+				.header("PROXY", proxyHelper.encodeProxy(proxyFactory.getProxy()))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(mapper.writeValueAsBytes(submitRequest)))
+				
+				.andDo(print())
+				
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isCreated())
+				.andReturn();
+		
+		String body = result.getResponse().getContentAsString();
+		JobInfo submitResult = mapper.readValue(body, JobInfo.class);
+		String jobId = submitResult.getJobId();
+		log.info("Aborting job for job id {}", jobId);
+		
+		JobActionRequest actionRequest = new JobActionRequest();
+		actionRequest.setAction("abort");
+		mockMvc.perform(put("/api/jobs/" + jobId)
+				.header("PROXY", proxyHelper.encodeProxy(proxyFactory.getProxy()))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(mapper.writeValueAsBytes(actionRequest)))
+				
+				.andDo(print())
+				
+				.andExpect(status().isNoContent());
+		mockMvc.perform(get("/api/jobs/" + jobId)
+				.header("PROXY", proxyHelper.encodeProxy(proxyFactory.getProxy())))
+				
+				.andDo(print())
+				
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(jsonPath("$.status", is("ABORTED")))
+				.andExpect(status().isOk());
 	}
 }

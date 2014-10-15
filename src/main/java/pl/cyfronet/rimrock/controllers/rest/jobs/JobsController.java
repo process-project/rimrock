@@ -140,7 +140,7 @@ public class JobsController {
 		
 		if(actionRequest.getAction().equalsIgnoreCase("abort")) {
 			UserJobs manager = userJobsFactory.get(proxyHelper.decodeProxy(proxy));
-			manager.delete(jobId);
+			manager.abort(jobId);
 		}
 		
 		return new ResponseEntity<Void>(NO_CONTENT);
