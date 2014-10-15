@@ -193,6 +193,10 @@ public class UserJobs {
 		return job;
 	}
 
+	public Job get(String jobId) {
+		return jobRepository.findOneByJobIdAndUser(jobId, userLogin);		
+	}
+	
 	private <T> T readResult(String output, Class<T> klass) {
 		try {
 			return mapper.readValue(output, klass);

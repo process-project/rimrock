@@ -28,7 +28,9 @@ import pl.cyfronet.rimrock.ProxyFactory;
 import pl.cyfronet.rimrock.RimrockApplication;
 import pl.cyfronet.rimrock.controllers.rest.jobs.JobInfo;
 import pl.cyfronet.rimrock.controllers.rest.jobs.SubmitRequest;
+import pl.cyfronet.rimrock.domain.Job;
 import pl.cyfronet.rimrock.gsi.ProxyHelper;
+import pl.cyfronet.rimrock.repositories.JobRepository;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -43,6 +45,7 @@ public class JobsControllerMvcTest {
 	@Autowired private ObjectMapper mapper;
 	@Autowired private ProxyFactory proxyFactory;
 	@Autowired private ProxyHelper proxyHelper;
+	@Autowired private JobRepository jobRepository;
 	
 	private MockMvc mockMvc;
 	
@@ -94,6 +97,16 @@ public class JobsControllerMvcTest {
 				
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(jsonPath("$.status", is("ERROR")))
+				.andExpect(status().isNotFound());
+	}
+	
+	@Test
+	public void testRetrievalNotOwnedJob() throws Exception {
+		Job job = new Job("not_owned_job", "FINISHED", "", "", "other_user_login", "zeus.cyfronet.pl");
+		jobRepository.save(job);		
+		
+		mockMvc.perform(get("/api/jobs/not_owned_job")
+				.header("PROXY", proxyHelper.encodeProxy(proxyFactory.getProxy())))
 				.andExpect(status().isNotFound());
 	}
 	

@@ -18,4 +18,6 @@ public interface JobRepository extends CrudRepository<Job, Long> {
 	
 	@Query("SELECT job FROM Job job WHERE user = :user AND host in :hosts")
 	List<Job> findByUserOnHosts(@Param("user") String user, @Param("hosts") List<String> hosts);
+	
+	Job findOneByJobIdAndUser(String jobId, String user);
 }

@@ -78,4 +78,10 @@ public class Job {
 	public void setStatus(String status) {
 		this.status = status;
 	}
+
+	@Override
+	public String toString() {
+		return "Job [id=" + id + ", jobId=" + jobId + ", user=" + user
+				+ ", host=" + host + ", status=" + status + "]";
+	}
 }
