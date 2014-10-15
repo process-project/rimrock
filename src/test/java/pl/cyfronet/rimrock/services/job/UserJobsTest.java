@@ -115,7 +115,7 @@ public class UserJobsTest {
 	public void testRunFailureWhenSubmittingJob() throws Exception {
 		when(
 				runner.run(eq("host"), eq(proxy),
-						eq("cd /home/dir; chmod +x start; ./start script.sh"),
+						eq("cd /home/dir/; chmod +x start; ./start script.sh"),
 						anyInt())).thenThrow(new GSSException(1));
 
 		try {
@@ -134,8 +134,8 @@ public class UserJobsTest {
 		result.setOutput("{\"corrupted\": true}");
 
 		when(
-				runner.run(eq("host"), eq(proxy),
-						eq("cd /home/dir; chmod +x start; ./start script.sh"),
+				runner.run(eq("host"), eq(proxy),							   
+						eq("cd /home/dir/; chmod +x start; ./start script.sh"),
 						anyInt())).thenReturn(result);
 
 		try {
@@ -219,7 +219,7 @@ public class UserJobsTest {
 						anyInt());
 		assertNull(jobRepository.findOneByJobId("to_delete"));
 	}
-
+	
 	private Job createJob(String id, String username, String hostname) {
 		Job job = new Job(id, "QUEUED", "", "", username, hostname);
 		jobRepository.save(job);
