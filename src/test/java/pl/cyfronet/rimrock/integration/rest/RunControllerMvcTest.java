@@ -4,7 +4,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.startsWith;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -24,7 +24,6 @@ import org.springframework.web.context.WebApplicationContext;
 
 import pl.cyfronet.rimrock.ProxyFactory;
 import pl.cyfronet.rimrock.RimrockApplication;
-import pl.cyfronet.rimrock.controllers.rest.RestHelper;
 import pl.cyfronet.rimrock.controllers.rest.run.RunRequest;
 import pl.cyfronet.rimrock.gsi.ProxyHelper;
 
@@ -59,7 +58,7 @@ public class RunControllerMvcTest {
 		runRequest.setCommand("pwd");
 		runRequest.setHost("zeus.cyfronet.pl");
 		
-		mockMvc.perform(get("/api/process")
+		mockMvc.perform(post("/api/process")
 				.header("PROXY", proxyHelper.encodeProxy(proxyFactory.getProxy()))
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(mapper.writeValueAsBytes(runRequest)))
@@ -80,7 +79,7 @@ public class RunControllerMvcTest {
 		runRequest.setCommand("echo 'error' > /dev/stderr; mkdir /tmp/test; mkdir /tmp/test");
 		runRequest.setHost("zeus.cyfronet.pl");
 		
-		mockMvc.perform(get("/api/process")
+		mockMvc.perform(post("/api/process")
 				.header("PROXY", proxyHelper.encodeProxy(proxyFactory.getProxy()))
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(mapper.writeValueAsBytes(runRequest)))
@@ -97,7 +96,7 @@ public class RunControllerMvcTest {
 	@Test
 	public void testNotNullValidation() throws JsonProcessingException, Exception {
 		RunRequest runRequest = new RunRequest();
-		mockMvc.perform(get("/api/process")
+		mockMvc.perform(post("/api/process")
 				.header("PROXY", proxyHelper.encodeProxy(proxyFactory.getProxy()))
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(mapper.writeValueAsBytes(runRequest)))
@@ -118,7 +117,7 @@ public class RunControllerMvcTest {
 		runRequest.setCommand("echo hello1; echo hello2; echo hello3");
 		runRequest.setHost("zeus.cyfronet.pl");
 		
-		mockMvc.perform(get("/api/process")
+		mockMvc.perform(post("/api/process")
 				.header("PROXY", proxyHelper.encodeProxy(proxyFactory.getProxy()))
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(mapper.writeValueAsBytes(runRequest)))
@@ -138,7 +137,7 @@ public class RunControllerMvcTest {
 		runRequest.setCommand("echo 'going to sleep'; sleep 5");
 		runRequest.setHost("zeus.cyfronet.pl");
 		
-		mockMvc.perform(get("/api/process")
+		mockMvc.perform(post("/api/process")
 				.header("PROXY", proxyHelper.encodeProxy(proxyFactory.getProxy()))
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(mapper.writeValueAsBytes(runRequest)))

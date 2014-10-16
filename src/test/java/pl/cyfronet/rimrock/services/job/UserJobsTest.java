@@ -41,23 +41,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = RimrockApplication.class)
 public class UserJobsTest {
-	@Mock
-	private FileManagerFactory fileManagerFactory;
+	@Mock private FileManagerFactory fileManagerFactory;
+	@Mock private FileManager fileManager;
+	@Mock private GsisshRunner runner;
+	@Mock private ProxyHelper proxyHelper;
 
-	@Mock
-	private FileManager fileManager;
-
-	@Mock
-	private GsisshRunner runner;
-
-	@Mock
-	private ProxyHelper proxyHelper;
-
-	@Autowired
-	private ObjectMapper mapper;
-
-	@Autowired
-	private JobRepository jobRepository;
+	@Autowired private ObjectMapper mapper;
+	@Autowired private JobRepository jobRepository;
 
 	private UserJobs userJobs;
 	private String proxy = "proxy";

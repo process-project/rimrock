@@ -18,11 +18,7 @@ public class Job {
 	protected Job() {
 	}
 	
-	public Job(String jobId, String status, 
-			String standardOutputLocation, 
-			String standardErrorLocation, 
-			String user, String host) {
-		
+	public Job(String jobId, String status, String standardOutputLocation, String standardErrorLocation, String user, String host) {
 		this.jobId = jobId;
 		this.status = status;
 		this.standardOutputLocation = standardOutputLocation;

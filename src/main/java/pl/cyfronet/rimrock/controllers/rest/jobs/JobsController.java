@@ -91,14 +91,13 @@ public class JobsController {
 		log.debug("Processing status request for job with id {}", jobId);
 	
 		UserJobs manager = userJobsFactory.get(proxyHelper.decodeProxy(proxy));
-		
 		Job job = manager.get(jobId);
+		
 		if(job == null) {
 			throw new JobNotFoundException(jobId);
 		}
 			
 		manager.update(Arrays.asList(job.getHost()));
-		
 		job = manager.get(jobId);
 		
 		return new ResponseEntity<JobInfo>(new JobInfo(job, plgDataUrl), OK);
@@ -108,7 +107,6 @@ public class JobsController {
 	public ResponseEntity<List<JobInfo>> globalStatus(@RequestHeader("PROXY") String proxy) 
 			throws CredentialException, InvalidStateException, GSSException, FileManagerException, 
 			IOException, InterruptedException {
-		
 		List<String> hosts = jobRepository.getHosts();
 		UserJobs manager = userJobsFactory.get(proxyHelper.decodeProxy(proxy));
 		List<Job> jobs = manager.update(hosts);
@@ -122,7 +120,6 @@ public class JobsController {
 	@RequestMapping(value = "/api/jobs/{jobId:.+}", method = DELETE, produces = APPLICATION_JSON_VALUE)
 	public ResponseEntity<Void> deleteJob(@RequestHeader("PROXY") String proxy, @PathVariable("jobId") String jobId) 
 			throws CredentialException, GSSException, FileManagerException, JobNotFoundException {
-		
 		UserJobs manager = userJobsFactory.get(proxyHelper.decodeProxy(proxy));
 		manager.delete(jobId);
 		
@@ -133,7 +130,6 @@ public class JobsController {
 	public ResponseEntity<Void> processJobAction(@RequestHeader("PROXY") String proxy,
 			@Valid @RequestBody JobActionRequest actionRequest, BindingResult errors, @PathVariable("jobId") String jobId) 
 			throws CredentialException, GSSException, FileManagerException, JobNotFoundException {
-		
 		if(errors.hasErrors()) {
 			throw new ValidationException(RestHelper.convertErrors(errors));
 		}

@@ -33,10 +33,8 @@ public class UserJobs {
 	private static final Logger log = LoggerFactory.getLogger(UserJobs.class);
 
 	private int timeout = 60000;
-
 	private String proxy;
 	private String userLogin;
-
 	private GsisshRunner runner;
 	private JobRepository jobRepository;
 	private ObjectMapper mapper;
@@ -57,45 +55,30 @@ public class UserJobs {
 	/**
 	 * Submit new job into queues system.
 	 * 
-	 * @param host
-	 *            Host where job will be submitted
-	 * @param workingDirectory
-	 *            Job working directory.
-	 * @param script
-	 *            Job script payload.
+	 * @param host Host where job will be submitted
+	 * @param workingDirectory Job working directory.
+	 * @param script Job script payload.
+	 * 
 	 * @return Information about job status, std oud and std err file paths.
-	 * @throws FileManagerException
-	 *             Thrown when there is not possible to transfer start job
-	 *             scripts.
-	 * @throws CredentialException
-	 *             Thrown where it is not possible to log in into given host
-	 *             using user credentials.
-	 * @throws RunException
-	 *             Thrown when any error connected with executing job
-	 *             submissions on given host occurs.
+	 * 
+	 * @throws FileManagerException Thrown when there is not possible to transfer start job scripts.
+	 * @throws CredentialException Thrown where it is not possible to log in into given host using user credentials.
+	 * @throws RunException Thrown when any error connected with executing job submissions on given host occurs.
 	 */
-	public Job submit(String host, String workingDirectory, String script)
-			throws FileManagerException, CredentialException, RunException {
+	public Job submit(String host, String workingDirectory, String script) throws FileManagerException, CredentialException, RunException {
 		String rootPath = buildRootPath(host, workingDirectory, proxy);
+		log.debug("Starting {} user job in {}:{} ", new Object[] {userLogin, host, rootPath});
 
-		log.debug("Starting {} user job in {}:{} ", new Object[] { userLogin,
-				host, rootPath });
+		fileManager.cp(rootPath + "script.sh", new ByteArrayResource(script.getBytes()));
+		fileManager.cp(rootPath + "start", new ClassPathResource("scripts/start"));
 
-		fileManager.cp(rootPath + "script.sh",
-				new ByteArrayResource(script.getBytes()));
-		fileManager.cp(rootPath + "start", new ClassPathResource(
-				"scripts/start"));
-
-		RunResults result = run(host, String.format(
-				"cd %s; chmod +x start; ./start script.sh", rootPath), timeout);
-
+		RunResults result = run(host, String.format("cd %s; chmod +x start; ./start script.sh", rootPath), timeout);
 		processRunExceptions(result);
 
-		SubmitResult submitResult = readResult(result.getOutput(),
-				SubmitResult.class);
+		SubmitResult submitResult = readResult(result.getOutput(), SubmitResult.class);
+		
 		if ("OK".equals(submitResult.getResult())) {
-			return jobRepository.save(new Job(submitResult.getJobId(),
-					"QUEUED", submitResult.getStandardOutputLocation(),
+			return jobRepository.save(new Job(submitResult.getJobId(), "QUEUED", submitResult.getStandardOutputLocation(),
 					submitResult.getStandardErrorLocation(), userLogin, host));
 		} else {
 			throw new RunException(submitResult.getErrorMessage(), result);
@@ -105,15 +88,12 @@ public class UserJobs {
 	/**
 	 * Update job statuses started on selected hosts.
 	 * 
-	 * @param hosts
-	 *            Jobs started on these hosts will be updated.
+	 * @param hosts Jobs started on these hosts will be updated.
+	 * 
 	 * @return Updated jobs.
-	 * @throws CredentialException
-	 *             Thrown where it is not possible to log in into given host
-	 *             using user credentials.
-	 * @throws FileManagerException
-	 *             Thrown when there is not possible to transfer start job
-	 *             scripts.
+	 * 
+	 * @throws CredentialException Thrown where it is not possible to log in into given host using user credentials.
+	 * @throws FileManagerException Thrown when there is not possible to transfer start job scripts.
 	 */
 	public List<Job> update(List<String> hosts) throws CredentialException,
 			FileManagerException {
@@ -153,16 +133,11 @@ public class UserJobs {
 	 * Delete job. If job is in state different then "FINISHED", than it is also
 	 * deleted from the infrastructure.
 	 * 
-	 * @param jobId
-	 *            Job identifier.
-	 * @throws JobNotFoundException
-	 *             Thrown when job is not found in the database.
-	 * @throws CredentialException
-	 *             Thrown where it is not possible to log in into given host
-	 *             using user credentials.
-	 * @throws FileManagerException
-	 *             Thrown when there is not possible to transfer start job
-	 *             scripts.
+	 * @param jobId Job identifier.
+	 * 
+	 * @throws JobNotFoundException Thrown when job is not found in the database.
+	 * @throws CredentialException Thrown where it is not possible to log in into given host using user credentials.
+	 * @throws FileManagerException Thrown when there is not possible to transfer start job scripts.
 	 */
 	public void delete(String jobId) throws JobNotFoundException, CredentialException, FileManagerException {
 		Job job = abortJob(jobId);

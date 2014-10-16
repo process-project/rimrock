@@ -6,8 +6,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.IntegrationTest;
@@ -30,7 +33,10 @@ import com.jayway.restassured.response.Response;
 @SpringApplicationConfiguration(classes = RimrockApplication.class)
 @WebAppConfiguration
 @IntegrationTest
+@Ignore("The machine this test is run on needs to have a public address assigned!")
 public class InteractiveRunControllerTest {
+	private static final Logger log = LoggerFactory.getLogger(InteractiveRunControllerTest.class);
+	
 	@Autowired private ProxyFactory proxyFactory;
 	@Autowired private ProxyHelper proxyHelper;
 	@Autowired private ObjectMapper mapper;
@@ -63,6 +69,7 @@ public class InteractiveRunControllerTest {
 			statusCode(200).
 		extract().
 			path("process_id");
+		log.info("Obtained process id is {}", processId);
 		
 		InteractiveProcessInputRequest ipir = new InteractiveProcessInputRequest();
 		ipir.setStandardInput("echo 4\nexit");
@@ -78,7 +85,7 @@ public class InteractiveRunControllerTest {
 			statusCode(200);
 		
 		boolean finished = false;
-		int attempts = 10;
+		int attempts = 100;
 		String output = "";
 		
 		while(!finished && attempts-- > 0) {
