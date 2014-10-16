@@ -21,6 +21,7 @@ import pl.cyfronet.rimrock.domain.Job;
 import pl.cyfronet.rimrock.gsi.ProxyHelper;
 import pl.cyfronet.rimrock.repositories.JobRepository;
 import pl.cyfronet.rimrock.services.GsisshRunner;
+import pl.cyfronet.rimrock.services.RunException;
 import pl.cyfronet.rimrock.services.RunResults;
 import pl.cyfronet.rimrock.services.filemanager.FileManager;
 import pl.cyfronet.rimrock.services.filemanager.FileManagerException;
