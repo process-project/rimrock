@@ -6,6 +6,8 @@ import static org.springframework.http.HttpStatus.REQUEST_TIMEOUT;
 import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
 
 import java.io.IOException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.globus.gsi.CredentialException;
 import org.ietf.jgss.GSSException;
@@ -24,6 +26,15 @@ import com.sshtools.j2ssh.util.InvalidStateException;
 public class GlobalExceptionHandling {
 	@ExceptionHandler(CredentialException.class)
 	public ResponseEntity<ErrorResponse> handleCredentialsError(CredentialException e) {
+		String msg = e.getMessage(); 
+				
+		Pattern p = Pattern.compile("\\A[\\w\\.]*\\w?Exception: (.*)\\z");
+		Matcher m = p.matcher(msg);
+		
+		if (m.find()) {
+			msg = m.group(1);
+		} 
+		
 		return new ResponseEntity<ErrorResponse>(new ErrorResponse(e.getMessage()), FORBIDDEN);
 	}
 	
