@@ -1,6 +1,4 @@
-package pl.cyfronet.rimrock.services.job;
-
-import pl.cyfronet.rimrock.services.RunResults;
+package pl.cyfronet.rimrock.services;
 
 public class RunException extends RuntimeException {
 
@@ -14,15 +12,23 @@ public class RunException extends RuntimeException {
 	public RunException(String message) {
 		super(message);
 	}
-	
+
 	public RunException(String message, RunResults run) {
 		super(message);
 		output = run.getOutput();
 		error = run.getError();
 		exitCode = run.getExitCode();
 		timeoutOccured = run.isTimeoutOccured();
+
+		updateErrorExitCode();
 	}
-	
+
+	private void updateErrorExitCode() {
+		if (exitCode == 0) {
+			exitCode = -1;
+		}
+	}
+
 	public String getOutput() {
 		return output;
 	}

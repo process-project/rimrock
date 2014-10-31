@@ -114,4 +114,16 @@ public class InteractiveRunControllerTest {
 		
 		assertEquals("4", output.trim());
 	}
+	
+	@Test
+	public void testNonExistingIProcess() throws Exception {
+		given().
+			header("PROXY", proxyHelper.encodeProxy(proxyFactory.getProxy())).
+		when().
+			get("/api/iprocess/{id}", "nonExisting").
+		then().
+			log().all().
+			contentType(JSON).
+			statusCode(404);
+	}
 }

@@ -1,8 +1,10 @@
 package pl.cyfronet.rimrock.controllers.rest;
 
+import pl.cyfronet.rimrock.services.RunException;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class RunResponse {
+public class ErrorResponse {
 	@JsonProperty("exit_code")
 	private int exitCode;
 
@@ -20,13 +22,26 @@ public class RunResponse {
 		OK, ERROR
 	}	
 	
-	public RunResponse(Status status, int exitCode, String standardOutput,
+	public ErrorResponse(int exitCode, String standardOutput,
 			String errorOutput, String errorMessage) {
-		this.setStatus(status);
+		this.status = Status.ERROR;
 		this.exitCode = exitCode;
 		this.standardOutput = standardOutput;
 		this.errorOutput = errorOutput;
 		this.errorMessage = errorMessage;
+	}
+
+	public ErrorResponse(String errorMessage) {
+		this(0, errorMessage);
+	}
+	
+	public ErrorResponse(int exitCode, String errorMessage) {
+		this(exitCode, null, null, errorMessage);
+	}
+	
+	public ErrorResponse(RunException e) {
+		this(e.getExitCode(), e.getOutput(), e
+				.getError(), e.getMessage());
 	}
 
 	public String getStandardOutput() {

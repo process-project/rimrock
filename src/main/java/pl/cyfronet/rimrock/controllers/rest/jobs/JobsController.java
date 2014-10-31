@@ -1,13 +1,9 @@
 package pl.cyfronet.rimrock.controllers.rest.jobs;
 
 import static org.springframework.http.HttpStatus.CREATED;
-import static org.springframework.http.HttpStatus.FORBIDDEN;
-import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
-import static org.springframework.http.HttpStatus.REQUEST_TIMEOUT;
-import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.web.bind.annotation.RequestMethod.DELETE;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
@@ -26,7 +22,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
@@ -37,13 +32,13 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import pl.cyfronet.rimrock.controllers.rest.ErrorResponse;
 import pl.cyfronet.rimrock.controllers.rest.RestHelper;
-import pl.cyfronet.rimrock.controllers.rest.RunResponse;
 import pl.cyfronet.rimrock.domain.Job;
 import pl.cyfronet.rimrock.gsi.ProxyHelper;
 import pl.cyfronet.rimrock.repositories.JobRepository;
+import pl.cyfronet.rimrock.services.RunException;
 import pl.cyfronet.rimrock.services.filemanager.FileManagerException;
-import pl.cyfronet.rimrock.services.job.RunException;
 import pl.cyfronet.rimrock.services.job.UserJobs;
 import pl.cyfronet.rimrock.services.job.UserJobsFactory;
 
@@ -73,7 +68,7 @@ public class JobsController {
 			BindingResult errors) throws CredentialException, GSSException,
 			FileManagerException, RunException {
 		if (errors.hasErrors()) {
-			throw new ValidationException(RestHelper.convertErrors(errors));
+			throw new ValidationException(errors);
 		}
 
 		UserJobs manager = userJobsFactory.get(proxyHelper.decodeProxy(proxy));
@@ -141,37 +136,9 @@ public class JobsController {
 		
 		return new ResponseEntity<Void>(NO_CONTENT);
 	}
-
-	@ExceptionHandler(CredentialException.class)
-	private ResponseEntity<RunResponse> handleCredentialsError(CredentialException e) {
-		return new ResponseEntity<RunResponse>(new RunResponse(e.getMessage()), FORBIDDEN);
-	}
 	
 	@ExceptionHandler(JobNotFoundException.class)
-	private ResponseEntity<RunResponse> handleJobNotFoundError(JobNotFoundException e) {
-		return new ResponseEntity<RunResponse>(new RunResponse(e.getMessage()), NOT_FOUND);
-	}
-	
-	@ExceptionHandler(ValidationException.class)
-	private ResponseEntity<RunResponse> handleValidationError(CredentialException e) {
-		return new ResponseEntity<RunResponse>(new RunResponse(e.getMessage()), UNPROCESSABLE_ENTITY);
-	}
-	
-	@ExceptionHandler({FileManagerException.class, 
-		InvalidStateException.class, GSSException.class, 
-		IOException.class, InterruptedException.class})
-	private ResponseEntity<RunResponse> handleRunCmdError(Exception e) {
-		return new ResponseEntity<RunResponse>(new RunResponse(e.getMessage()), INTERNAL_SERVER_ERROR);
-	}
-
-	@ExceptionHandler(RunException.class)
-	private ResponseEntity<RunResponse> handleRunError(RunException e) {
-		HttpStatus status = e.isTimeoutOccured() ? REQUEST_TIMEOUT : INTERNAL_SERVER_ERROR; 
-		return new ResponseEntity<RunResponse>(new RunResponse(e), status);
-	}
-	
-	@ExceptionHandler(Exception.class)
-	private ResponseEntity<RunResponse> handleError(Exception e) {
-		return new ResponseEntity<RunResponse>(new RunResponse(e.getMessage()), INTERNAL_SERVER_ERROR);
+	private ResponseEntity<ErrorResponse> handleJobNotFoundError(JobNotFoundException e) {
+		return new ResponseEntity<ErrorResponse>(new ErrorResponse(e.getMessage()), NOT_FOUND);
 	}
 }
