@@ -1,75 +1,79 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
-<head>
-	<title layout:title-pattern="$DECORATOR_TITLE - $CONTENT_TITLE">RIMROCK</title>	
-	
-	<link rel="stylesheet" th:href="@{/css/bootstrap.min.css}"/>        
-    
-    <!-- Custom styles for this template -->
-    <link rel="stylesheet" th:href="@{/css/main.css}"/>
-    
-	<!-- rimrock custom styles and overrides -->
-	<link rel="stylesheet" th:href="@{/css/rimrock.css}"/>
-    
-    <script type="text/javascript" th:src="@{/js/jquery.min.js}"></script>
-    <script type="text/javascript" th:src="@{/js/hover.zoom.js}"></script>
-    <script type="text/javascript" th:src="@{/js/hover.zoom.conf.js}"></script>
-</head>
-<body>
-	<!-- Static navbar -->
-    <div class="navbar navbar-inverse navbar-fixed-top">
-      <div class="container cbp-af-inner">
-        <div class="navbar-header">
-          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </button>
-          <a class="navbar-brand" th:href="@{/}" th:text="#{rimrock.name}"></a>
-        </div>
-        <div class="navbar-collapse collapse">
-          <ul class="nav navbar-nav navbar-right">
-            <li><a th:href="@{/processes}" th:text="#{processes.title}"></a></li>
-            <li><a th:href="@{/iprocesses}" th:text="#{iprocesses.title}"></a></li>
-            <li><a th:href="@{/jobs}" th:text="#{jobs.title}"></a></li>
-            <li><a th:href="@{/news}" th:text="#{news.title}"></a></li>
-            <li><a th:href="@{/team}" th:text="#{team.title}"></a></li>
-            <li><a th:href="@{/contact}" th:text="#{contact.title}"></a></li>
-          </ul>
-        </div>
-      </div>
-    </div>
-
-	<div id="under_navbar"></div>
-
-	<section layout:fragment="content"></section>	
-	
-	<div id="footer">
-		<div class="container">
-			<div class="row">
-				<div class="col-lg-4">
-					<h4 th:text="#{contact.bunker}"></h4>
-					<p th:utext="#{contact.address}"></p>
-				</div>				
-				<div class="col-lg-4">
-					<h4 th:text="#{links}"></h4>
-					<p>
-						<a th:href="#{dice.homepage}" th:text="#{dice.name}"></a><br/>
-						<a th:href="#{cyfronet.homepage}" th:text="#{cyfronet.name}"></a><br/>
-						<a th:href="#{agh.homepage}" th:text="#{agh.name}"></a>
-					</p>
-				</div>
-				
-				<div class="col-lg-4">
-					<h4 th:text="#{dice.about.title}"></h4>
-					<p th:text="#{dice.about.credo}"></p>
-				</div>			
-			</div>		
-		</div>
-	</div>
+<html 	xmlns:th="http://www.thymeleaf.org"
+		xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+	<head profile="http://www.w3.org/2005/10/profile">
+		<title layout:title-pattern="$DECORATOR_TITLE - $CONTENT_TITLE">RIMROCK</title>
+		<link rel="icon" type="image/png" th:href="@{/img/icon-64x64.png}"/>
 		
-    <script type="text/javascript" th:src="@{/js/bootstrap.min.js}"></script>    
-    <script type="text/javascript" th:src="@{/js/classie.js}"></script>
-    <script type="text/javascript" th:src="@{/js/cbpAnimatedHeader.min.js}"></script>
-</body>
+		<link rel="stylesheet" th:href="@{/css/bootstrap.min.css}"/>
+		
+		<!-- Custom styles for this template -->
+		<link rel="stylesheet" th:href="@{/css/main.css}"/>
+		
+		<!-- rimrock custom styles and overrides -->
+		<link rel="stylesheet" th:href="@{/css/rimrock.css}"/>
+		
+		<script type="text/javascript" th:src="@{/js/jquery.min.js}"></script>
+		<script type="text/javascript" th:src="@{/js/hover.zoom.js}"></script>
+		<script type="text/javascript" th:src="@{/js/hover.zoom.conf.js}"></script>
+	</head>
+	<body>
+		<!-- Static navbar -->
+		<div class="navbar navbar-inverse navbar-fixed-top">
+			<div class="container cbp-af-inner">
+				<div class="navbar-header">
+					<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+					</button>
+					<a class="navbar-brand" th:href="@{/}">
+						<img th:src="@{/img/logo-280x126.png}"></img>
+					</a>
+				</div>
+				<div class="navbar-collapse collapse">
+					<ul class="nav navbar-nav navbar-right">
+						<li><a th:href="@{/processes}" th:text="#{processes.title}"></a></li>
+						<li><a th:href="@{/iprocesses}" th:text="#{iprocesses.title}"></a></li>
+						<li><a th:href="@{/jobs}" th:text="#{jobs.title}"></a></li>
+						<li><a th:href="@{/team}" th:text="#{team.title}"></a></li>
+					</ul>
+				</div>
+			</div>
+		</div>
+	
+		<div id="under_navbar"></div>
+	
+		<section layout:fragment="content"></section>
+	
+		<div id="footer">
+			<div class="container">
+				<div class="row">
+					<div class="col-lg-4">
+						<h4 th:text="#{contact.bunker}"></h4>
+						<p th:utext="#{contact.address}"></p>
+					</div>
+					<div class="col-lg-4">
+						<h4 th:text="#{links}"></h4>
+						<p>
+							<a th:href="#{dice.homepage}" th:text="#{dice.name}"></a>
+							<br/>
+							<a th:href="#{cyfronet.homepage}" th:text="#{cyfronet.name}"></a>
+							<br/>
+							<a th:href="#{agh.homepage}" th:text="#{agh.name}"></a>
+						</p>
+					</div>
+	
+					<div class="col-lg-4">
+						<h4 th:text="#{dice.about.title}"></h4>
+						<p th:text="#{dice.about.credo}"></p>
+					</div>
+				</div>
+			</div>
+		</div>
+	
+		<script type="text/javascript" th:src="@{/js/bootstrap.min.js}"></script>
+		<script type="text/javascript" th:src="@{/js/classie.js}"></script>
+		<script type="text/javascript" th:src="@{/js/cbpAnimatedHeader.min.js}"></script>
+	</body>
 </html>

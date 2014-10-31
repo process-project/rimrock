@@ -1,3 +1,15 @@
 .nav-tabs {
 	border-bottom: 1px solid transparent;
 }
+
+/* logo fix */
+.navbar-brand img {
+	margin-top: -50px;
+}
+.navbar-shrink .navbar-header {
+	overflow: hidden;
+}
+.navbar-inverse {
+	background-color: lightgray;
+	border-color: gray;
+}
