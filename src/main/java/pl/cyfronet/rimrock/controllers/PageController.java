@@ -25,18 +25,8 @@ public class PageController {
 		return "jobs";
 	}
 	
-	@RequestMapping("/news")
-	public String news() {
-		return "news";
-	}
-	
 	@RequestMapping("/team")
 	public String team() {
 		return "team";
-	}
-	
-	@RequestMapping("/contact")
-	public String contact() {
-		return "contact";
 	}
 }
