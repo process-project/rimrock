@@ -26,6 +26,11 @@
                 zoom: 0
             });
             
+            $('.gray').hoverZoom({
+                overlayColor: 'rgba(211, 211, 211, 0.7)',
+                zoom: 0
+            });                       
+            
             /* USAGE
             
             $('#pink').hoverZoom({
