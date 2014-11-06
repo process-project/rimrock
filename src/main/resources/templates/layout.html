@@ -37,6 +37,13 @@
 						<li><a th:href="@{/iprocesses}" th:text="#{iprocesses.title}"></a></li>
 						<li><a th:href="@{/jobs}" th:text="#{jobs.title}"></a></li>
 						<li><a th:href="@{/team}" th:text="#{team.title}"></a></li>
+						
+						<li>
+							<div class="btn-group btn-group-xs navbar-btn">
+								<a href="?lang=pl" type="button" class="btn btn-default" th:attrappend="class=${lang == 'pl' ? ' active' : ''}">PL</a>								
+								<a href="?lang=en" type="button" class="btn btn-default" th:attrappend="class=${lang == 'en' ? ' active' : ''}">EN</a>								
+							</div>
+						</li>
 					</ul>
 				</div>
 			</div>
