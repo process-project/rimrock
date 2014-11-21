@@ -9,6 +9,8 @@ import static org.springframework.web.bind.annotation.RequestMethod.PUT;
 import static org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder.on;
 
 import java.io.IOException;
+import java.security.KeyStoreException;
+import java.security.cert.CertificateException;
 import java.util.List;
 import java.util.UUID;
 
@@ -80,7 +82,7 @@ public class InteractiveRunController {
 	
 	@RequestMapping(value = "/api/iprocess", method = POST, consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
 	public ResponseEntity<InteractiveProcessResponse> startInteractiveProcess(@RequestHeader("PROXY") String proxy,
-			@Valid @RequestBody InteractiveProcessRequest request, BindingResult errors) throws CredentialException, FileManagerException, GSSException, InvalidStateException, IOException, InterruptedException {
+			@Valid @RequestBody InteractiveProcessRequest request, BindingResult errors) throws CredentialException, FileManagerException, InvalidStateException, KeyStoreException, CertificateException, GSSException, IOException, InterruptedException {
 		if(errors.hasErrors()) {
 			throw new ValidationException(errors);
 		}
@@ -114,7 +116,7 @@ public class InteractiveRunController {
 	
 	@RequestMapping(value = "/api/iprocess", method = GET, produces = APPLICATION_JSON_VALUE)
 	@SuppressWarnings({"rawtypes", "unchecked"})
-	public ResponseEntity getInteractiveProcesseses(@RequestHeader("PROXY") String proxy) throws CredentialException, GSSException {
+	public ResponseEntity getInteractiveProcesseses(@RequestHeader("PROXY") String proxy) throws CredentialException, GSSException, KeyStoreException, CertificateException, IOException {
 		String decodedProxy = proxyHelper.decodeProxy(proxy);
 		String userLogin = proxyHelper.getUserLogin(decodedProxy);
 		List<InteractiveProcess> processes = processRepository.findByUserLogin(userLogin);
@@ -184,5 +186,4 @@ public class InteractiveRunController {
 	private ResponseEntity<ErrorResponse> handleInteractiveProcessNotFoundError(InteractiveProcessNotFoundException e) {
 		return new ResponseEntity<ErrorResponse>(new ErrorResponse(e.getMessage()), NOT_FOUND);
 	}
-	
 }

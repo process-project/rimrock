@@ -10,6 +10,8 @@ import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 import java.io.IOException;
+import java.security.KeyStoreException;
+import java.security.cert.CertificateException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -66,7 +68,7 @@ public class JobsController {
 	public ResponseEntity<JobInfo> submit(@RequestHeader("PROXY") String proxy,
 			@Valid @RequestBody SubmitRequest submitRequest,
 			BindingResult errors) throws CredentialException, GSSException,
-			FileManagerException, RunException {
+			FileManagerException, RunException, KeyStoreException, CertificateException, IOException {
 		if (errors.hasErrors()) {
 			throw new ValidationException(errors);
 		}
@@ -82,7 +84,7 @@ public class JobsController {
 	@RequestMapping(value = "/api/jobs/{jobId:.+}", method = GET, produces = APPLICATION_JSON_VALUE)
 	public ResponseEntity<JobInfo> jobInfo(@RequestHeader("PROXY") String proxy, @PathVariable("jobId") String jobId) 
 			throws JobNotFoundException, CredentialException, GSSException, 
-			InvalidStateException, FileManagerException, IOException, InterruptedException {
+			InvalidStateException, FileManagerException, IOException, InterruptedException, KeyStoreException, CertificateException {
 		log.debug("Processing status request for job with id {}", jobId);
 	
 		UserJobs manager = userJobsFactory.get(proxyHelper.decodeProxy(proxy));
@@ -101,7 +103,7 @@ public class JobsController {
 	@RequestMapping(value = "/api/jobs", method = GET, produces = APPLICATION_JSON_VALUE)
 	public ResponseEntity<List<JobInfo>> globalStatus(@RequestHeader("PROXY") String proxy) 
 			throws CredentialException, InvalidStateException, GSSException, FileManagerException, 
-			IOException, InterruptedException {
+			IOException, InterruptedException, KeyStoreException, CertificateException {
 		List<String> hosts = jobRepository.getHosts();
 		UserJobs manager = userJobsFactory.get(proxyHelper.decodeProxy(proxy));
 		List<Job> jobs = manager.update(hosts);
@@ -114,7 +116,7 @@ public class JobsController {
 
 	@RequestMapping(value = "/api/jobs/{jobId:.+}", method = DELETE, produces = APPLICATION_JSON_VALUE)
 	public ResponseEntity<Void> deleteJob(@RequestHeader("PROXY") String proxy, @PathVariable("jobId") String jobId) 
-			throws CredentialException, GSSException, FileManagerException, JobNotFoundException {
+			throws CredentialException, GSSException, FileManagerException, JobNotFoundException, KeyStoreException, CertificateException, IOException {
 		UserJobs manager = userJobsFactory.get(proxyHelper.decodeProxy(proxy));
 		manager.delete(jobId);
 		
@@ -124,7 +126,7 @@ public class JobsController {
 	@RequestMapping(value = "/api/jobs/{jobId:.+}", method = RequestMethod.PUT, consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
 	public ResponseEntity<Void> processJobAction(@RequestHeader("PROXY") String proxy,
 			@Valid @RequestBody JobActionRequest actionRequest, BindingResult errors, @PathVariable("jobId") String jobId) 
-			throws CredentialException, GSSException, FileManagerException, JobNotFoundException {
+			throws CredentialException, GSSException, FileManagerException, JobNotFoundException, KeyStoreException, CertificateException, IOException {
 		if(errors.hasErrors()) {
 			throw new ValidationException(RestHelper.convertErrors(errors));
 		}

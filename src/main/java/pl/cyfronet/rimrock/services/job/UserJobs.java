@@ -1,6 +1,8 @@
 package pl.cyfronet.rimrock.services.job;
 
 import java.io.IOException;
+import java.security.KeyStoreException;
+import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -44,7 +46,7 @@ public class UserJobs {
 	public UserJobs(String proxy, FileManagerFactory fileManagerFactory,
 			GsisshRunner runner, JobRepository jobRepository,
 			ProxyHelper proxyHelper, ObjectMapper mapper)
-			throws CredentialException, GSSException {
+			throws CredentialException, GSSException, KeyStoreException, CertificateException, IOException {
 		this.proxy = proxy;
 		this.userLogin = proxyHelper.getUserLogin(proxy);
 		this.runner = runner;
@@ -65,8 +67,10 @@ public class UserJobs {
 	 * @throws FileManagerException Thrown when there is not possible to transfer start job scripts.
 	 * @throws CredentialException Thrown where it is not possible to log in into given host using user credentials.
 	 * @throws RunException Thrown when any error connected with executing job submissions on given host occurs.
+	 * @throws CertificateException 
+	 * @throws KeyStoreException 
 	 */
-	public Job submit(String host, String workingDirectory, String script) throws FileManagerException, CredentialException, RunException {
+	public Job submit(String host, String workingDirectory, String script) throws FileManagerException, CredentialException, RunException, KeyStoreException, CertificateException {
 		String rootPath = buildRootPath(host, workingDirectory, proxy);
 		log.debug("Starting {} user job in {}:{} ", new Object[] {userLogin, host, rootPath});
 
@@ -95,9 +99,12 @@ public class UserJobs {
 	 * 
 	 * @throws CredentialException Thrown where it is not possible to log in into given host using user credentials.
 	 * @throws FileManagerException Thrown when there is not possible to transfer start job scripts.
+	 * @throws CertificateException 
+	 * @throws KeyStoreException 
+	 * @throws RunException 
 	 */
 	public List<Job> update(List<String> hosts) throws CredentialException,
-			FileManagerException {
+			FileManagerException, RunException, KeyStoreException, CertificateException {
 		if (hosts == null || hosts.size() == 0) {
 			return Arrays.asList();
 		}
@@ -139,19 +146,22 @@ public class UserJobs {
 	 * @throws JobNotFoundException Thrown when job is not found in the database.
 	 * @throws CredentialException Thrown where it is not possible to log in into given host using user credentials.
 	 * @throws FileManagerException Thrown when there is not possible to transfer start job scripts.
+	 * @throws CertificateException 
+	 * @throws KeyStoreException 
+	 * @throws RunException 
 	 */
-	public void delete(String jobId) throws JobNotFoundException, CredentialException, FileManagerException {
+	public void delete(String jobId) throws JobNotFoundException, CredentialException, FileManagerException, RunException, KeyStoreException, CertificateException {
 		Job job = abortJob(jobId);
 		jobRepository.delete(job);
 	}
 	
-	public void abort(String jobId) throws CredentialException, RunException, FileManagerException, JobNotFoundException {
+	public void abort(String jobId) throws CredentialException, RunException, FileManagerException, JobNotFoundException, KeyStoreException, CertificateException {
 		Job job = abortJob(jobId);
 		job.setStatus("ABORTED");
 		jobRepository.save(job);
 	}
 
-	private Job abortJob(String jobId) throws JobNotFoundException, FileManagerException, CredentialException {
+	private Job abortJob(String jobId) throws JobNotFoundException, FileManagerException, CredentialException, RunException, KeyStoreException, CertificateException {
 		Job job = jobRepository.findOneByJobId(jobId);
 
 		if(job == null) {
@@ -182,7 +192,7 @@ public class UserJobs {
 	}
 
 	private StatusResult getStatusResult(String host)
-			throws CredentialException, RunException, FileManagerException {
+			throws CredentialException, RunException, FileManagerException, KeyStoreException, CertificateException {
 		String rootPath = PathHelper.getRootPath(host, userLogin);
 		fileManager.cp(rootPath + ".rimrock/status", new ClassPathResource(
 				"scripts/status"));
@@ -201,7 +211,7 @@ public class UserJobs {
 	}
 
 	private RunResults run(String host, String command, int timeout)
-			throws CredentialException, RunException {
+			throws CredentialException, RunException, KeyStoreException, CertificateException {
 		try {
 			return runner.run(host, proxy, command, timeout);
 		} catch (InvalidStateException | GSSException | IOException

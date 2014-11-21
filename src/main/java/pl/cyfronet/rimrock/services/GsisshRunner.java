@@ -3,6 +3,8 @@ package pl.cyfronet.rimrock.services;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.security.KeyStoreException;
+import java.security.cert.CertificateException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -11,8 +13,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.globus.gsi.CredentialException;
-import org.globus.gsi.X509Credential;
-import org.globus.gsi.gssapi.GlobusGSSCredentialImpl;
 import org.ietf.jgss.GSSCredential;
 import org.ietf.jgss.GSSException;
 import org.slf4j.Logger;
@@ -56,22 +56,19 @@ public class GsisshRunner {
 	 * Runs the given command on the host. Authentication uses the given proxy. If given timeout
 	 * (provided in millis) is greater than 0 it is used, otherwise a default value is used. 
 	 */
-	public RunResults run(String host, String proxyValue, String command, int timeoutMillis) throws CredentialException, GSSException, IOException, InvalidStateException, InterruptedException {
+	public RunResults run(String host, String proxyValue, String command, int timeoutMillis) throws CredentialException, GSSException, IOException, InvalidStateException, InterruptedException, KeyStoreException, CertificateException {
 		String userLogin = proxyHelper.getUserLogin(proxyValue);
 		
 		try {
 			checkPool(userLogin);
-			
-			X509Credential proxy = new X509Credential(new ByteArrayInputStream(proxyValue.getBytes()));
-			GSSCredential gsscredential = new GlobusGSSCredentialImpl(proxy, GSSCredential.INITIATE_ONLY);
-			proxy.verify();
-			
+			proxyHelper.verify(proxyValue);
+			GSSCredential gsscredential = proxyHelper.getGssCredential(proxyValue);			
 			SshConnectionProperties properties = new SshConnectionProperties();
 			properties.setHost(host);
 			properties.setUserProxy(gsscredential);
 			
 			GSSAuthenticationClient pwd = new GSSAuthenticationClient(gsscredential);
-			pwd.setUsername(extractUserName(proxy.getSubject()));
+			pwd.setUsername(userLogin);
 			
 			SshClient ssh = new SshClient();
 			RunResults results = new RunResults();
@@ -221,16 +218,5 @@ public class GsisshRunner {
 
 	private byte[] completeCommand(String command, String separator) {
 		return ("echo '" + separator + "'; " + command + "; echo $?; echo '" + separator + "'; exit\n").getBytes();
-	}
-
-	private String extractUserName(String subject) {
-		Pattern pattern = Pattern.compile(".+CN=(plg.+),.+");
-		Matcher matcher = pattern.matcher(subject);
-		
-		if(matcher.matches()) {
-			return matcher.group(1);
-		}
-		
-		throw new IllegalArgumentException("Subject " + subject + " does not carry a valid user name");
 	}
 }

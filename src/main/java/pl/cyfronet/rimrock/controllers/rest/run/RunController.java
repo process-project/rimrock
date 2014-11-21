@@ -5,6 +5,8 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 import java.io.IOException;
+import java.security.KeyStoreException;
+import java.security.cert.CertificateException;
 
 import javax.validation.Valid;
 
@@ -49,7 +51,7 @@ public class RunController {
 	
 	@RequestMapping(value = "/api/process", method = POST, consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
 	@ResponseBody
-	public ResponseEntity<RunResponse> run(@RequestHeader("PROXY") String proxy, @Valid @RequestBody RunRequest runRequest, BindingResult errors) throws CredentialException, InvalidStateException, GSSException, IOException, InterruptedException {
+	public ResponseEntity<RunResponse> run(@RequestHeader("PROXY") String proxy, @Valid @RequestBody RunRequest runRequest, BindingResult errors) throws CredentialException, InvalidStateException, GSSException, IOException, InterruptedException, KeyStoreException, CertificateException {
 		log.debug("Processing run request {}", runRequest);
 		
 		if(errors.hasErrors()) {

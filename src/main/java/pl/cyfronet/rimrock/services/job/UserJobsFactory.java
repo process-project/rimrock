@@ -1,5 +1,9 @@
 package pl.cyfronet.rimrock.services.job;
 
+import java.io.IOException;
+import java.security.KeyStoreException;
+import java.security.cert.CertificateException;
+
 import org.globus.gsi.CredentialException;
 import org.ietf.jgss.GSSException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +34,7 @@ public class UserJobsFactory {
 	@Autowired
 	private ObjectMapper mapper;
 
-	public UserJobs get(String proxy) throws CredentialException, GSSException {
+	public UserJobs get(String proxy) throws CredentialException, GSSException, KeyStoreException, CertificateException, IOException {
 		return new UserJobs(proxy, fileManagerFactory, runner, jobRepository,
 				proxyHelper, mapper);
 	}
