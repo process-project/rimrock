@@ -194,10 +194,8 @@ public class UserJobs {
 	private StatusResult getStatusResult(String host)
 			throws CredentialException, RunException, FileManagerException, KeyStoreException, CertificateException {
 		String rootPath = PathHelper.getRootPath(host, userLogin);
-		fileManager.cp(rootPath + ".rimrock/status", new ClassPathResource(
-				"scripts/status"));
-		RunResults result = run(host, String.format(
-				"cd %s.rimrock; chmod +x status; ./status", rootPath), timeout);
+		fileManager.cp(rootPath + ".rimrock/status", new ClassPathResource("scripts/status"));
+		RunResults result = run(host, String.format("cd %s.rimrock; chmod +x status; ./status", rootPath), timeout);
 
 		if (result.isTimeoutOccured() || result.getExitCode() != 0) {
 			StatusResult statusResult = new StatusResult();
@@ -210,20 +208,20 @@ public class UserJobs {
 		}
 	}
 
-	private RunResults run(String host, String command, int timeout)
-			throws CredentialException, RunException, KeyStoreException, CertificateException {
+	private RunResults run(String host, String command, int timeout) throws CredentialException, RunException, KeyStoreException, CertificateException {
 		try {
-			return runner.run(host, proxy, command, timeout);
+			RunResults runResults = runner.run(host, proxy, command, timeout);
+			log.debug("Run results for command [{}] are the following: {}", command, runResults);
+			
+			return runResults;
 		} catch (InvalidStateException | GSSException | IOException
 				| InterruptedException e) {
 			throw new RunException(e.getMessage());
 		}
 	}
 
-	private String buildRootPath(String host, String workingDirectory,
-			String proxy) throws CredentialException {
-		String rootPath = workingDirectory == null ? PathHelper.getRootPath(host, userLogin)
-				: workingDirectory;
+	private String buildRootPath(String host, String workingDirectory, String proxy) throws CredentialException {
+		String rootPath = workingDirectory == null ? PathHelper.getRootPath(host, userLogin) : workingDirectory;
 
 		if (!rootPath.endsWith("/")) {
 			rootPath = rootPath + "/";

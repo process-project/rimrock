@@ -26,7 +26,7 @@ public class RunResults {
 	}
 	@Override
 	public String toString() {
-		return "RunResults [output=" + output + ", error=" + error + ", exitCode=" + exitCode + "]";
+		return "RunResults [output=" + output + ", error=" + error + ", exitCode=" + exitCode + ", timeoutOccured=" + timeoutOccured + "]";
 	}
 	public boolean isTimeoutOccured() {
 		return timeoutOccured;

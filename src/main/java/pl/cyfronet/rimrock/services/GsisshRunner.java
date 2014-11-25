@@ -62,6 +62,7 @@ public class GsisshRunner {
 		try {
 			checkPool(userLogin);
 			proxyHelper.verify(proxyValue);
+			
 			GSSCredential gsscredential = proxyHelper.getGssCredential(proxyValue);			
 			SshConnectionProperties properties = new SshConnectionProperties();
 			properties.setHost(host);
