@@ -132,6 +132,10 @@ a:after {
 	border-color: transparent;
 }
 
+.navbar-btn {
+	padding-top: 5px;
+}
+
 .progress-bar-theme {
   background-color: #1abc9c;
 }
