@@ -48,8 +48,13 @@
 							<th th:text="#{example.data_params}"></th>
 							<td>
 								<p>
-									<strong th:text="|#{example.json}:|"></strong>
-								</p><pre th:text="#{jobs.post.data_params}"></pre><p>
+									<strong th:text="|#{example.json}:|"></strong>									
+								</p>
+								<pre th:text="#{jobs.post.data_params}"></pre>
+								<p>
+									<div class="alert alert-warning">
+										<span th:utext="#{jobs.post.working_directory.warning}"></span>
+									</div>
 									<strong th:text="|#{example.example}:|"></strong>
 								</p>
 								<pre>
