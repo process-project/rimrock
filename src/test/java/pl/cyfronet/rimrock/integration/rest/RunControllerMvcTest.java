@@ -14,6 +14,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -44,6 +45,8 @@ public class RunControllerMvcTest {
 	@Autowired private ObjectMapper mapper;
 	@Autowired private ProxyFactory proxyFactory;
 	@Autowired private ProxyHelper proxyHelper;
+	
+	@Value("${run.timeout.millis}") private int runTimeoutMillis;
 	
 	private MockMvc mockMvc;
 	
@@ -134,7 +137,7 @@ public class RunControllerMvcTest {
 	@Test
 	public void testTimout() throws Exception {
 		RunRequest runRequest = new RunRequest();
-		runRequest.setCommand("echo 'going to sleep'; sleep 5");
+		runRequest.setCommand("echo 'going to sleep'; sleep " + ((runTimeoutMillis / 1000) + 5));
 		runRequest.setHost("zeus.cyfronet.pl");
 		
 		mockMvc.perform(post("/api/process")
