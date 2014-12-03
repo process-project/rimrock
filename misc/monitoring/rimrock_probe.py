@@ -22,6 +22,7 @@ debug = False
 proxy = None
 rimrock_url = None
 ui_url = "zeus.cyfronet.pl"
+timeout = 200
 
 # helper functions
 
@@ -62,7 +63,7 @@ def read_proxy(file_path):
 # testing scenarios
 
 def process_sequence():
-    payload = {"host": "zeus.cyfronet.pl", "command": "pwd"}
+    payload = {"host": ui_url, "command": "pwd"}
     headers = {
         "Content-type": "application/json",
         "Accept": "*/*",
@@ -75,12 +76,12 @@ def process_sequence():
         "error_message": None
     }
 
-    conn = httplib.HTTPSConnection(rimrock_url)
+    conn = httplib.HTTPSConnection(rimrock_url, timeout=timeout)
     try:
         conn.request("POST", "/api/process", body=json.dumps(payload), headers=headers)
+        resp = conn.getresponse()
     except Exception, e:
         return_critical("Unable to do a post request for process_sequence", e)
-    resp = conn.getresponse()
 
     response = resp.read()
 
@@ -112,6 +113,11 @@ if __name__ == "__main__":
         return_unknown("Unable to find proxy, please set X509_USER_PROXY environment variable!")
 
     rimrock_url = arguments['-H']
+
+    if not unicode(arguments['-t']).isnumeric() or int(arguments['-t']) <= 0:
+        return_unknown("Timeout is not a number, please supply a positive, non zero numerical value")
+
+    timeout = int(arguments['-t'])
 
     process_sequence()
 
