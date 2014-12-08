@@ -141,7 +141,7 @@ def iprocess_sequence():
     # while not finished:
     # time.sleep(1)
     # response, code = make_request("/api/iprocess/" + process_id, method="GET")
-    #     check_response({"status": "OK"}, response)
+    # check_response({"status": "OK"}, response)
     #     finished = response["finished"]
     #     count += 1
     #     if count > 20:
@@ -158,16 +158,14 @@ def job_sequence():
     if len(response) == 0:
         return_critical("Listing user jobs didn't return anything", response)
 
-        # reserved for future needs
-        # count = 0
-        #
-        # while status != "FINISHED":
-        # time.sleep(1)
-        # response, code = make_request("/api/jobs/" + job_id, method="GET")
-        #     status = response["status"]
-        #     count += 1
-        #     if count > 20:
-        #         return_critical("Job did not finish in 20 seconds!")
+
+    time.sleep(3)
+    response, code = make_request("/api/jobs/" + job_id, method="GET")
+    status = response["status"]
+    if status == "ERROR":
+        return_critical("Job in ERROR state!", response)
+    if status != "QUEUED" and status != "FINISHED":
+        return_critical("Unknown job state!", response)
 
 
 def job_cancel_sequence():
