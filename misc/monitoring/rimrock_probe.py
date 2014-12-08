@@ -174,6 +174,7 @@ def job_cancel_sequence():
     response, code = make_request("/api/jobs", {"host": ui_url, "script": "#!/bin/bash\necho hello\nexit 0"})
     status = response["status"]
     job_id = response["job_id"]
+    err_msg = None
 
     time.sleep(3)
 
@@ -181,15 +182,16 @@ def job_cancel_sequence():
     if code != 204:
         return_critical("Unable to abort job! Got code: " + str(code), response)
 
-    # count = 0
-    #
-    # while status != "ABORTED":
-    # time.sleep(1)
-    #     response, code = make_request("/api/jobs/" + job_id, method="GET")
-    #     status = response["status"]
-    #     count += 1
-    #     if count > 20:
-    #         return_critical("Job cancel had no effect in 20 seconds!")
+    count = 0
+
+    while status != "ABORTED" and not (status == "ERROR" and "does not exist" in err_msg):
+        time.sleep(1)
+        response, code = make_request("/api/jobs/" + job_id, method="GET")
+        status = response["status"]
+        err_msg = response["error_message"]
+        count += 1
+        if count > 20:
+            return_critical("Job cancel had no effect in 20 seconds!")
 
 
 # main function
