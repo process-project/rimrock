@@ -98,7 +98,7 @@ def make_request(path, payload=None, method="POST"):
         except Exception, e2:
             return_critical("Unable to parse response of process_sequence", "response:" + response + "\n" + str(e2))
 
-        debug_log("Response: " + str(parsed_response))
+        debug_log("Response: " + str(parsed_response) + ", code:" + str(resp.status))
         return (parsed_response, resp.status)
 
 
@@ -134,14 +134,13 @@ def iprocess_sequence():
     response, code = make_request("/api/iprocess/" + process_id, {"standard_input": "exit"}, method="PUT")
     check_response({"status": "OK"}, response)
 
-    finished = response["finished"]
-    # reserved for future needs
+    # finished = response["finished"]
     # count = 0
     #
     # while not finished:
-    # time.sleep(1)
-    # response, code = make_request("/api/iprocess/" + process_id, method="GET")
-    # check_response({"status": "OK"}, response)
+    #     time.sleep(1)
+    #     response, code = make_request("/api/iprocess/" + process_id, method="GET")
+    #     check_response({"status": "OK"}, response)
     #     finished = response["finished"]
     #     count += 1
     #     if count > 20:
@@ -157,7 +156,6 @@ def job_sequence():
 
     if len(response) == 0:
         return_critical("Listing user jobs didn't return anything", response)
-
 
     time.sleep(3)
     response, code = make_request("/api/jobs/" + job_id, method="GET")
