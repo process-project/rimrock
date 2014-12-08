@@ -118,7 +118,7 @@ def process_sequence():
 
 
 def iprocess_sequence():
-    response, code = make_request("/api/iprocess", {"host": ui_url, "command": "ls"})
+    response, code = make_request("/api/iprocess", {"host": ui_url, "command": "bash"})
     check_response({"status": "OK"}, response)
 
     process_id = response["process_id"]
@@ -134,17 +134,17 @@ def iprocess_sequence():
     response, code = make_request("/api/iprocess/" + process_id, {"standard_input": "exit"}, method="PUT")
     check_response({"status": "OK"}, response)
 
-    # finished = response["finished"]
-    # count = 0
-    #
-    # while not finished:
-    #     time.sleep(1)
-    #     response, code = make_request("/api/iprocess/" + process_id, method="GET")
-    #     check_response({"status": "OK"}, response)
-    #     finished = response["finished"]
-    #     count += 1
-    #     if count > 20:
-    #         return_critical("Process did not finish in 20 seconds, after issuing exit command!")
+    finished = response["finished"]
+    count = 0
+
+    while not finished:
+        time.sleep(1)
+        response, code = make_request("/api/iprocess/" + process_id, method="GET")
+        check_response({"status": "OK"}, response)
+        finished = response["finished"]
+        count += 1
+        if count > 20:
+            return_critical("Process did not finish in 20 seconds, after issuing exit command!")
 
 
 def job_sequence():
