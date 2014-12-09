@@ -98,7 +98,7 @@ def make_request(path, payload=None, method="POST"):
         except Exception, e2:
             return_critical("Unable to parse response of process_sequence", "response:" + response + "\n" + str(e2))
 
-        debug_log("Response: " + str(parsed_response))
+        debug_log("Response: " + str(parsed_response) + ", code:" + str(resp.status))
         return (parsed_response, resp.status)
 
 
@@ -118,7 +118,7 @@ def process_sequence():
 
 
 def iprocess_sequence():
-    response, code = make_request("/api/iprocess", {"host": ui_url, "command": "ls"})
+    response, code = make_request("/api/iprocess", {"host": ui_url, "command": "bash"})
     check_response({"status": "OK"}, response)
 
     process_id = response["process_id"]
@@ -135,17 +135,16 @@ def iprocess_sequence():
     check_response({"status": "OK"}, response)
 
     finished = response["finished"]
-    # reserved for future needs
-    # count = 0
-    #
-    # while not finished:
-    # time.sleep(1)
-    # response, code = make_request("/api/iprocess/" + process_id, method="GET")
-    #     check_response({"status": "OK"}, response)
-    #     finished = response["finished"]
-    #     count += 1
-    #     if count > 20:
-    #         return_critical("Process did not finish in 20 seconds, after issuing exit command!")
+    count = 0
+
+    while not finished:
+        time.sleep(1)
+        response, code = make_request("/api/iprocess/" + process_id, method="GET")
+        check_response({"status": "OK"}, response)
+        finished = response["finished"]
+        count += 1
+        if count > 20:
+            return_critical("Process did not finish in 20 seconds, after issuing exit command!")
 
 
 def job_sequence():
@@ -158,22 +157,20 @@ def job_sequence():
     if len(response) == 0:
         return_critical("Listing user jobs didn't return anything", response)
 
-        # reserved for future needs
-        # count = 0
-        #
-        # while status != "FINISHED":
-        # time.sleep(1)
-        # response, code = make_request("/api/jobs/" + job_id, method="GET")
-        #     status = response["status"]
-        #     count += 1
-        #     if count > 20:
-        #         return_critical("Job did not finish in 20 seconds!")
+    time.sleep(3)
+    response, code = make_request("/api/jobs/" + job_id, method="GET")
+    status = response["status"]
+    if status == "ERROR":
+        return_critical("Job in ERROR state!", response)
+    if status != "QUEUED" and status != "FINISHED":
+        return_critical("Unknown job state!", response)
 
 
 def job_cancel_sequence():
     response, code = make_request("/api/jobs", {"host": ui_url, "script": "#!/bin/bash\necho hello\nexit 0"})
     status = response["status"]
     job_id = response["job_id"]
+    err_msg = None
 
     time.sleep(3)
 
@@ -181,15 +178,16 @@ def job_cancel_sequence():
     if code != 204:
         return_critical("Unable to abort job! Got code: " + str(code), response)
 
-    # count = 0
-    #
-    # while status != "ABORTED":
-    # time.sleep(1)
-    #     response, code = make_request("/api/jobs/" + job_id, method="GET")
-    #     status = response["status"]
-    #     count += 1
-    #     if count > 20:
-    #         return_critical("Job cancel had no effect in 20 seconds!")
+    count = 0
+
+    while status != "ABORTED" and not (status == "ERROR" and "does not exist" in err_msg):
+        time.sleep(1)
+        response, code = make_request("/api/jobs/" + job_id, method="GET")
+        status = response["status"]
+        err_msg = response["error_message"]
+        count += 1
+        if count > 20:
+            return_critical("Job cancel had no effect in 20 seconds!")
 
 
 # main function
