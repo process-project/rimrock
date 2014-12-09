@@ -40,8 +40,9 @@ public class GlobalExceptionHandling {
 		if(m.find()) {
 			msg = m.group(1);
 		} 
-		
-		return new ResponseEntity<ErrorResponse>(new ErrorResponse(e.getMessage()), FORBIDDEN);
+		msg = String.format("%s. Make sure that your proxy is a valid SimpleCA certificate.", e.getMessage());
+
+		return new ResponseEntity<ErrorResponse>(new ErrorResponse(msg), FORBIDDEN);
 	}
 	
 	@ExceptionHandler({FileManagerException.class, 
