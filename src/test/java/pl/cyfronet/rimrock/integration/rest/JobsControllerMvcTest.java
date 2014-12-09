@@ -112,7 +112,7 @@ public class JobsControllerMvcTest {
 	}
 	
 	@Test
-	public void testGlobalStatusRetrievalForInvalidJobId() throws Exception {
+	public void testGlobalStatusRetrieval() throws Exception {
 		mockMvc.perform(get("/api/jobs")
 				.header("PROXY", proxyHelper.encodeProxy(proxyFactory.getProxy())))
 				

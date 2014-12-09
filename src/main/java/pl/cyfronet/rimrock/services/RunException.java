@@ -22,9 +22,13 @@ public class RunException extends RuntimeException {
 
 		updateErrorExitCode();
 	}
+	
+	public RunException(String message, Throwable cause) {
+		super(message, cause);
+	}
 
 	private void updateErrorExitCode() {
-		if (exitCode == 0) {
+		if(exitCode == 0) {
 			exitCode = -1;
 		}
 	}
