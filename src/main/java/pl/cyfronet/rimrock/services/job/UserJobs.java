@@ -216,7 +216,7 @@ public class UserJobs {
 			return runResults;
 		} catch (InvalidStateException | GSSException | IOException
 				| InterruptedException e) {
-			throw new RunException(e.getMessage());
+			throw new RunException(e.getMessage(), e);
 		}
 	}
 
