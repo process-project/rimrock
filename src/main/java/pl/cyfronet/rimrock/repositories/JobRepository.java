@@ -12,12 +12,12 @@ public interface JobRepository extends CrudRepository<Job, Long> {
 	@Query("select distinct job.host from Job job") 
 	List<String> getHosts();
 	
-	List<Job> findByUser(String user);
+	List<Job> findByUserLogin(String userLogin);
 	
 	Job findOneByJobId(String jobId);	
 	
-	@Query("SELECT job FROM Job job WHERE user = :user AND host in :hosts")
-	List<Job> findByUserOnHosts(@Param("user") String user, @Param("hosts") List<String> hosts);
+	@Query("SELECT job FROM Job job WHERE userLogin = :userLogin AND host in :hosts")
+	List<Job> findByUsernameOnHosts(@Param("userLogin") String userLogin, @Param("hosts") List<String> hosts);
 	
-	Job findOneByJobIdAndUser(String jobId, String user);
+	Job findOneByJobIdAndUserLogin(String jobId, String userLogin);
 }

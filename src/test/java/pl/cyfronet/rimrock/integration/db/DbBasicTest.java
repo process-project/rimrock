@@ -64,7 +64,7 @@ public class DbBasicTest {
 		jobRepository.save(userJob("3", "user1", "host3"));
 		jobRepository.save(userJob("4", "user2", "host1"));
 		
-		List<Job> jobs = jobRepository.findByUserOnHosts("user1", Arrays.asList("host1", "host2"));
+		List<Job> jobs = jobRepository.findByUsernameOnHosts("user1", Arrays.asList("host1", "host2"));
 		
 		assertEquals(2, jobs.size());		
 		assertEquals("1", jobs.get(0).getJobId());

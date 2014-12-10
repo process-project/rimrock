@@ -61,6 +61,14 @@
 			<scope>runtime</scope>
 		</dependency>
 
+		<dependency>
+			<groupId>postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+			<version>9.1-901-1.jdbc4</version>
+			<scope>runtime</scope>
+		</dependency>
+				
+
 		<!-- Infrastructure dependencies -->
 		<dependency>
 			<groupId>sshtools</groupId>

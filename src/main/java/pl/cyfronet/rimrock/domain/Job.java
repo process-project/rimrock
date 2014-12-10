@@ -11,19 +11,19 @@ public class Job {
 	@Column(nullable = false) private String jobId;
 	@Column(nullable = false) private String standardOutputLocation;
 	@Column(nullable = false) private String standardErrorLocation;
-	@Column(nullable = false) private String user;
+	@Column(nullable = false) private String userLogin;
 	@Column(nullable = false) private String host;
 	@Column(nullable = false) private String status;
 
 	protected Job() {
 	}
 	
-	public Job(String jobId, String status, String standardOutputLocation, String standardErrorLocation, String user, String host) {
+	public Job(String jobId, String status, String standardOutputLocation, String standardErrorLocation, String userLogin, String host) {
 		this.jobId = jobId;
 		this.status = status;
 		this.standardOutputLocation = standardOutputLocation;
 		this.standardErrorLocation = standardErrorLocation;
-		this.user = user;
+		this.userLogin = userLogin;
 		this.host = host;
 	}
 	
@@ -51,12 +51,12 @@ public class Job {
 	public void setStandardErrorLocation(String standardErrorLocation) {
 		this.standardErrorLocation = standardErrorLocation;
 	}
-	public String getUser() {
-		return user;
+	public String getUserLogin() {
+		return userLogin;
 	}
 
-	public void setUser(String user) {
-		this.user = user;
+	public void setUserLogin(String userLogin) {
+		this.userLogin = userLogin;
 	}
 
 	public String getHost() {
@@ -77,7 +77,7 @@ public class Job {
 
 	@Override
 	public String toString() {
-		return "Job [id=" + id + ", jobId=" + jobId + ", user=" + user
+		return "Job [id=" + id + ", jobId=" + jobId + ", userLogin=" + userLogin
 				+ ", host=" + host + ", status=" + status + "]";
 	}
 }
