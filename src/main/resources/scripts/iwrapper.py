@@ -4,6 +4,7 @@ import subprocess
 import time
 import json
 import sys
+import os
 
 class OutputThread(threading.Thread):
 	def __init__(self, outStream):
@@ -52,9 +53,9 @@ class RestThread(threading.Thread):
 		headers = {'content-type': 'application/json'}
 		response = requests.post(self.url, data = json.dumps(payload), headers = headers, verify = False)
 
-url = sys.argv[1]
-processId = sys.argv[2]
-command = sys.argv[3]
+url = os.environ['url']
+processId = os.environ['processId']
+command = os.environ['command']
 
 process = subprocess.Popen([command], stdin = subprocess.PIPE, stdout = subprocess.PIPE,
 							stderr = subprocess.PIPE, universal_newlines = True)
