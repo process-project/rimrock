@@ -1,12 +1,13 @@
 """Rimrock probe.
 
 Usage:
-    rimrock_probe.py -H <hostname> -t <timeout> [-d]
+    rimrock_probe.py -H <hostname> -t <timeout> [-x <proxy_path>] [-d]
 
 Options:
-    -H <hostname>   Target host for submitting jobs
-    -t <timeout>    Time limit for individual operations.
-    -d              Print verbose output, not suitable for Nagios operation.
+    -H <hostname>       Target host for submitting jobs
+    -t <timeout>        Time limit for individual operations.
+    -x <proxy_path>     Proxy file location, also can be supplied as X509_USER_PROXY environment variable
+    -d                  Print verbose output, not suitable for Nagios operation.
 
 """
 import sys
@@ -198,15 +199,25 @@ if __name__ == "__main__":
         debug = True
     debug_log("arguments: " + str(arguments))
 
+    proxy_location = None
+
     if "X509_USER_PROXY" in os.environ.keys():
+        debug_log("X509_USER_PROXY is set")
         proxy_location = os.environ["X509_USER_PROXY"]
+    if arguments['-x']:
+        debug_log("-x argument is given")
+        proxy_location = arguments['-x']
+
+    if proxy_location is not None:
+        debug_log("proxy location: " + proxy_location)
         try:
             proxy = load_proxy(os.path.expanduser(proxy_location))
             debug_log("got proxy: " + proxy[:40] + "...")
         except Exception, e:
             return_unknown("Unable to read proxy file", e)
     else:
-        return_unknown("Unable to find proxy, please set X509_USER_PROXY environment variable!")
+        return_unknown("Unable to find proxy, please provide -x parameter or set X509_USER_PROXY environment variable!")
+
 
     rimrock_url = arguments['-H']
 
