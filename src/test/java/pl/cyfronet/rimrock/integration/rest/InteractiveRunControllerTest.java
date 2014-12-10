@@ -40,7 +40,7 @@ public class InteractiveRunControllerTest {
 	@Autowired private ObjectMapper mapper;
 	
 	@Value("${local.server.port}") private int serverPort;
-	@Value("${server.address}") private String serverAddress;
+	@Value("${server.bind.address}") private String serverAddress;
 	
 	@Before
 	public void setup() {
