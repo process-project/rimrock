@@ -121,7 +121,7 @@ public class UserJobs {
 			statuses.addAll(statusResult.getStatuses());
 		}
 
-		List<Job> jobs = jobRepository.findByUserOnHosts(userLogin, hosts);
+		List<Job> jobs = jobRepository.findByUsernameOnHosts(userLogin, hosts);
 		Map<String, Status> mappedStatusJobIds = statuses.stream()
 				.collect(Collectors.toMap(Status::getJobId, Function.<Status> identity()));
 
@@ -180,7 +180,7 @@ public class UserJobs {
 	}
 
 	public Job get(String jobId) {
-		return jobRepository.findOneByJobIdAndUser(jobId, userLogin);		
+		return jobRepository.findOneByJobIdAndUserLogin(jobId, userLogin);		
 	}
 	
 	private <T> T readResult(String output, Class<T> klass) {
