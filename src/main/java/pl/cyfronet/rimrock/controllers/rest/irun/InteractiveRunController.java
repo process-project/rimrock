@@ -25,7 +25,6 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -117,37 +116,37 @@ public class InteractiveRunController {
 	
 	@RequestMapping(value = "/api/iprocess", method = GET, produces = APPLICATION_JSON_VALUE)
 	@SuppressWarnings({"rawtypes", "unchecked"})
-	public ResponseEntity getInteractiveProcesseses(@RequestHeader("PROXY") String proxy) throws CredentialException, GSSException, KeyStoreException, CertificateException, IOException {
+	public ResponseEntity getInteractiveProcesseses(@RequestHeader("PROXY") String proxy, @RequestHeader(required = false, value = "PROCESS-ID") String processId) throws CredentialException, GSSException, KeyStoreException, CertificateException, IOException {
 		String decodedProxy = getDecodedValidatedProxy(proxy);
 		String userLogin = proxyHelper.getUserLogin(decodedProxy);
-		List<InteractiveProcess> processes = processRepository.findByUserLogin(userLogin);
 		
-		return new ResponseEntity(processes, OK);
+		if(processId == null) {
+			InteractiveProcess process = getProcess(processId);
+			String output = process.getOutput();
+			String error = process.getError();
+			process.setOutput("");
+			process.setError("");
+			processRepository.save(process);
+			
+			InteractiveProcessResponse response = new InteractiveProcessResponse(Status.OK, null);
+			response.setStandardOutput(output);
+			response.setStandardError(error);
+			response.setFinished(process.isFinished());
+			response.setProcessId(processId);
+			
+			return new ResponseEntity<InteractiveProcessResponse>(response, OK);
+		} else {
+			List<InteractiveProcess> processes = processRepository.findByUserLogin(userLogin);
+			
+			return new ResponseEntity(processes, OK);
+		}
 	}
 	
-	@RequestMapping(value = "/api/iprocess/{processId}", method = GET, produces = APPLICATION_JSON_VALUE)
-	public ResponseEntity<InteractiveProcessResponse> getInteractiveProcessStatus(@RequestHeader("PROXY") String proxy, @PathVariable("processId") String processId) throws CredentialException {
-		getDecodedValidatedProxy(proxy);
-		InteractiveProcess process = getProcess(processId);
-		String output = process.getOutput();
-		String error = process.getError();
-		process.setOutput("");
-		process.setError("");
-		processRepository.save(process);
-		
-		InteractiveProcessResponse response = new InteractiveProcessResponse(Status.OK, null);
-		response.setStandardOutput(output);
-		response.setStandardError(error);
-		response.setFinished(process.isFinished());
-		response.setProcessId(processId);
-		
-		return new ResponseEntity<InteractiveProcessResponse>(response, OK);
-	}
-	
-	@RequestMapping(value = "/api/iprocess/{processId}", method = PUT, consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
-	public ResponseEntity<InteractiveProcessResponse> processInteractiveProcessInput(@RequestHeader("PROXY") String proxy, @PathVariable("processId") String processId,
+	@RequestMapping(value = "/api/iprocess", method = PUT, consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
+	public ResponseEntity<InteractiveProcessResponse> processInteractiveProcessInput(@RequestHeader("PROXY") String proxy, @RequestHeader("PROCESS-ID") String processId,
 			@Valid @RequestBody InteractiveProcessInputRequest request, BindingResult errors) throws CredentialException {
 		getDecodedValidatedProxy(proxy);
+		
 		InteractiveProcess process = getProcess(processId);
 		String output = process.getOutput();
 		String error = process.getError();

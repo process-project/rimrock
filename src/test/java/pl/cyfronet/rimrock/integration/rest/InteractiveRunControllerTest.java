@@ -6,7 +6,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -33,7 +32,6 @@ import com.jayway.restassured.response.Response;
 @SpringApplicationConfiguration(classes = RimrockApplication.class)
 @WebAppConfiguration
 @IntegrationTest
-@Ignore("The machine this test is run on needs to have a public address assigned!")
 public class InteractiveRunControllerTest {
 	private static final Logger log = LoggerFactory.getLogger(InteractiveRunControllerTest.class);
 	
@@ -75,10 +73,11 @@ public class InteractiveRunControllerTest {
 		ipir.setStandardInput("echo 4\nexit");
 		given().
 			header("PROXY", proxyHelper.encodeProxy(proxyFactory.getProxy())).
+			header("PROCESS-ID", processId).
 			contentType(JSON).
 			body(mapper.writeValueAsBytes(ipir)).
 		when().
-			put("/api/iprocess/{id}", processId).
+			put("/api/iprocess").
 		then().
 			log().all().
 			contentType(JSON).
@@ -92,8 +91,9 @@ public class InteractiveRunControllerTest {
 			Response response =
 			given().
 				header("PROXY", proxyHelper.encodeProxy(proxyFactory.getProxy())).
+				header("PROCESS-ID", processId).
 			when().
-				get("/api/iprocess/{id}", processId).
+				get("/api/iprocess").
 			then().
 				log().all().
 				contentType(JSON).
@@ -119,8 +119,9 @@ public class InteractiveRunControllerTest {
 	public void testNonExistingIProcess() throws Exception {
 		given().
 			header("PROXY", proxyHelper.encodeProxy(proxyFactory.getProxy())).
+			header("PROCESS-ID", "nonExisting").
 		when().
-			get("/api/iprocess/{id}", "nonExisting").
+			get("/api/iprocess").
 		then().
 			log().all().
 			contentType(JSON).
