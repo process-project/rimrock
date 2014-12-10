@@ -90,6 +90,7 @@ public class InteractiveRunController {
 		String decodedProxy = getDecodedValidatedProxy(proxy);
 		FileManager fileManager = fileManagerFactory.get(decodedProxy);
 		fileManager.cp(PathHelper.getRootPath(request.getHost(), proxyHelper.getUserLogin(decodedProxy)) + ".rimrock/iwrapper.py", new ClassPathResource("scripts/iwrapper.py"));
+		fileManager.cp(PathHelper.getRootPath(request.getHost(), proxyHelper.getUserLogin(decodedProxy)) + ".rimrock/TERENASSLCA", new ClassPathResource("certs/TERENASSLCA"));
 		
 		String processId = UUID.randomUUID().toString();
 		String internalUrl = MvcUriComponentsBuilder.fromMethodCall(on(InteractiveRunController.class).update(null)).build().toUriString();

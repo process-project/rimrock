@@ -42,7 +42,7 @@ class RestThread(threading.Thread):
 			error = self.errorThread.getAvailableBytes()
 			payload = {'standard_output': output, 'standard_error': error, 'process_id': self.processId}
 			headers = {'content-type': 'application/json'}
-			response = requests.post(self.url, data = json.dumps(payload), headers = headers, verify = False)
+			response = requests.post(self.url, data = json.dumps(payload), headers = headers, verify = '.rimrock/TERENASSLCA')
 			cmd = response.json()['input']
 			if cmd:
 				self.inputStream.write(cmd + '\n')
@@ -51,7 +51,7 @@ class RestThread(threading.Thread):
 		error = self.errorThread.getAvailableBytes()
 		payload = {'standard_output': output, 'standard_error': error, 'process_id': self.processId, 'finished': True}
 		headers = {'content-type': 'application/json'}
-		response = requests.post(self.url, data = json.dumps(payload), headers = headers, verify = False)
+		response = requests.post(self.url, data = json.dumps(payload), headers = headers, verify = '.rimrock/TERENASSLCA')
 
 url = os.environ['url']
 processId = os.environ['processId']
