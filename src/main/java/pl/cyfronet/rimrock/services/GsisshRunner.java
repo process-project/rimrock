@@ -218,6 +218,6 @@ public class GsisshRunner {
 	}
 
 	private byte[] completeCommand(String command, String separator) {
-		return ("echo '" + separator + "'; " + command + "; echo $?; echo '" + separator + "'; exit\n").getBytes();
+		return ("unset HISTFILE; echo '" + separator + "'; " + command + "; echo $?; echo '" + separator + "'; exit\n").getBytes();
 	}
 }
