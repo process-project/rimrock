@@ -55,7 +55,7 @@ public class ProxyFactory {
 		X509Certificate userCert = CertificateLoadUtil.loadCertificate(userCertFile.getInputStream());
 		OpenSSLKey key = new BouncyCastleOpenSSLKey(userKeyFile.getInputStream());
 
-		if (key.isEncrypted()) {
+		if(key.isEncrypted()) {
 			try {
 				key.decrypt(userKeyPass);
 			} catch (GeneralSecurityException e) {

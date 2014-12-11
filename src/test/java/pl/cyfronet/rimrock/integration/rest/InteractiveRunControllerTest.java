@@ -45,7 +45,9 @@ public class InteractiveRunControllerTest {
 	@Before
 	public void setup() {
 		RestAssured.port = serverPort;
-		RestAssured.baseURI = "http://" + serverAddress + ":" + serverPort;
+		String finalServerAddress = "http://" + serverAddress + ":" + serverPort;
+		RestAssured.baseURI = finalServerAddress;
+		log.info("Server address used: {}", finalServerAddress);
 	}
 	
 	@Test

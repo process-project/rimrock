@@ -120,7 +120,7 @@ public class InteractiveRunController {
 		String decodedProxy = getDecodedValidatedProxy(proxy);
 		String userLogin = proxyHelper.getUserLogin(decodedProxy);
 		
-		if(processId == null) {
+		if(processId != null) {
 			InteractiveProcess process = getProcess(processId);
 			String output = process.getOutput();
 			String error = process.getError();
