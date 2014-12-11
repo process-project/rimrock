@@ -66,7 +66,7 @@ public class InteractiveRunController {
 	
 	@RequestMapping(value = "/api/internal/update", method = POST, consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
 	public ResponseEntity<InternalUpdateResponse> update(@Valid @RequestBody InternalUpdateRequest updateRequest) {
-		log.info("Processing internal update request with body {}", updateRequest);
+		log.debug("Processing internal update request with body {}", updateRequest);
 		
 		InteractiveProcess process = getProcess(updateRequest.getProcessId());
 		String input = process.getPendingInput();
@@ -93,7 +93,7 @@ public class InteractiveRunController {
 		
 		String processId = UUID.randomUUID().toString();
 		String internalUrl = MvcUriComponentsBuilder.fromMethodCall(on(InteractiveRunController.class).update(null)).build().toUriString();
-		log.info("Attempting to start new interactive process with id {} and reporting URL {}", processId, internalUrl);
+		log.debug("Attempting to start new interactive process with id {} and reporting URL {}", processId, internalUrl);
 		
 		RunResults runResults = runner.run(request.getHost(), decodedProxy,
 				String.format("module load plgrid/tools/python/3.3.2; (url='%s' processId='%s' command='%s' nohup python3 .rimrock/iwrapper.py &)",
