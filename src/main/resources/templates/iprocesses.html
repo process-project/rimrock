@@ -191,7 +191,7 @@ curl -k -X POST --data '{"host":"zeus.cyfronet.pl", "command":"bash"}' \
 								</p> <pre>
 proxy="`cat {path-to-proxy-file} | base64 | tr -d '\n'`"
 
-curl -k -X GET --header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpServletRequest.serverName} + @{~/api/iprocess/25a6b082-7ef0-4ec7-8349-c3beb9b341a4}" />
+curl -k -X GET --header "PROCESS-ID:25a6b082-7ef0-4ec7-8349-c3beb9b341a4" --header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpServletRequest.serverName} + @{~/api/iprocess}" />
   					</pre>
 							</td>
 						</tr>
@@ -373,7 +373,7 @@ curl -k -X GET --header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpSe
 proxy="`cat {path-to-proxy-file} | base64 | tr -d '\n'`"
 
 curl -k -X PUT --data '{"standard_input":"echo hello"}' --header "Content-Type:application/json" \
---header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpServletRequest.serverName} + @{~/api/iprocess/25a6b082-7ef0-4ec7-8349-c3beb9b341a4}"/>
+--header "PROCESS-ID:25a6b082-7ef0-4ec7-8349-c3beb9b341a4" --header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpServletRequest.serverName} + @{~/api/iprocess}"/>
   					</pre>
 							</td>
 						</tr>
