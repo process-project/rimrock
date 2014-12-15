@@ -26,12 +26,11 @@ public class ProxyHelper {
 	private static final Logger log = LoggerFactory.getLogger(ProxyHelper.class);
 	
 	public String getUserLogin(String proxyValue) throws CredentialException {
-		String dn = getX509Credential(proxyValue).getSubject();
-		Pattern pattern = Pattern.compile(".+,CN=(plg.*),.*$");
+		String dn = getX509Credential(proxyValue).getIssuer();
+		Pattern pattern = Pattern.compile(".+,CN=(plg.*)(,.*$|$)");
 		Matcher matcher = pattern.matcher(dn);
 		
 		if(matcher.matches()) {
-			
 			String login = matcher.group(1);
 			log.debug("Extracted user login from certificate subject {} is {}", dn, login);
 			return login;

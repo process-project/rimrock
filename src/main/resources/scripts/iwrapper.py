@@ -4,6 +4,7 @@ import subprocess
 import time
 import json
 import sys
+import os
 
 class OutputThread(threading.Thread):
 	def __init__(self, outStream):
@@ -41,7 +42,7 @@ class RestThread(threading.Thread):
 			error = self.errorThread.getAvailableBytes()
 			payload = {'standard_output': output, 'standard_error': error, 'process_id': self.processId}
 			headers = {'content-type': 'application/json'}
-			response = requests.post(self.url, data = json.dumps(payload), headers = headers, verify = False)
+			response = requests.post(self.url, data = json.dumps(payload), headers = headers, verify = '.rimrock/TERENASSLCA')
 			cmd = response.json()['input']
 			if cmd:
 				self.inputStream.write(cmd + '\n')
@@ -50,11 +51,11 @@ class RestThread(threading.Thread):
 		error = self.errorThread.getAvailableBytes()
 		payload = {'standard_output': output, 'standard_error': error, 'process_id': self.processId, 'finished': True}
 		headers = {'content-type': 'application/json'}
-		response = requests.post(self.url, data = json.dumps(payload), headers = headers, verify = False)
+		response = requests.post(self.url, data = json.dumps(payload), headers = headers, verify = '.rimrock/TERENASSLCA')
 
-url = sys.argv[1]
-processId = sys.argv[2]
-command = sys.argv[3]
+url = os.environ['url']
+processId = os.environ['processId']
+command = os.environ['command']
 
 process = subprocess.Popen([command], stdin = subprocess.PIPE, stdout = subprocess.PIPE,
 							stderr = subprocess.PIPE, universal_newlines = True)

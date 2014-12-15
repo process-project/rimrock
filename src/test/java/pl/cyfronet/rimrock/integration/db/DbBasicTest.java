@@ -7,6 +7,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.Arrays;
 import java.util.List;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -25,6 +26,11 @@ public class DbBasicTest {
 	
 	@Before
 	public void setUp() {
+		jobRepository.deleteAll();
+	}
+	
+	@After
+	public void tearDown() {
 		jobRepository.deleteAll();
 	}
 	
@@ -58,7 +64,7 @@ public class DbBasicTest {
 		jobRepository.save(userJob("3", "user1", "host3"));
 		jobRepository.save(userJob("4", "user2", "host1"));
 		
-		List<Job> jobs = jobRepository.findByUserOnHosts("user1", Arrays.asList("host1", "host2"));
+		List<Job> jobs = jobRepository.findByUsernameOnHosts("user1", Arrays.asList("host1", "host2"));
 		
 		assertEquals(2, jobs.size());		
 		assertEquals("1", jobs.get(0).getJobId());

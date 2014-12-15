@@ -30,7 +30,7 @@ import com.sshtools.j2ssh.connection.ChannelState;
 import com.sshtools.j2ssh.io.IOStreamConnector;
 import com.sshtools.j2ssh.session.SessionChannelClient;
 
-@Ignore("This test blocks and awaits stdin. Only run manually.")
+@Ignore("This test blocks awaits stdin. Only run manually.")
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = RimrockApplication.class)
 public class BasicSshSessionTest {

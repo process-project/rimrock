@@ -83,7 +83,7 @@ public class UserJobsTest {
 		
 		assertEquals("jobId", job.getJobId());
 		assertEquals("QUEUED", job.getStatus());
-		assertEquals(userLogin, job.getUser());
+		assertEquals(userLogin, job.getUserLogin());
 		assertEquals("host", job.getHost());
 		assertEquals("stdout", job.getStandardOutputLocation());
 		assertEquals("stderr", job.getStandardErrorLocation());

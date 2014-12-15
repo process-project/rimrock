@@ -5,7 +5,7 @@
 
 	<groupId>pl.cyfronet</groupId>
 	<artifactId>rimrock</artifactId>
-	<version>0.1.0-SNAPSHOT</version>
+	<version>1.0.0</version>
 	<packaging>jar</packaging>
 
 	<name>rimrock - Robust Remote Process Controller</name>
@@ -17,7 +17,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>1.1.8.RELEASE</version>
+		<version>1.2.0.RELEASE</version>
 		<relativePath />
 	</parent>
 
@@ -60,6 +60,14 @@
 			<artifactId>hsqldb</artifactId>
 			<scope>runtime</scope>
 		</dependency>
+
+		<dependency>
+			<groupId>postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+			<version>9.1-901-1.jdbc4</version>
+			<scope>runtime</scope>
+		</dependency>
+				
 
 		<!-- Infrastructure dependencies -->
 		<dependency>
