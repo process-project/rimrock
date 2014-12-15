@@ -28,15 +28,18 @@ class OutputThread(threading.Thread):
 		return len(self.outputChunks) > 0 or self.is_alive()
 
 class RestThread(threading.Thread):
-	def __init__(self, url, processId, inputStream, outputThread, errorThread):
+	def __init__(self, url, processId, inputStream, outputThread, errorThread, timeoutSeconds, process):
 		super(RestThread, self).__init__()
 		self.url = url
 		self.processId = processId
 		self.inputStream = inputStream
 		self.outputThread = outputThread
 		self.errorThread = errorThread
+		self.timeoutSeconds = timeoutSeconds
+		self.process = process
 
 	def run(self):
+		self.time = time.time()
 		while self.outputThread.available() or self.errorThread.available():
 			output = self.outputThread.getAvailableBytes()
 			error = self.errorThread.getAvailableBytes()
@@ -46,22 +49,31 @@ class RestThread(threading.Thread):
 			cmd = response.json()['input']
 			if cmd:
 				self.inputStream.write(cmd + '\n')
+			if cmd or output or error:
+				self.time = time.time()
+			if time.time() - self.time > self.timeoutSeconds
+				self.process.kill()
+				payload = {'standard_output': '', 'standard_error': 'Timeout occurred', 'process_id': self.processId, 'finished': True}
+				headers = {'content-type': 'application/json'}
+				requests.post(self.url, data = json.dumps(payload), headers = headers, verify = '.rimrock/TERENASSLCA')
+				return
 			time.sleep(0.5)
 		output = self.outputThread.getAvailableBytes()
 		error = self.errorThread.getAvailableBytes()
 		payload = {'standard_output': output, 'standard_error': error, 'process_id': self.processId, 'finished': True}
 		headers = {'content-type': 'application/json'}
-		response = requests.post(self.url, data = json.dumps(payload), headers = headers, verify = '.rimrock/TERENASSLCA')
+		requests.post(self.url, data = json.dumps(payload), headers = headers, verify = '.rimrock/TERENASSLCA')
 
 url = os.environ['url']
 processId = os.environ['processId']
 command = os.environ['command']
+timeout = os.environ['timeout']
 
 process = subprocess.Popen([command], stdin = subprocess.PIPE, stdout = subprocess.PIPE,
 							stderr = subprocess.PIPE, universal_newlines = True)
 outThread = OutputThread(process.stdout)
 errThread = OutputThread(process.stderr)
-restThread = RestThread(url, processId, process.stdin, outThread, errThread)
+restThread = RestThread(url, processId, process.stdin, outThread, errThread, int(timeout), process)
 
 outThread.start()
 errThread.start()

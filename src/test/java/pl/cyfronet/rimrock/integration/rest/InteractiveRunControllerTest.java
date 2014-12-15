@@ -129,4 +129,9 @@ public class InteractiveRunControllerTest {
 			contentType(JSON).
 			statusCode(404);
 	}
+	
+	@Test
+	public void testTimeout() {
+		
+	}
 }
