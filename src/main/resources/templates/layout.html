@@ -59,7 +59,7 @@
 					<div class="col-lg-2">
 						<h4 th:text="#{contact.title}"></h4>
 						<p>
-							<a th:href="#{'mailto:' + contact.email}" th:text="#{contact.email}"></a>
+							<a th:href="'mailto:' + #{contact.email}" th:text="#{contact.email}"></a>
 						</p>
 					</div>
 					<div class="col-lg-3">
