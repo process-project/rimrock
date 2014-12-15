@@ -57,6 +57,12 @@
 			<div class="container">
 				<div class="row">
 					<div class="col-lg-4">
+						<h4 th:text="#{contact.title}"></h4>
+						<p>
+							<a th:href="#{'mailto:' + dice.email}" th:text="#{dice.email"></a>
+						</p>
+					</div>
+					<div class="col-lg-4">
 						<h4 th:text="#{contact.bunker}"></h4>
 						<p th:utext="#{contact.address}"></p>
 					</div>
