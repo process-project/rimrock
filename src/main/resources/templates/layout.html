@@ -56,17 +56,17 @@
 		<div id="footer">
 			<div class="container">
 				<div class="row">
-					<div class="col-lg-4">
+					<div class="col-lg-2">
 						<h4 th:text="#{contact.title}"></h4>
 						<p>
-							<a th:href="#{'mailto:' + dice.email}" th:text="#{dice.email"></a>
+							<a th:href="#{'mailto:' + contact.email}" th:text="#{contact.email}"></a>
 						</p>
 					</div>
-					<div class="col-lg-4">
+					<div class="col-lg-3">
 						<h4 th:text="#{contact.bunker}"></h4>
 						<p th:utext="#{contact.address}"></p>
 					</div>
-					<div class="col-lg-4">
+					<div class="col-lg-2">
 						<h4 th:text="#{links}"></h4>
 						<p>
 							<a th:href="#{dice.homepage}" th:text="#{dice.name}"></a>
@@ -77,7 +77,7 @@
 						</p>
 					</div>
 	
-					<div class="col-lg-4">
+					<div class="col-lg-5">
 						<h4 th:text="#{dice.about.title}"></h4>
 						<p th:text="#{dice.about.credo}"></p>
 					</div>
