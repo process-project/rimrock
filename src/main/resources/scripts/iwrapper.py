@@ -51,7 +51,7 @@ class RestThread(threading.Thread):
 				self.inputStream.write(cmd + '\n')
 			if cmd or output or error:
 				self.time = time.time()
-			if time.time() - self.time > self.timeoutSeconds
+			if time.time() - self.time > self.timeoutSeconds:
 				self.process.kill()
 				payload = {'standard_output': '', 'standard_error': 'Timeout occurred', 'process_id': self.processId, 'finished': True}
 				headers = {'content-type': 'application/json'}
