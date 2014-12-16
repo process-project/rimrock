@@ -21,6 +21,7 @@ import org.ietf.jgss.GSSException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -55,6 +56,8 @@ public class InteractiveRunController {
 	private GsisshRunner runner;
 	private FileManagerFactory fileManagerFactory;
 	private ProxyHelper proxyHelper;
+	
+	@Value("${irun.timeout.seconds}") private String iprocessTimeoutSeconds;
 
 	@Autowired
 	public InteractiveRunController(InteractiveProcessRepository processRepository, GsisshRunner runner, FileManagerFactory fileManagerFactory, ProxyHelper proxyHelper) {
@@ -96,8 +99,8 @@ public class InteractiveRunController {
 		log.debug("Attempting to start new interactive process with id {} and reporting URL {}", processId, internalUrl);
 		
 		RunResults runResults = runner.run(request.getHost(), decodedProxy,
-				String.format("module load plgrid/tools/python/3.3.2; (url='%s' processId='%s' command='%s' nohup python3 .rimrock/iwrapper.py &)",
-						internalUrl, processId, request.getCommand()), 5000);
+				String.format("module load plgrid/tools/python/3.3.2; (url='%s' processId='%s' command='%s' timeout='%s' nohup python3 .rimrock/iwrapper.py &)",
+						internalUrl, processId, request.getCommand(), iprocessTimeoutSeconds), 5000);
 		
 		if(runResults.isTimeoutOccured() || runResults.getExitCode() != 0) {
 			throw new RunException("Interactive process could not be properly executed", runResults);			
