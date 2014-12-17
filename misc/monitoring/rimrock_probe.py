@@ -13,11 +13,13 @@ Options:
 import sys
 import os
 import base64
-import json
 import httplib
 import inspect
 import time
 from optparse import OptionParser
+
+import simplejson
+
 
 # global variables
 
@@ -72,17 +74,20 @@ def check_response(desired_result, result):
                             "actual result:\n" + str(result) + "\ndesired response:\n" + str(desired_result))
 
 
-def make_request(path, payload=None, method="POST"):
+def make_request(path, payload=None, method="POST", add_headers=None):
     headers = {
         "Content-type": "application/json",
         "PROXY": proxy
     }
 
+    if add_headers is not None:
+        headers.update(add_headers)
+
     debug_log("Request: " + path + ", method: " + method + ", with payload: " + str(payload))
 
     conn = httplib.HTTPSConnection(rimrock_url, timeout=timeout)
     try:
-        body = json.dumps(payload) if payload is not None else None
+        body = simplejson.dumps(payload) if payload is not None else None
         conn.request(method, path, body=body, headers=headers)
         # conn.set_debuglevel(1)
         resp = conn.getresponse()
@@ -95,7 +100,7 @@ def make_request(path, payload=None, method="POST"):
         return (None, resp.status)
     else:
         try:
-            parsed_response = json.loads(response)
+            parsed_response = simplejson.loads(response)
         except Exception, e2:
             return_critical("Unable to parse response of process_sequence", "response:" + response + "\n" + str(e2))
 
@@ -125,14 +130,14 @@ def iprocess_sequence():
     process_id = response["process_id"]
     debug_log("process_id: " + process_id)
 
-    response, code = make_request("/api/iprocess/" + process_id, method="GET")
+    response, code = make_request("/api/iprocess/", method="GET", add_headers={"PROCESS-ID": process_id})
     check_response({"status": "OK"}, response)
 
     response, code = make_request("/api/iprocess", method="GET")
     if len(response) == 0:
         return_critical("Listing user jobs didn't return anything", response)
 
-    response, code = make_request("/api/iprocess/" + process_id, {"standard_input": "exit"}, method="PUT")
+    response, code = make_request("/api/iprocess/", {"standard_input": "exit"}, method="PUT", add_headers={"PROCESS-ID": process_id})
     check_response({"status": "OK"}, response)
 
     finished = response["finished"]
@@ -140,7 +145,7 @@ def iprocess_sequence():
 
     while not finished:
         time.sleep(1)
-        response, code = make_request("/api/iprocess/" + process_id, method="GET")
+        response, code = make_request("/api/iprocess/", method="GET", add_headers={"PROCESS-ID": process_id})
         check_response({"status": "OK"}, response)
         finished = response["finished"]
         count += 1
