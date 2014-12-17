@@ -2,6 +2,7 @@ package pl.cyfronet.rimrock.integration.rest;
 
 import static com.jayway.restassured.RestAssured.given;
 import static com.jayway.restassured.http.ContentType.JSON;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -41,6 +42,7 @@ public class InteractiveRunControllerTest {
 	
 	@Value("${local.server.port}") private int serverPort;
 	@Value("${test.server.bind.address}") private String serverAddress;
+	@Value("${irun.timeout.seconds}") private int irunTimeoutSeconds;
 	
 	@Before
 	public void setup() {
@@ -128,5 +130,40 @@ public class InteractiveRunControllerTest {
 			log().all().
 			contentType(JSON).
 			statusCode(404);
+	}
+	
+	@Test
+	public void testTimeout() throws JsonProcessingException, Exception {
+		InteractiveProcessRequest ipr = new InteractiveProcessRequest();
+		ipr.setHost("ui.cyfronet.pl");
+		ipr.setCommand("bash");
+		
+		String processId = 
+		given().
+			header("PROXY", proxyHelper.encodeProxy(proxyFactory.getProxy())).
+			contentType(JSON).
+			body(mapper.writeValueAsBytes(ipr)).
+		when().
+			post("/api/iprocess").
+		then().
+			log().all().
+			contentType(JSON).
+			statusCode(200).
+		extract().
+			path("process_id");
+		log.info("Obtained process id is {}", processId);
+		
+		Thread.sleep((irunTimeoutSeconds + 2) * 1000);
+		
+		given().
+			header("PROXY", proxyHelper.encodeProxy(proxyFactory.getProxy())).
+			header("PROCESS-ID", processId).
+		when().
+			get("/api/iprocess").
+		then().
+			log().all().
+			contentType(JSON).
+			statusCode(200).
+			body("standard_error", equalTo("Timeout occurred"));
 	}
 }

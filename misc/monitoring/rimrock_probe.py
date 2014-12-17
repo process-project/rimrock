@@ -13,11 +13,13 @@ Options:
 import sys
 import os
 import base64
-import json
 import httplib
 import inspect
 import time
-from docopt import docopt
+from optparse import OptionParser
+
+import simplejson
+
 
 # global variables
 
@@ -72,17 +74,20 @@ def check_response(desired_result, result):
                             "actual result:\n" + str(result) + "\ndesired response:\n" + str(desired_result))
 
 
-def make_request(path, payload=None, method="POST"):
+def make_request(path, payload=None, method="POST", add_headers=None):
     headers = {
         "Content-type": "application/json",
         "PROXY": proxy
     }
 
+    if add_headers is not None:
+        headers.update(add_headers)
+
     debug_log("Request: " + path + ", method: " + method + ", with payload: " + str(payload))
 
     conn = httplib.HTTPSConnection(rimrock_url, timeout=timeout)
     try:
-        body = json.dumps(payload) if payload is not None else None
+        body = simplejson.dumps(payload) if payload is not None else None
         conn.request(method, path, body=body, headers=headers)
         # conn.set_debuglevel(1)
         resp = conn.getresponse()
@@ -95,7 +100,7 @@ def make_request(path, payload=None, method="POST"):
         return (None, resp.status)
     else:
         try:
-            parsed_response = json.loads(response)
+            parsed_response = simplejson.loads(response)
         except Exception, e2:
             return_critical("Unable to parse response of process_sequence", "response:" + response + "\n" + str(e2))
 
@@ -125,14 +130,14 @@ def iprocess_sequence():
     process_id = response["process_id"]
     debug_log("process_id: " + process_id)
 
-    response, code = make_request("/api/iprocess/" + process_id, method="GET")
+    response, code = make_request("/api/iprocess/", method="GET", add_headers={"PROCESS-ID": process_id})
     check_response({"status": "OK"}, response)
 
     response, code = make_request("/api/iprocess", method="GET")
     if len(response) == 0:
         return_critical("Listing user jobs didn't return anything", response)
 
-    response, code = make_request("/api/iprocess/" + process_id, {"standard_input": "exit"}, method="PUT")
+    response, code = make_request("/api/iprocess/", {"standard_input": "exit"}, method="PUT", add_headers={"PROCESS-ID": process_id})
     check_response({"status": "OK"}, response)
 
     finished = response["finished"]
@@ -140,7 +145,7 @@ def iprocess_sequence():
 
     while not finished:
         time.sleep(1)
-        response, code = make_request("/api/iprocess/" + process_id, method="GET")
+        response, code = make_request("/api/iprocess/", method="GET", add_headers={"PROCESS-ID": process_id})
         check_response({"status": "OK"}, response)
         finished = response["finished"]
         count += 1
@@ -194,19 +199,30 @@ def job_cancel_sequence():
 # main function
 
 if __name__ == "__main__":
-    arguments = docopt(__doc__, version="Rimrock probe 1.0")
-    if arguments['-d']:
+    parser = OptionParser(version="Rimrock probe v1.0")
+
+    parser.add_option("-H", dest="hostname", metavar="hostname", help="Target host for submitting jobs")
+    parser.add_option("-t", dest="timeout", metavar="timeout", type="int", default=200, help="Time limit for individual operations")
+    parser.add_option("-x", dest="proxy_path", metavar="proxy_path", help="Proxy file location, also can be supplied as X509_USER_PROXY environment variable")
+    parser.add_option("-d", action="store_true", dest="debug", help="Print verbose output, not suitable for Nagios operation", default=False)
+
+    (options, args) = parser.parse_args()
+
+    if len(args) != 0:
+        return_unknown("Unkown arguments: " + args)
+
+    if options.debug:
         debug = True
-    debug_log("arguments: " + str(arguments))
+    debug_log("options: " + str(options) + ", arguments: " + str(args))
 
     proxy_location = None
 
     if "X509_USER_PROXY" in os.environ.keys():
         debug_log("X509_USER_PROXY is set")
         proxy_location = os.environ["X509_USER_PROXY"]
-    if arguments['-x']:
+    if options.proxy_path:
         debug_log("-x argument is given")
-        proxy_location = arguments['-x']
+        proxy_location = options.proxy_path
 
     if proxy_location is not None:
         debug_log("proxy location: " + proxy_location)
@@ -218,13 +234,15 @@ if __name__ == "__main__":
     else:
         return_unknown("Unable to find proxy, please provide -x parameter or set X509_USER_PROXY environment variable!")
 
+    if not options.hostname:
+        return_unknown("Please provide a hostname with -H option")
 
-    rimrock_url = arguments['-H']
+    rimrock_url = options.hostname
 
-    if not unicode(arguments['-t']).isnumeric() or int(arguments['-t']) <= 0:
-        return_unknown("Timeout is not a number, please supply a positive, non zero numerical value")
+    if options.timeout <= 0:
+        return_unknown("Timeout is negative, it needs to be a positive value")
 
-    timeout = int(arguments['-t'])
+    timeout = options.timeout
 
     process_sequence()
     iprocess_sequence()
