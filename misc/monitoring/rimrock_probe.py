@@ -17,7 +17,7 @@ import json
 import httplib
 import inspect
 import time
-from docopt import docopt
+from optparse import OptionParser
 
 # global variables
 
@@ -194,19 +194,30 @@ def job_cancel_sequence():
 # main function
 
 if __name__ == "__main__":
-    arguments = docopt(__doc__, version="Rimrock probe 1.0")
-    if arguments['-d']:
+    parser = OptionParser(version="Rimrock probe v1.0")
+
+    parser.add_option("-H", dest="hostname", metavar="hostname", help="Target host for submitting jobs")
+    parser.add_option("-t", dest="timeout", metavar="timeout", type="int", default=200, help="Time limit for individual operations")
+    parser.add_option("-x", dest="proxy_path", metavar="proxy_path", help="Proxy file location, also can be supplied as X509_USER_PROXY environment variable")
+    parser.add_option("-d", action="store_true", dest="debug", help="Print verbose output, not suitable for Nagios operation", default=False)
+
+    (options, args) = parser.parse_args()
+
+    if len(args) != 0:
+        return_unknown("Unkown arguments: " + args)
+
+    if options.debug:
         debug = True
-    debug_log("arguments: " + str(arguments))
+    debug_log("options: " + str(options) + ", arguments: " + str(args))
 
     proxy_location = None
 
     if "X509_USER_PROXY" in os.environ.keys():
         debug_log("X509_USER_PROXY is set")
         proxy_location = os.environ["X509_USER_PROXY"]
-    if arguments['-x']:
+    if options.proxy_path:
         debug_log("-x argument is given")
-        proxy_location = arguments['-x']
+        proxy_location = options.proxy_path
 
     if proxy_location is not None:
         debug_log("proxy location: " + proxy_location)
@@ -218,13 +229,15 @@ if __name__ == "__main__":
     else:
         return_unknown("Unable to find proxy, please provide -x parameter or set X509_USER_PROXY environment variable!")
 
+    if not options.hostname:
+        return_unknown("Please provide a hostname with -H option")
 
-    rimrock_url = arguments['-H']
+    rimrock_url = options.hostname
 
-    if not unicode(arguments['-t']).isnumeric() or int(arguments['-t']) <= 0:
-        return_unknown("Timeout is not a number, please supply a positive, non zero numerical value")
+    if options.timeout <= 0:
+        return_unknown("Timeout is negative, it needs to be a positive value")
 
-    timeout = int(arguments['-t'])
+    timeout = options.timeout
 
     process_sequence()
     iprocess_sequence()
