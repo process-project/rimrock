@@ -87,7 +87,9 @@ def make_request(path, payload=None, method="POST", add_headers=None):
 
     conn = httplib.HTTPSConnection(rimrock_url, timeout=timeout)
     try:
-        body = simplejson.dumps(payload) if payload is not None else None
+        body = None
+        if payload is not None:
+            body = simplejson.dumps(payload)
         conn.request(method, path, body=body, headers=headers)
         # conn.set_debuglevel(1)
         resp = conn.getresponse()
