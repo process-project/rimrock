@@ -85,7 +85,7 @@ def make_request(path, payload=None, method="POST", add_headers=None):
 
     debug_log("Request: " + path + ", method: " + method + ", with payload: " + str(payload))
 
-    conn = httplib.HTTPSConnection(rimrock_url, timeout=timeout)
+    conn = httplib.HTTPSConnection(rimrock_url)
     try:
         body = None
         if payload is not None:
