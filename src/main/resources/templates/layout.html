@@ -82,6 +82,9 @@
 						<p th:text="#{dice.about.credo}"></p>
 					</div>
 				</div>
+				<div class="row">
+					<div class="col-lg-12 text-muted text-right"><span th:text="#{footer.version}"></span> <span th:text="${@environment.getProperty('application.version')}"></span></div>
+				</div>
 			</div>
 		</div>
 	
