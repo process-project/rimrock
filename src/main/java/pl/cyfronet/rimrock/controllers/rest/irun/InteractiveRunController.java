@@ -1,6 +1,5 @@
 package pl.cyfronet.rimrock.controllers.rest.irun;
 
-import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
@@ -25,14 +24,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
-import pl.cyfronet.rimrock.controllers.rest.ErrorResponse;
+import pl.cyfronet.rimrock.controllers.exceptions.ResourceNotFoundException;
 import pl.cyfronet.rimrock.controllers.rest.PathHelper;
 import pl.cyfronet.rimrock.controllers.rest.irun.InteractiveProcessResponse.Status;
 import pl.cyfronet.rimrock.controllers.rest.jobs.ValidationException;
@@ -84,7 +83,8 @@ public class InteractiveRunController {
 	
 	@RequestMapping(value = "/api/iprocess", method = POST, consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
 	public ResponseEntity<InteractiveProcessResponse> startInteractiveProcess(@RequestHeader("PROXY") String proxy,
-			@Valid @RequestBody InteractiveProcessRequest request, BindingResult errors) throws CredentialException, FileManagerException, InvalidStateException, KeyStoreException, CertificateException, GSSException, IOException, InterruptedException {
+			@Valid @RequestBody InteractiveProcessRequest request, BindingResult errors) throws CredentialException, FileManagerException, InvalidStateException,
+			KeyStoreException, CertificateException, GSSException, IOException, InterruptedException {
 		if(errors.hasErrors()) {
 			throw new ValidationException(errors);
 		}
@@ -125,6 +125,11 @@ public class InteractiveRunController {
 		
 		if(processId != null) {
 			InteractiveProcess process = getProcess(processId);
+			
+			if(process.getUserLogin() == null || !process.getUserLogin().equals(userLogin)) {
+				throw new ResourceAccessException("You do not seem to be the owner of the requested interactive process");
+			}
+			
 			String output = process.getOutput();
 			String error = process.getError();
 			process.setOutput("");
@@ -187,15 +192,10 @@ public class InteractiveRunController {
 	private InteractiveProcess getProcess(String processId) {
 		InteractiveProcess process = processRepository.findByProcessId(processId);
 		
-		if (process == null) {
-			throw new InteractiveProcessNotFoundException(processId);
+		if(process == null) {
+			throw new ResourceNotFoundException("Interactive process with id " + processId + " could not be found");
 		}
 		
 		return process;
-	}
-	
-	@ExceptionHandler(InteractiveProcessNotFoundException.class)
-	private ResponseEntity<ErrorResponse> handleInteractiveProcessNotFoundError(InteractiveProcessNotFoundException e) {
-		return new ResponseEntity<ErrorResponse>(new ErrorResponse(e.getMessage()), NOT_FOUND);
 	}
 }
