@@ -2,7 +2,9 @@ package pl.cyfronet.rimrock.controllers.rest;
 
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.REQUEST_TIMEOUT;
+import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
 
 import java.io.IOException;
@@ -17,7 +19,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.client.ResourceAccessException;
 
+import pl.cyfronet.rimrock.controllers.exceptions.ResourceNotFoundException;
 import pl.cyfronet.rimrock.controllers.rest.jobs.ValidationException;
 import pl.cyfronet.rimrock.services.RunException;
 import pl.cyfronet.rimrock.services.filemanager.FileManagerException;
@@ -42,12 +46,10 @@ public class GlobalExceptionHandling {
 		} 
 		msg = String.format("%s. Make sure that your proxy is a valid SimpleCA certificate.", e.getMessage());
 
-		return new ResponseEntity<ErrorResponse>(new ErrorResponse(msg), FORBIDDEN);
+		return new ResponseEntity<ErrorResponse>(new ErrorResponse(msg), UNAUTHORIZED);
 	}
 	
-	@ExceptionHandler({FileManagerException.class, 
-		InvalidStateException.class, GSSException.class, 
-		IOException.class, InterruptedException.class})
+	@ExceptionHandler({FileManagerException.class, InvalidStateException.class, GSSException.class, IOException.class, InterruptedException.class})
 	public ResponseEntity<ErrorResponse> handleRunCmdError(Exception e) {
 		log.error("Global error intercepted", e);
 		
@@ -67,6 +69,20 @@ public class GlobalExceptionHandling {
 		log.error("Global error intercepted", e);
 		
 		return new ResponseEntity<ErrorResponse>(new ErrorResponse(-1, e.getMessage()), UNPROCESSABLE_ENTITY);
+	}
+	
+	@ExceptionHandler(ResourceAccessException.class)
+	public ResponseEntity<ErrorResponse> handleAccessException(ResourceAccessException e) {
+		log.error("Global error intercepted", e);
+		
+		return new ResponseEntity<ErrorResponse>(new ErrorResponse(e.getMessage()), FORBIDDEN);
+	}
+	
+	@ExceptionHandler(ResourceNotFoundException.class)
+	public ResponseEntity<ErrorResponse> handleAccessException(ResourceNotFoundException e) {
+		log.error("Global error intercepted", e);
+		
+		return new ResponseEntity<ErrorResponse>(new ErrorResponse(e.getMessage()), NOT_FOUND);
 	}
 	
 	@ExceptionHandler(Exception.class)
