@@ -1,0 +1,13 @@
+v 1.1.0
+  - interactive processes timeout
+  - contact email in page footer
+
+v 1.0.1
+  - turn off session support even when languge is changed
+  - store languages prefferences in "rimrock-lang" cookie
+  - check user login from proxy while updating interactive process data
+
+v 1.0.0
+  - run processes on remote server through REST API
+  - submit and monitor jobs on remote server through REST API
+  - run interactive processes on remote server through REST API
