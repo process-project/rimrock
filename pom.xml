@@ -27,6 +27,7 @@
 		<java.version>1.8</java.version>
 		<tomcat.version>8.0.8</tomcat.version>
 		<gatling.version>2.0.0</gatling.version>
+		<jglobus.version>2.1.0</jglobus.version>
 	</properties>
 
 	<dependencies>
@@ -60,7 +61,6 @@
 			<artifactId>hsqldb</artifactId>
 			<scope>runtime</scope>
 		</dependency>
-
 		<dependency>
 			<groupId>postgresql</groupId>
 			<artifactId>postgresql</artifactId>
@@ -83,7 +83,12 @@
 		<dependency>
 			<groupId>org.jglobus</groupId>
 			<artifactId>gss</artifactId>
-			<version>2.1.0</version>
+			<version>${jglobus.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.jglobus</groupId>
+			<artifactId>gridftp</artifactId>
+			<version>${jglobus.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>ca.juliusdavies</groupId>
@@ -99,11 +104,6 @@
 			<groupId>org.apache.airavata</groupId>
 			<artifactId>gsissh</artifactId>
 			<version>0.12</version>
-		</dependency>
-		<dependency>
-			<groupId>org.jglobus</groupId>
-			<artifactId>gridftp</artifactId>
-			<version>2.0.6</version>
 		</dependency>
 
 		<!-- Test dependencies -->
