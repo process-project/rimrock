@@ -2,6 +2,7 @@ v 1.1.0
   - Interactive processes time out
   - Email contact added in the footer of the page
   - Version indicator added in the footer of the page
+  - Log levels are being properly respected in producion mode
 
 v 1.0.1
   - Session support disabled even when language is changed
