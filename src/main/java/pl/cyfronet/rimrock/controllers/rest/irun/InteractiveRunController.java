@@ -150,9 +150,14 @@ public class InteractiveRunController {
 	@RequestMapping(value = "/api/iprocess", method = PUT, consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
 	public ResponseEntity<InteractiveProcessResponse> processInteractiveProcessInput(@RequestHeader("PROXY") String proxy, @RequestHeader("PROCESS-ID") String processId,
 			@Valid @RequestBody InteractiveProcessInputRequest request, BindingResult errors) throws CredentialException {
-		getDecodedValidatedProxy(proxy);
-		
+		String decodedProxy = getDecodedValidatedProxy(proxy);
+		String userLogin = proxyHelper.getUserLogin(decodedProxy);
 		InteractiveProcess process = getProcess(processId);
+		
+		if(process.getUserLogin() == null || !process.getUserLogin().equals(userLogin)) {
+			throw new ResourceAccessException("You do not seem to be the owner of the requested interactive process");
+		}
+		
 		String output = process.getOutput();
 		String error = process.getError();
 		process.setOutput("");
