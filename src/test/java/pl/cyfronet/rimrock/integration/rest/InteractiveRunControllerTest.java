@@ -64,7 +64,7 @@ public class InteractiveRunControllerTest {
 			contentType(JSON).
 			body(mapper.writeValueAsBytes(ipr)).
 		when().
-			post("/api/iprocess").
+			post("/api/iprocesses").
 		then().
 			log().all().
 			contentType(JSON).
@@ -81,7 +81,7 @@ public class InteractiveRunControllerTest {
 			contentType(JSON).
 			body(mapper.writeValueAsBytes(ipir)).
 		when().
-			put("/api/iprocess").
+			put("/api/iprocesses").
 		then().
 			log().all().
 			contentType(JSON).
@@ -97,7 +97,7 @@ public class InteractiveRunControllerTest {
 				header("PROXY", proxyHelper.encodeProxy(proxyFactory.getProxy())).
 				header("PROCESS-ID", processId).
 			when().
-				get("/api/iprocess").
+				get("/api/iprocesses").
 			then().
 				log().all().
 				contentType(JSON).
@@ -125,7 +125,7 @@ public class InteractiveRunControllerTest {
 			header("PROXY", proxyHelper.encodeProxy(proxyFactory.getProxy())).
 			header("PROCESS-ID", "nonExisting").
 		when().
-			get("/api/iprocess").
+			get("/api/iprocesses").
 		then().
 			log().all().
 			contentType(JSON).
@@ -144,7 +144,7 @@ public class InteractiveRunControllerTest {
 			contentType(JSON).
 			body(mapper.writeValueAsBytes(ipr)).
 		when().
-			post("/api/iprocess").
+			post("/api/iprocesses").
 		then().
 			log().all().
 			contentType(JSON).
@@ -159,7 +159,7 @@ public class InteractiveRunControllerTest {
 			header("PROXY", proxyHelper.encodeProxy(proxyFactory.getProxy())).
 			header("PROCESS-ID", processId).
 		when().
-			get("/api/iprocess").
+			get("/api/iprocesses").
 		then().
 			log().all().
 			contentType(JSON).
