@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class InternalUpdateRequest {
 	@JsonProperty("standard_output") private String standardOutput;
 	@JsonProperty("standard_error") private String standardError;
-	@JsonProperty("process_id") private String processId;
+	@JsonProperty("secret") private String secret;
 	private boolean finished;
 	
 	public String getStandardOutput() {
@@ -30,10 +30,10 @@ public class InternalUpdateRequest {
 	public void setFinished(boolean finished) {
 		this.finished = finished;
 	}
-	public String getProcessId() {
-		return processId;
+	public String getSecret() {
+		return secret;
 	}
-	public void setProcessId(String processId) {
-		this.processId = processId;
+	public void setSecret(String processId) {
+		this.secret = processId;
 	}
 }

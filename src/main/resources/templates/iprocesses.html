@@ -126,15 +126,15 @@ curl -k -X POST --data '{"host":"zeus.cyfronet.pl", "command":"bash"}' \
 					<table class="table table-bordered">
 						<tr>
 							<th th:text="#{example.url}"></th>
-							<td><code>/api/iprocess</code></td>
+							<td><code>/api/iprocess/{process_id}</code></td>
 						</tr>
 						<tr>
 							<th th:text="#{example.method}"></th>
 							<td><span class="label label-primary">GET</span></td>
 						</tr>
 						<tr>
-							<th th:text="#{example.header_params}"></th>
-							<td><em>PROCESS-ID</em> - <span th:text="#{iprocess.status.param.process_id}"></span></td>
+							<th th:text="#{example.url_params}"></th>
+							<td><em>process_id</em> - <span th:text="#{iprocess.status.param.process_id}"></span></td>
 						</tr>
 						<tr>
 							<th th:text="#{example.data_params}"></th>
@@ -191,7 +191,7 @@ curl -k -X POST --data '{"host":"zeus.cyfronet.pl", "command":"bash"}' \
 								</p> <pre>
 proxy="`cat {path-to-proxy-file} | base64 | tr -d '\n'`"
 
-curl -k -X GET --header "PROCESS-ID:25a6b082-7ef0-4ec7-8349-c3beb9b341a4" --header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpServletRequest.serverName} + @{~/api/iprocess}" />
+curl -k -X GET --header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpServletRequest.serverName} + @{~/api/iprocess/25a6b082-7ef0-4ec7-8349-c3beb9b341a4}" />
   					</pre>
 							</td>
 						</tr>
@@ -296,15 +296,15 @@ curl -k -X GET --header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpSe
 					<table class="table table-bordered">
 						<tr>
 							<th th:text="#{example.url}"></th>
-							<td><code>/api/iprocess</code></td>
+							<td><code>/api/iprocess/{process_id}</code></td>
 						</tr>
 						<tr>
 							<th th:text="#{example.method}"></th>
 							<td><span class="label label-primary">PUT</span></td>
 						</tr>
 						<tr>
-							<th th:text="#{example.header_params}"></th>
-							<td><em>PROCESS-ID</em> - <span th:text="#{iprocess.status.param.process_id}"></span></td>
+							<th th:text="#{example.url_params}"></th>
+							<td><em>process_id</em> - <span th:text="#{iprocess.status.param.process_id}"></span></td>
 						</tr>
 						<tr>
 							<th th:text="#{example.data_params}"></th>
@@ -373,7 +373,7 @@ curl -k -X GET --header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpSe
 proxy="`cat {path-to-proxy-file} | base64 | tr -d '\n'`"
 
 curl -k -X PUT --data '{"standard_input":"echo hello"}' --header "Content-Type:application/json" \
---header "PROCESS-ID:25a6b082-7ef0-4ec7-8349-c3beb9b341a4" --header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpServletRequest.serverName} + @{~/api/iprocess}"/>
+--header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpServletRequest.serverName} + @{~/api/iprocess/25a6b082-7ef0-4ec7-8349-c3beb9b341a4}"/>
   					</pre>
 							</td>
 						</tr>
