@@ -81,7 +81,7 @@ public class InteractiveRunController {
 		return new ResponseEntity<InternalUpdateResponse>(new InternalUpdateResponse(input), OK);
 	}
 	
-	@RequestMapping(value = "/api/iprocess", method = POST, consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
+	@RequestMapping(value = "/api/iprocesses", method = POST, consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
 	public ResponseEntity<InteractiveProcessResponse> startInteractiveProcess(@RequestHeader("PROXY") String proxy,
 			@Valid @RequestBody InteractiveProcessRequest request, BindingResult errors) throws CredentialException, FileManagerException, InvalidStateException,
 			KeyStoreException, CertificateException, GSSException, IOException, InterruptedException {
@@ -117,7 +117,7 @@ public class InteractiveRunController {
 		return new ResponseEntity<InteractiveProcessResponse>(response, OK);	
 	}
 	
-	@RequestMapping(value = "/api/iprocess", method = GET, produces = APPLICATION_JSON_VALUE)
+	@RequestMapping(value = "/api/iprocesses", method = GET, produces = APPLICATION_JSON_VALUE)
 	@SuppressWarnings({"rawtypes", "unchecked"})
 	public ResponseEntity getInteractiveProcesseses(@RequestHeader("PROXY") String proxy, @RequestHeader(required = false, value = "PROCESS-ID") String processId) throws CredentialException, GSSException, KeyStoreException, CertificateException, IOException {
 		String decodedProxy = getDecodedValidatedProxy(proxy);
@@ -150,7 +150,7 @@ public class InteractiveRunController {
 		}
 	}
 	
-	@RequestMapping(value = "/api/iprocess", method = PUT, consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
+	@RequestMapping(value = "/api/iprocesses", method = PUT, consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
 	public ResponseEntity<InteractiveProcessResponse> processInteractiveProcessInput(@RequestHeader("PROXY") String proxy, @RequestHeader("PROCESS-ID") String processId,
 			@Valid @RequestBody InteractiveProcessInputRequest request, BindingResult errors) throws CredentialException {
 		String decodedProxy = getDecodedValidatedProxy(proxy);
