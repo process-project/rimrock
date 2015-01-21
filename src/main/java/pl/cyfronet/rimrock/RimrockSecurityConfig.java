@@ -115,48 +115,52 @@ public class RimrockSecurityConfig extends WebSecurityConfigurerAdapter {
 		if(localLdapServer != null && localLdapServer.isStarted()) {
 			localLdapServer.getDirectoryService().shutdown();
 			localLdapServer.stop();
+			localLdapServer = null;
 		}
 	}
 	
 	private int startLocalLdapServer() throws Exception, InvalidNameException, NamingException, IOException {
 		int serverPort = 8081;
-		String root = "dc=Cyfronet,dc=plgrid,dc=pl";
-		DefaultDirectoryService service = new DefaultDirectoryService();
-		List<Interceptor> list = new ArrayList<Interceptor>();
-		list.add(new NormalizationInterceptor());
-		list.add(new AuthenticationInterceptor());
-		list.add(new ReferralInterceptor());
-		list.add(new ExceptionInterceptor());
-		list.add(new OperationalAttributeInterceptor());
-		list.add(new SchemaInterceptor());
-		list.add(new SubentryInterceptor());
-		service.setInterceptors(list);
 		
-		JdbmPartition partition = new JdbmPartition();
-		partition.setId("rootPartition");
-		partition.setSuffix(root);
-		service.addPartition(partition);
-		service.setExitVmOnShutdown(false);
-		service.setShutdownHookEnabled(false);
-		service.getChangeLog().setEnabled(false);
-		service.setDenormalizeOpAttrsEnabled(true);
-		service.setWorkingDirectory(new File("/tmp/" + UUID.randomUUID().toString()));
-		
-		localLdapServer = new LdapServer();
-		localLdapServer.setDirectoryService(service);
-		localLdapServer.setTransports(new TcpTransport(serverPort));
-		service.startup();
-		localLdapServer.start();
-		
-		LdapDN dn = new LdapDN(root);
-		String dc = root.substring(3, root.indexOf(','));
-		ServerEntry entry = service.newEntry(dn);
-		entry.add("objectClass", "top", "domain", "extensibleObject");
-		entry.add("dc", dc);
-		service.getAdminSession().add(entry);
-		
-		LdifFileLoader loader = new LdifFileLoader(service.getAdminSession(), ldapData.getFilename());
-		loader.execute();
+		if(localLdapServer == null) {
+			String root = "dc=Cyfronet,dc=plgrid,dc=pl";
+			DefaultDirectoryService service = new DefaultDirectoryService();
+			List<Interceptor> list = new ArrayList<Interceptor>();
+			list.add(new NormalizationInterceptor());
+			list.add(new AuthenticationInterceptor());
+			list.add(new ReferralInterceptor());
+			list.add(new ExceptionInterceptor());
+			list.add(new OperationalAttributeInterceptor());
+			list.add(new SchemaInterceptor());
+			list.add(new SubentryInterceptor());
+			service.setInterceptors(list);
+			
+			JdbmPartition partition = new JdbmPartition();
+			partition.setId("rootPartition");
+			partition.setSuffix(root);
+			service.addPartition(partition);
+			service.setExitVmOnShutdown(false);
+			service.setShutdownHookEnabled(false);
+			service.getChangeLog().setEnabled(false);
+			service.setDenormalizeOpAttrsEnabled(true);
+			service.setWorkingDirectory(new File("/tmp/" + UUID.randomUUID().toString()));
+			
+			localLdapServer = new LdapServer();
+			localLdapServer.setDirectoryService(service);
+			localLdapServer.setTransports(new TcpTransport(serverPort));
+			service.startup();
+			localLdapServer.start();
+			
+			LdapDN dn = new LdapDN(root);
+			String dc = root.substring(3, root.indexOf(','));
+			ServerEntry entry = service.newEntry(dn);
+			entry.add("objectClass", "top", "domain", "extensibleObject");
+			entry.add("dc", dc);
+			service.getAdminSession().add(entry);
+			
+			LdifFileLoader loader = new LdifFileLoader(service.getAdminSession(), ldapData.getFilename());
+			loader.execute();
+		}
 		
 		return serverPort;
 	}
