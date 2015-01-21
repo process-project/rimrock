@@ -17,7 +17,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>1.2.0.RELEASE</version>
+		<version>1.2.1.RELEASE</version>
 		<relativePath />
 	</parent>
 
@@ -54,6 +54,27 @@
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
 		</dependency>
 
+		<!-- Spring security dependencies -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-security</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-ldap</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.directory.server</groupId>
+			<artifactId>apacheds-server-jndi</artifactId>
+			<version>1.5.5</version>
+			<exclusions>
+				<exclusion>
+					<artifactId>bcprov-jdk15</artifactId>
+					<groupId>bouncycastle</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
 		<!-- Database implementation -->
 		<dependency>
 			<groupId>org.hsqldb</groupId>
@@ -67,7 +88,7 @@
 			<version>9.1-901-1.jdbc4</version>
 			<scope>runtime</scope>
 		</dependency>
-				
+
 
 		<!-- Infrastructure dependencies -->
 		<dependency>
@@ -133,6 +154,7 @@
 			<groupId>org.scala-lang</groupId>
 			<artifactId>scala-library</artifactId>
 			<version>2.10.4</version>
+			<scope>test</scope>
 		</dependency>
 
 		<!-- Gatling test dependencies -->
