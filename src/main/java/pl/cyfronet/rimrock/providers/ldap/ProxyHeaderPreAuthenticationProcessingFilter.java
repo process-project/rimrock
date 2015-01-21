@@ -1,4 +1,4 @@
-package pl.cyfronet.rimrock;
+package pl.cyfronet.rimrock.providers.ldap;
 
 import javax.servlet.http.HttpServletRequest;
 

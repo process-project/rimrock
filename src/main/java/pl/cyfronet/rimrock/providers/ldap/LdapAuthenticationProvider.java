@@ -3,7 +3,6 @@ package pl.cyfronet.rimrock.providers.ldap;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
@@ -12,7 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.ldap.NameNotFoundException;
 import org.springframework.ldap.core.AttributesMapper;
 import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -60,46 +58,31 @@ public class LdapAuthenticationProvider implements AuthenticationProvider {
 	
 	@Override
 	public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-		test();
 		log.debug("Authenticating user with login {} and credentials {}", authentication.getName(), authentication.getCredentials());
 		
 		PlgridUser user = null;
 		
 		try {
 			String dn = prepareDn(authentication.getName());
-			log.info("Looking up {}", dn);
+			log.debug("LDAP authorization procedure started for user {} with dn {}", authentication.getName(), dn);
 			user = (PlgridUser) ldapTemplate.lookup(dn, new PlgridUserAttributesMapper());
-		} catch(NameNotFoundException e) {
-			throw new MissingUserAuthenticationException("User " + authentication.getName() + " not found in LDAP");
 		} catch (Exception e) {
 			log.warn("Something went wrong with the LDAP lookup procedure while authorizing user " + authentication.getName(), e);
-			
-			throw new MissingUserAuthenticationException("User " + authentication.getName() + " not found in LDAP");
 		}
 		
 		if(user == null) {
-			throw new MissingUserAuthenticationException("User " + authentication.getName() + " not found in LDAP");
+			String message = "User " + authentication.getName() + " not found in LDAP";
+			log.debug(message);
+			
+			throw new MissingUserAuthenticationException(message);
 		}
 		
 		if(user.getServices().contains(ldapRimrockName)) {
+			log.debug("LDAP authorization was successful for {}", authentication.getName());
 			return new PreAuthenticatedAuthenticationToken(authentication.getName(), authentication.getCredentials());
 		} else {
 			throw new UserNotSignedForServiceAuthenticationException("User " + authentication.getName() + " found in LDAP but is not signed up for " + ldapRimrockName);
 		}
-	}
-
-	private void test() {
-		List result = ldapTemplate.search("", "(objectclass=person)", new AttributesMapper() {
-			@Override
-			public Object mapFromAttributes(Attributes attributes) throws NamingException {
-				for(NamingEnumeration<String> e = attributes.getIDs(); e.hasMoreElements();) {
-					System.out.println(e.next());
-				}
-				
-				return attributes.get("uid").get();
-			}
-		});
-		log.info(result.toString());
 	}
 
 	@Override

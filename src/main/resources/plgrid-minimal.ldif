@@ -109,3 +109,14 @@ sn: Harezlak
 cn: Daniel Harezlak
 plgridService: rimrock
 plgridSite: cyfronet
+
+dn: uid=plgtesthar,ou=People,dc=Cyfronet,dc=plgrid,dc=pl
+objectClass: top
+objectClass: person
+objectClass: inetOrgPerson
+objectClass: plgridAccessService
+uid: plgtesthar
+sn: Harezlak
+cn: Daniel Harezlak
+plgridService: rimrock
+plgridSite: cyfronet
