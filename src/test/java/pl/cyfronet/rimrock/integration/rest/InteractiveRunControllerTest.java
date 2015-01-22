@@ -76,12 +76,11 @@ public class InteractiveRunControllerTest {
 		InteractiveProcessInputRequest ipir = new InteractiveProcessInputRequest();
 		ipir.setStandardInput("echo 4\nexit");
 		given().
-			header("PROXY", proxyHelper.encodeProxy(proxyFactory.getProxy())).
-			header("PROCESS-ID", processId).
+			header("PROXY", proxyHelper.encodeProxy(proxyFactory.getProxy())).			
 			contentType(JSON).
 			body(mapper.writeValueAsBytes(ipir)).
 		when().
-			put("/api/iprocess").
+			put("/api/iprocess/" + processId).
 		then().
 			log().all().
 			contentType(JSON).
@@ -95,9 +94,8 @@ public class InteractiveRunControllerTest {
 			Response response =
 			given().
 				header("PROXY", proxyHelper.encodeProxy(proxyFactory.getProxy())).
-				header("PROCESS-ID", processId).
 			when().
-				get("/api/iprocess").
+				get("/api/iprocess/" + processId).
 			then().
 				log().all().
 				contentType(JSON).
@@ -123,9 +121,8 @@ public class InteractiveRunControllerTest {
 	public void testNonExistingIProcess() throws Exception {
 		given().
 			header("PROXY", proxyHelper.encodeProxy(proxyFactory.getProxy())).
-			header("PROCESS-ID", "nonExisting").
 		when().
-			get("/api/iprocess").
+			get("/api/iprocess/nonExisting").
 		then().
 			log().all().
 			contentType(JSON).

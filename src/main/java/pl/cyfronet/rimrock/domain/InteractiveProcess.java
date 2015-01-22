@@ -13,6 +13,7 @@ public class InteractiveProcess {
 	private String pendingInput;
 	private boolean finished;
 	private String userLogin;
+	private String secret;
 	
 	public Long getId() {
 		return id;
@@ -55,5 +56,11 @@ public class InteractiveProcess {
 	}
 	public void setUserLogin(String userLogin) {
 		this.userLogin = userLogin;
+	}
+	public String getSecret() {
+		return secret;
+	}
+	public void setSecret(String secret) {
+		this.secret = secret;
 	}
 }
