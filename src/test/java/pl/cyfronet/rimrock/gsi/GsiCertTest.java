@@ -1,8 +1,11 @@
 package pl.cyfronet.rimrock.gsi;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.io.IOUtils;
 import org.globus.gsi.CredentialException;
@@ -34,5 +37,17 @@ public class GsiCertTest {
 	public void testLoadingRegularProxy() throws CredentialException, IOException {
 		String login = proxyHelper.getUserLogin(IOUtils.toString(regularProxy.getInputStream()));
 		assertTrue(login + " does not match plg.*", login.matches("plg.*"));
+	}
+	
+	@Test
+	public void testDnMatcher() {
+		Pattern p = Pattern.compile(ProxyHelper.LOGIN_FROM_DN_PATTERN);
+		Matcher m1 = p.matcher("C=PL,O=PL-Grid,O=Uzytkownik,O=PL-Grid,CN=Imie Nazwisko,CN=plglogin,CN=311707489");
+		assertTrue(m1.matches());
+		assertEquals("plglogin", m1.group(1));
+		
+		Matcher m2 = p.matcher("C=PL,O=PL-Grid,O=Uzytkownik,O=PL-Grid,CN=Imie Nazwisko,CN=plglogin");
+		assertTrue(m2.matches());
+		assertEquals("plglogin", m2.group(1));
 	}
 }
