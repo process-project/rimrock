@@ -5,6 +5,11 @@ v 1.1.0
   - Log levels are being properly respected in production mode
   - IProcess endpoint was pluralized
 
+v 1.0.3
+  - LDAP authentication feature is configurable with an application property
+  - LDAP authentication preliminary implementation is in place
+  - User login extraction from proxy DN was fixed 
+ 
 v 1.0.2
   - User login is verified while providing new interactive process input
 
