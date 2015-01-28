@@ -28,6 +28,7 @@ import org.apache.directory.shared.ldap.name.LdapDN;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.web.ErrorAttributes;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -41,6 +42,7 @@ import org.springframework.security.config.annotation.web.servlet.configuration.
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.ldap.DefaultSpringSecurityContextSource;
 
+import pl.cyfronet.rimrock.providers.ldap.CustomErrorAttributes;
 import pl.cyfronet.rimrock.providers.ldap.LdapAuthenticationProvider;
 import pl.cyfronet.rimrock.providers.ldap.ProxyHeaderPreAuthenticationProcessingFilter;
 
@@ -51,6 +53,7 @@ public class RimrockSecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Value("${unsecure.api.resources}")	private String unsecureApiResources;
 	@Value("classpath:plgrid-minimal.ldif")	private Resource ldapData;
+	@Value("${ldap.integration.enabled}") private boolean ldapEbabled;
 
 	private LdapServer localLdapServer;
 
@@ -91,21 +94,34 @@ public class RimrockSecurityConfig extends WebSecurityConfigurerAdapter {
 	@Bean
 	@Profile("local")
 	protected LdapTemplate ldapTemplate() throws Exception {
-		int serverPort = startLocalLdapServer();
-
-		DefaultSpringSecurityContextSource contextSource = new DefaultSpringSecurityContextSource("ldap://127.0.0.1:" + serverPort
-				+ "/dc=Cyfronet,dc=plgrid,dc=pl");
-		contextSource.afterPropertiesSet();
-		log.info("Embedded LDAP server started on port " + serverPort);
-
-		return new LdapTemplate(contextSource);
+		if(ldapEbabled) {
+			int serverPort = startLocalLdapServer();
+	
+			DefaultSpringSecurityContextSource contextSource = new DefaultSpringSecurityContextSource("ldap://127.0.0.1:" + serverPort
+					+ "/dc=Cyfronet,dc=plgrid,dc=pl");
+			contextSource.afterPropertiesSet();
+			log.info("Embedded LDAP server started on port " + serverPort);
+	
+			return new LdapTemplate(contextSource);
+		}
+		
+		return null;
 	}
 
 
 	@Bean
 	@Profile("production")
 	protected LdapTemplate productionLdapTemplate() throws Exception {
-		return new LdapTemplate();
+		if(ldapEbabled) {
+			return new LdapTemplate();
+		}
+		
+		return null;
+	}
+	
+	@Bean
+	protected ErrorAttributes errorAttributes() {
+		return new CustomErrorAttributes();
 	}
 	
 	@PreDestroy

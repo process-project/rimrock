@@ -87,7 +87,7 @@ public class InteractiveRunController {
 			throw new ValidationException(errors);
 		}
 		
-		String decodedProxy = getDecodedValidatedProxy(proxy);
+		String decodedProxy = proxyHelper.decodeProxy(proxy);
 		FileManager fileManager = fileManagerFactory.get(decodedProxy);
 		fileManager.cp(PathHelper.getRootPath(request.getHost(), proxyHelper.getUserLogin(decodedProxy)) + ".rimrock/iwrapper.py", new ClassPathResource("scripts/iwrapper.py"));
 		fileManager.cp(PathHelper.getRootPath(request.getHost(), proxyHelper.getUserLogin(decodedProxy)) + ".rimrock/TERENASSLCA", new ClassPathResource("certs/TERENASSLCA"));
@@ -122,7 +122,7 @@ public class InteractiveRunController {
 	public ResponseEntity getInteractiveProcesseses(
 			@RequestHeader("PROXY") String proxy, @PathVariable("iprocessId") String processId) 
 			throws CredentialException, GSSException, KeyStoreException, CertificateException, IOException {
-		String decodedProxy = getDecodedValidatedProxy(proxy);
+		String decodedProxy = proxyHelper.decodeProxy(proxy);
 		String userLogin = proxyHelper.getUserLogin(decodedProxy);
 		
 		if(processId != null) {
@@ -156,7 +156,7 @@ public class InteractiveRunController {
 	public ResponseEntity<InteractiveProcessResponse> processInteractiveProcessInput(
 			@RequestHeader("PROXY") String proxy, @PathVariable("iprocessId") String processId,
 			@Valid @RequestBody InteractiveProcessInputRequest request, BindingResult errors) throws CredentialException {
-		String decodedProxy = getDecodedValidatedProxy(proxy);
+		String decodedProxy = proxyHelper.decodeProxy(proxy);
 		String userLogin = proxyHelper.getUserLogin(decodedProxy);
 		InteractiveProcess process = getProcess(processId);
 		
@@ -178,13 +178,6 @@ public class InteractiveRunController {
 		response.setProcessId(processId);
 		
 		return new ResponseEntity<InteractiveProcessResponse>(response, OK);
-	}
-
-	private String getDecodedValidatedProxy(String proxy) throws CredentialException {
-		String decodedProxy = proxyHelper.decodeProxy(proxy);
-		proxyHelper.verify(decodedProxy);
-
-		return decodedProxy;
 	}
 
 	private String merge(String first, String second) {
