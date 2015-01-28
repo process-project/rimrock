@@ -24,6 +24,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -70,7 +71,7 @@ public class InteractiveRunController {
 	public ResponseEntity<InternalUpdateResponse> update(@Valid @RequestBody InternalUpdateRequest updateRequest) {
 		log.debug("Processing internal update request with body {}", updateRequest);
 		
-		InteractiveProcess process = getProcess(updateRequest.getProcessId());
+		InteractiveProcess process = getProcessBySecret(updateRequest.getSecret());
 		String input = process.getPendingInput();
 		process.setPendingInput("");
 		process.setFinished(updateRequest.isFinished());
@@ -89,14 +90,15 @@ public class InteractiveRunController {
 			throw new ValidationException(errors);
 		}
 		
-		String decodedProxy = getDecodedValidatedProxy(proxy);
+		String decodedProxy = proxyHelper.decodeProxy(proxy);
 		FileManager fileManager = fileManagerFactory.get(decodedProxy);
 		fileManager.cp(PathHelper.getRootPath(request.getHost(), proxyHelper.getUserLogin(decodedProxy)) + ".rimrock/iwrapper.py", new ClassPathResource("scripts/iwrapper.py"));
 		fileManager.cp(PathHelper.getRootPath(request.getHost(), proxyHelper.getUserLogin(decodedProxy)) + ".rimrock/TERENASSLCA", new ClassPathResource("certs/TERENASSLCA"));
 		
 		String processId = UUID.randomUUID().toString();
+		String secret = UUID.randomUUID().toString();
 		String internalUrl = MvcUriComponentsBuilder.fromMethodCall(on(InteractiveRunController.class).update(null)).build().toUriString();
-		log.debug("Attempting to start new interactive process with id {} and reporting URL {}", processId, internalUrl);
+		log.debug("Attempting to start new interactive process with id {} and reporting URL {} with secret {}", processId, internalUrl, secret);
 		
 		RunResults runResults = runner.run(request.getHost(), decodedProxy,
 				String.format("module load plgrid/tools/python/3.3.2; (url='%s' processId='%s' command='%s' timeout='%s' nohup python3 .rimrock/iwrapper.py &)",
@@ -108,6 +110,7 @@ public class InteractiveRunController {
 		
 		InteractiveProcess interactiveProcess = new InteractiveProcess();
 		interactiveProcess.setProcessId(processId);
+		interactiveProcess.setSecret(secret);
 		interactiveProcess.setUserLogin(proxyHelper.getUserLogin(decodedProxy));
 		processRepository.save(interactiveProcess);
 		
@@ -116,11 +119,13 @@ public class InteractiveRunController {
 		
 		return new ResponseEntity<InteractiveProcessResponse>(response, OK);	
 	}
-	
-	@RequestMapping(value = "/api/iprocesses", method = GET, produces = APPLICATION_JSON_VALUE)
+
+	@RequestMapping(value = "/api/iprocess/{iprocessId:.+}", method = GET, produces = APPLICATION_JSON_VALUE)
 	@SuppressWarnings({"rawtypes", "unchecked"})
-	public ResponseEntity getInteractiveProcesseses(@RequestHeader("PROXY") String proxy, @RequestHeader(required = false, value = "PROCESS-ID") String processId) throws CredentialException, GSSException, KeyStoreException, CertificateException, IOException {
-		String decodedProxy = getDecodedValidatedProxy(proxy);
+	public ResponseEntity getInteractiveProcesseses(
+			@RequestHeader("PROXY") String proxy, @PathVariable("iprocessId") String processId) 
+			throws CredentialException, GSSException, KeyStoreException, CertificateException, IOException {
+		String decodedProxy = proxyHelper.decodeProxy(proxy);
 		String userLogin = proxyHelper.getUserLogin(decodedProxy);
 		
 		if(processId != null) {
@@ -149,11 +154,12 @@ public class InteractiveRunController {
 			return new ResponseEntity(processes, OK);
 		}
 	}
-	
-	@RequestMapping(value = "/api/iprocesses", method = PUT, consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
-	public ResponseEntity<InteractiveProcessResponse> processInteractiveProcessInput(@RequestHeader("PROXY") String proxy, @RequestHeader("PROCESS-ID") String processId,
+
+	@RequestMapping(value = "/api/iprocess/{iprocessId:.+}", method = PUT, consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
+	public ResponseEntity<InteractiveProcessResponse> processInteractiveProcessInput(
+			@RequestHeader("PROXY") String proxy, @PathVariable("iprocessId") String processId,
 			@Valid @RequestBody InteractiveProcessInputRequest request, BindingResult errors) throws CredentialException {
-		String decodedProxy = getDecodedValidatedProxy(proxy);
+		String decodedProxy = proxyHelper.decodeProxy(proxy);
 		String userLogin = proxyHelper.getUserLogin(decodedProxy);
 		InteractiveProcess process = getProcess(processId);
 		
@@ -177,13 +183,6 @@ public class InteractiveRunController {
 		return new ResponseEntity<InteractiveProcessResponse>(response, OK);
 	}
 
-	private String getDecodedValidatedProxy(String proxy) throws CredentialException {
-		String decodedProxy = proxyHelper.decodeProxy(proxy);
-		proxyHelper.verify(decodedProxy);
-
-		return decodedProxy;
-	}
-
 	private String merge(String first, String second) {
 		String normalized = (first == null ? "" : first).trim();
 		
@@ -199,6 +198,16 @@ public class InteractiveRunController {
 		
 		if(process == null) {
 			throw new ResourceNotFoundException("Interactive process with id " + processId + " could not be found");
+		}
+		
+		return process;
+	}
+	
+	private InteractiveProcess getProcessBySecret(String secret) {
+		InteractiveProcess process = processRepository.findBySecret(secret);
+		
+		if(process == null) {
+			throw new ResourceNotFoundException("Interactive process could not be found");
 		}
 		
 		return process;

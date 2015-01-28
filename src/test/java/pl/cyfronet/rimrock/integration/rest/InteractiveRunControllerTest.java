@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.IntegrationTest;
 import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 
@@ -33,6 +34,7 @@ import com.jayway.restassured.response.Response;
 @SpringApplicationConfiguration(classes = RimrockApplication.class)
 @WebAppConfiguration
 @IntegrationTest
+@DirtiesContext
 public class InteractiveRunControllerTest {
 	private static final Logger log = LoggerFactory.getLogger(InteractiveRunControllerTest.class);
 	
@@ -76,12 +78,11 @@ public class InteractiveRunControllerTest {
 		InteractiveProcessInputRequest ipir = new InteractiveProcessInputRequest();
 		ipir.setStandardInput("echo 4\nexit");
 		given().
-			header("PROXY", proxyHelper.encodeProxy(proxyFactory.getProxy())).
-			header("PROCESS-ID", processId).
+			header("PROXY", proxyHelper.encodeProxy(proxyFactory.getProxy())).			
 			contentType(JSON).
 			body(mapper.writeValueAsBytes(ipir)).
 		when().
-			put("/api/iprocesses").
+			put("/api/iprocess/" + processId).
 		then().
 			log().all().
 			contentType(JSON).
@@ -95,9 +96,8 @@ public class InteractiveRunControllerTest {
 			Response response =
 			given().
 				header("PROXY", proxyHelper.encodeProxy(proxyFactory.getProxy())).
-				header("PROCESS-ID", processId).
 			when().
-				get("/api/iprocesses").
+				get("/api/iprocess/" + processId).
 			then().
 				log().all().
 				contentType(JSON).
@@ -123,9 +123,8 @@ public class InteractiveRunControllerTest {
 	public void testNonExistingIProcess() throws Exception {
 		given().
 			header("PROXY", proxyHelper.encodeProxy(proxyFactory.getProxy())).
-			header("PROCESS-ID", "nonExisting").
 		when().
-			get("/api/iprocesses").
+			get("/api/iprocess/nonExisting").
 		then().
 			log().all().
 			contentType(JSON).

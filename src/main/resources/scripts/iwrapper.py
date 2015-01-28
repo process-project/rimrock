@@ -31,7 +31,7 @@ class RestThread(threading.Thread):
 	def __init__(self, url, processId, inputStream, outputThread, errorThread, timeoutSeconds, process):
 		super(RestThread, self).__init__()
 		self.url = url
-		self.processId = processId
+		self.secret = secret
 		self.inputStream = inputStream
 		self.outputThread = outputThread
 		self.errorThread = errorThread
@@ -43,7 +43,7 @@ class RestThread(threading.Thread):
 		while self.outputThread.available() or self.errorThread.available():
 			output = self.outputThread.getAvailableBytes()
 			error = self.errorThread.getAvailableBytes()
-			payload = {'standard_output': output, 'standard_error': error, 'process_id': self.processId}
+			payload = {'standard_output': output, 'standard_error': error, 'secret': self.secret}
 			headers = {'content-type': 'application/json'}
 			response = requests.post(self.url, data = json.dumps(payload), headers = headers, verify = '.rimrock/TERENASSLCA')
 			cmd = response.json()['input']
@@ -60,12 +60,12 @@ class RestThread(threading.Thread):
 			time.sleep(0.5)
 		output = self.outputThread.getAvailableBytes()
 		error = self.errorThread.getAvailableBytes()
-		payload = {'standard_output': output, 'standard_error': error, 'process_id': self.processId, 'finished': True}
+		payload = {'standard_output': output, 'standard_error': error, 'secret': self.secret, 'finished': True}
 		headers = {'content-type': 'application/json'}
 		requests.post(self.url, data = json.dumps(payload), headers = headers, verify = '.rimrock/TERENASSLCA')
 
 url = os.environ['url']
-processId = os.environ['processId']
+secret = os.environ['secret']
 command = os.environ['command']
 timeout = os.environ['timeout']
 
