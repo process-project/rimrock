@@ -28,10 +28,11 @@ class OutputThread(threading.Thread):
 		return len(self.outputChunks) > 0 or self.is_alive()
 
 class RestThread(threading.Thread):
-	def __init__(self, url, processId, inputStream, outputThread, errorThread, timeoutSeconds, process):
+	def __init__(self, url, secret, processId, inputStream, outputThread, errorThread, timeoutSeconds, process):
 		super(RestThread, self).__init__()
 		self.url = url
 		self.secret = secret
+		self.processId = processId
 		self.inputStream = inputStream
 		self.outputThread = outputThread
 		self.errorThread = errorThread
@@ -43,7 +44,7 @@ class RestThread(threading.Thread):
 		while self.outputThread.available() or self.errorThread.available():
 			output = self.outputThread.getAvailableBytes()
 			error = self.errorThread.getAvailableBytes()
-			payload = {'standard_output': output, 'standard_error': error, 'secret': self.secret}
+			payload = {'standard_output': output, 'standard_error': error, 'secret': self.secret, 'process_id': self.processId}
 			headers = {'content-type': 'application/json'}
 			response = requests.post(self.url, data = json.dumps(payload), headers = headers, verify = '.rimrock/TERENASSLCA')
 			cmd = response.json()['input']
@@ -53,19 +54,20 @@ class RestThread(threading.Thread):
 				self.time = time.time()
 			if time.time() - self.time > self.timeoutSeconds:
 				self.process.kill()
-				payload = {'standard_output': '', 'standard_error': 'Timeout occurred', 'process_id': self.processId, 'finished': True}
+				payload = {'standard_output': '', 'standard_error': 'Timeout occurred', 'secret': self.secret, 'process_id': self.processId, 'finished': True}
 				headers = {'content-type': 'application/json'}
 				requests.post(self.url, data = json.dumps(payload), headers = headers, verify = '.rimrock/TERENASSLCA')
 				return
 			time.sleep(0.5)
 		output = self.outputThread.getAvailableBytes()
 		error = self.errorThread.getAvailableBytes()
-		payload = {'standard_output': output, 'standard_error': error, 'secret': self.secret, 'finished': True}
+		payload = {'standard_output': output, 'standard_error': error, 'secret': self.secret, 'process_id': self.processId, 'finished': True}
 		headers = {'content-type': 'application/json'}
 		requests.post(self.url, data = json.dumps(payload), headers = headers, verify = '.rimrock/TERENASSLCA')
 
 url = os.environ['url']
 secret = os.environ['secret']
+processId = os.environ['processId']
 command = os.environ['command']
 timeout = os.environ['timeout']
 
@@ -73,7 +75,7 @@ process = subprocess.Popen([command], stdin = subprocess.PIPE, stdout = subproce
 							stderr = subprocess.PIPE, universal_newlines = True)
 outThread = OutputThread(process.stdout)
 errThread = OutputThread(process.stderr)
-restThread = RestThread(url, processId, process.stdin, outThread, errThread, int(timeout), process)
+restThread = RestThread(url, secret, processId, process.stdin, outThread, errThread, int(timeout), process)
 
 outThread.start()
 errThread.start()

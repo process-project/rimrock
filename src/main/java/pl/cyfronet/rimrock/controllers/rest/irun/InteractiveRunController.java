@@ -101,8 +101,8 @@ public class InteractiveRunController {
 		log.debug("Attempting to start new interactive process with id {} and reporting URL {} with secret {}", processId, internalUrl, secret);
 		
 		RunResults runResults = runner.run(request.getHost(), decodedProxy,
-				String.format("module load plgrid/tools/python/3.3.2; (url='%s' processId='%s' command='%s' timeout='%s' nohup python3 .rimrock/iwrapper.py &)",
-						internalUrl, processId, request.getCommand(), iprocessTimeoutSeconds), 5000);
+				String.format("module load plgrid/tools/python/3.3.2; (url='%s' secret='%s' processId='%s' command='%s' timeout='%s' nohup python3 .rimrock/iwrapper.py &)",
+						internalUrl, secret, processId, request.getCommand(), iprocessTimeoutSeconds), 5000);
 		
 		if(runResults.isTimeoutOccured() || runResults.getExitCode() != 0) {
 			throw new RunException("Interactive process could not be properly executed", runResults);			
@@ -120,7 +120,7 @@ public class InteractiveRunController {
 		return new ResponseEntity<InteractiveProcessResponse>(response, OK);	
 	}
 
-	@RequestMapping(value = "/api/iprocess/{iprocessId:.+}", method = GET, produces = APPLICATION_JSON_VALUE)
+	@RequestMapping(value = "/api/iprocesses/{iprocessId:.+}", method = GET, produces = APPLICATION_JSON_VALUE)
 	@SuppressWarnings({"rawtypes", "unchecked"})
 	public ResponseEntity getInteractiveProcesseses(
 			@RequestHeader("PROXY") String proxy, @PathVariable("iprocessId") String processId) 
@@ -155,7 +155,7 @@ public class InteractiveRunController {
 		}
 	}
 
-	@RequestMapping(value = "/api/iprocess/{iprocessId:.+}", method = PUT, consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
+	@RequestMapping(value = "/api/iprocesses/{iprocessId:.+}", method = PUT, consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
 	public ResponseEntity<InteractiveProcessResponse> processInteractiveProcessInput(
 			@RequestHeader("PROXY") String proxy, @PathVariable("iprocessId") String processId,
 			@Valid @RequestBody InteractiveProcessInputRequest request, BindingResult errors) throws CredentialException {
