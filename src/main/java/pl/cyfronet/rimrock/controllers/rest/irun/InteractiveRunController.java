@@ -121,38 +121,42 @@ public class InteractiveRunController {
 	}
 
 	@RequestMapping(value = "/api/iprocesses/{iprocessId:.+}", method = GET, produces = APPLICATION_JSON_VALUE)
-	@SuppressWarnings({"rawtypes", "unchecked"})
-	public ResponseEntity getInteractiveProcesseses(
+	@SuppressWarnings({"rawtypes"})
+	public ResponseEntity getInteractiveProcess(
 			@RequestHeader("PROXY") String proxy, @PathVariable("iprocessId") String processId) 
 			throws CredentialException, GSSException, KeyStoreException, CertificateException, IOException {
 		String decodedProxy = proxyHelper.decodeProxy(proxy);
 		String userLogin = proxyHelper.getUserLogin(decodedProxy);
+		InteractiveProcess process = getProcess(processId);
 		
-		if(processId != null) {
-			InteractiveProcess process = getProcess(processId);
-			
-			if(process.getUserLogin() == null || !process.getUserLogin().equals(userLogin)) {
-				throw new ResourceAccessException("You do not seem to be the owner of the requested interactive process");
-			}
-			
-			String output = process.getOutput();
-			String error = process.getError();
-			process.setOutput("");
-			process.setError("");
-			processRepository.save(process);
-			
-			InteractiveProcessResponse response = new InteractiveProcessResponse(Status.OK, null);
-			response.setStandardOutput(output);
-			response.setStandardError(error);
-			response.setFinished(process.isFinished());
-			response.setProcessId(processId);
-			
-			return new ResponseEntity<InteractiveProcessResponse>(response, OK);
-		} else {
-			List<InteractiveProcess> processes = processRepository.findByUserLogin(userLogin);
-			
-			return new ResponseEntity(processes, OK);
+		if(process.getUserLogin() == null || !process.getUserLogin().equals(userLogin)) {
+			throw new ResourceAccessException("You do not seem to be the owner of the requested interactive process");
 		}
+		
+		String output = process.getOutput();
+		String error = process.getError();
+		process.setOutput("");
+		process.setError("");
+		processRepository.save(process);
+		
+		InteractiveProcessResponse response = new InteractiveProcessResponse(Status.OK, null);
+		response.setStandardOutput(output);
+		response.setStandardError(error);
+		response.setFinished(process.isFinished());
+		response.setProcessId(processId);
+		
+		return new ResponseEntity<InteractiveProcessResponse>(response, OK);
+	}
+	
+	@RequestMapping(value = "/api/iprocesses", method = GET, produces = APPLICATION_JSON_VALUE)
+	@SuppressWarnings({"rawtypes", "unchecked"})
+	public ResponseEntity getInteractiveProcesses(@RequestHeader("PROXY") String proxy) 
+			throws CredentialException, GSSException, KeyStoreException, CertificateException, IOException {
+		String decodedProxy = proxyHelper.decodeProxy(proxy);
+		String userLogin = proxyHelper.getUserLogin(decodedProxy);
+		List<InteractiveProcess> processes = processRepository.findByUserLogin(userLogin);
+			
+		return new ResponseEntity(processes, OK);
 	}
 
 	@RequestMapping(value = "/api/iprocesses/{iprocessId:.+}", method = PUT, consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
