@@ -4,6 +4,8 @@ v 1.1.0
   - Version indicator added in the footer of the page
   - Log levels are being properly respected in production mode
   - IProcess endpoint was pluralized
+  - Deployment process is fully automated
+  - Interactive process is limited by its own timeout
 
 v 1.0.3
   - LDAP authentication feature is configurable with an application property
