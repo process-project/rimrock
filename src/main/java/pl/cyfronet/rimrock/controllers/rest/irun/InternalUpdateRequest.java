@@ -22,7 +22,8 @@ public class InternalUpdateRequest {
 	}
 	@Override
 	public String toString() {
-		return "UpdateRequest [standardOutput=" + standardOutput + ", standardError=" + standardError + "]";
+		return "InternalUpdateRequest [standardOutput=" + standardOutput + ", standardError=" + standardError + ", secret=" + secret + ", finished=" + finished
+				+ "]";
 	}
 	public boolean isFinished() {
 		return finished;
