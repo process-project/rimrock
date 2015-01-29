@@ -69,6 +69,8 @@ def load_proxy(file_path):
 def check_response(desired_result, result):
     # this returns name of function calling check_response()
     test_name = inspect.stack()[2][4][0].strip()
+    if result is None and desired_result != result:
+        return_critical("Empty response for " + test_name + "\ndesired response:\n" + str(desired_result))
     for k, v in desired_result.items():
         if result[k] != v:
             return_critical("Response for " + test_name + " contains errors",
