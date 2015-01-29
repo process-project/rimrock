@@ -88,6 +88,15 @@ public class InteractiveRunControllerTest {
 			contentType(JSON).
 			statusCode(200);
 		
+		given().
+			header("PROXY", proxyHelper.encodeProxy(proxyFactory.getProxy())).
+		when().
+			get("/api/iprocesses").
+		then().
+			log().all().
+			contentType(JSON).
+			statusCode(200);
+		
 		boolean finished = false;
 		int attempts = 100;
 		String output = "";
