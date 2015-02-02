@@ -136,14 +136,14 @@ def iprocesses_sequence():
     process_id = response["process_id"]
     debug_log("process_id: " + process_id)
 
-    response, code = make_request("/api/iprocesses/", method="GET", add_headers={"PROCESS-ID": process_id})
+    response, code = make_request("/api/iprocesses/" + process_id, method="GET")
     check_response({"status": "OK"}, response)
 
     response, code = make_request("/api/iprocesses", method="GET")
     if len(response) == 0:
         return_critical("Listing user jobs didn't return anything", response)
 
-    response, code = make_request("/api/iprocesses/", {"standard_input": "exit"}, method="PUT", add_headers={"PROCESS-ID": process_id})
+    response, code = make_request("/api/iprocesses/" + process_id, {"standard_input": "exit"}, method="PUT")
     check_response({"status": "OK"}, response)
 
     finished = response["finished"]
@@ -151,7 +151,7 @@ def iprocesses_sequence():
 
     while not finished:
         time.sleep(1)
-        response, code = make_request("/api/iprocesses/", method="GET", add_headers={"PROCESS-ID": process_id})
+        response, code = make_request("/api/iprocesses/" + process_id, method="GET")
         check_response({"status": "OK"}, response)
         finished = response["finished"]
         count += 1
