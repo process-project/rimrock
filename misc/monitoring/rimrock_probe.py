@@ -98,7 +98,7 @@ def make_request(path, payload=None, method="POST", add_headers=None):
         # conn.set_debuglevel(1)
         resp = conn.getresponse()
     except Exception, e1:
-        return_critical("Unable to do a post request for process_sequence", e1)
+        return_critical("Unable to do a post request", e1)
 
     response = resp.read()
 
@@ -108,7 +108,7 @@ def make_request(path, payload=None, method="POST", add_headers=None):
         try:
             parsed_response = simplejson.loads(response)
         except Exception, e2:
-            return_critical("Unable to parse response of process_sequence", "response:" + response + "\n" + str(e2))
+            return_critical("Unable to parse response", "response:" + response + "\n" + str(e2))
 
         debug_log("Response: " + str(parsed_response) + ", code:" + str(resp.status))
         return (parsed_response, resp.status)
