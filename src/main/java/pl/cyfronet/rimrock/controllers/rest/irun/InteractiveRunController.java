@@ -1,6 +1,7 @@
 package pl.cyfronet.rimrock.controllers.rest.irun;
 
 import static org.springframework.http.HttpStatus.OK;
+import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
@@ -117,7 +118,7 @@ public class InteractiveRunController {
 		InteractiveProcessResponse response = new InteractiveProcessResponse(Status.OK, null);
 		response.setProcessId(processId);
 		
-		return new ResponseEntity<InteractiveProcessResponse>(response, OK);	
+		return new ResponseEntity<InteractiveProcessResponse>(response, CREATED);
 	}
 
 	@RequestMapping(value = "/api/iprocesses/{iprocessId:.+}", method = GET, produces = APPLICATION_JSON_VALUE)
