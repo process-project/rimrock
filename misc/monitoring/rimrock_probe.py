@@ -86,7 +86,7 @@ def make_request(path, payload=None, method="POST", add_headers=None):
     if add_headers is not None:
         headers.update(add_headers)
 
-    debug_log("Request: " + path + ", method: " + method + ", with payload: " + str(
+    debug_log("Request: " + rimrock_url + path + ", method: " + method + ", with payload: " + str(
         payload) + ", with additional headers: " + str(add_headers))
 
     conn = httplib.HTTPSConnection(rimrock_url)
