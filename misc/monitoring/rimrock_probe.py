@@ -66,9 +66,12 @@ def load_proxy(file_path):
     return base64.encodestring(a.strip()).replace("\n", "")
 
 
-def check_response(desired_result, result):
+def check_response(desired_result, desired_code, result, code):
     # this returns name of function calling check_response()
     test_name = inspect.stack()[2][4][0].strip()
+    if desired_code is not None and desired_code != code:
+        return_critical(
+            "Wrong status code for " + test_name + "\ngot:\n" + str(code) + "\ndesired code:\n" + str(desired_code))
     if result is None and desired_result != result:
         return_critical("Empty response for " + test_name + "\ndesired response:\n" + str(desired_result))
     for k, v in desired_result.items():
@@ -126,25 +129,25 @@ def process_sequence():
     }
 
     response, code = make_request("/api/process", payload)
-    check_response(desired_response, response)
+    check_response(desired_response, 200, response, code)
 
 
 def iprocesses_sequence():
     response, code = make_request("/api/iprocesses", {"host": ui_url, "command": "bash"})
-    check_response({"status": "OK"}, response)
+    check_response({"status": "OK"}, None, response, code)
 
     process_id = response["process_id"]
     debug_log("process_id: " + process_id)
 
     response, code = make_request("/api/iprocesses/" + process_id, method="GET")
-    check_response({"status": "OK"}, response)
+    check_response({"status": "OK"}, 200, response, code)
 
     response, code = make_request("/api/iprocesses", method="GET")
     if len(response) == 0:
         return_critical("Listing user jobs didn't return anything", response)
 
     response, code = make_request("/api/iprocesses/" + process_id, {"standard_input": "exit"}, method="PUT")
-    check_response({"status": "OK"}, response)
+    check_response({"status": "OK"}, 200, response, code)
 
     finished = response["finished"]
     count = 0
@@ -152,7 +155,7 @@ def iprocesses_sequence():
     while not finished:
         time.sleep(1)
         response, code = make_request("/api/iprocesses/" + process_id, method="GET")
-        check_response({"status": "OK"}, response)
+        check_response({"status": "OK"}, None, response, code)
         finished = response["finished"]
         count += 1
         if count > 20:
