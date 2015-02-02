@@ -128,21 +128,21 @@ def process_sequence():
     check_response(desired_response, response)
 
 
-def iprocess_sequence():
-    response, code = make_request("/api/iprocess", {"host": ui_url, "command": "bash"})
+def iprocesses_sequence():
+    response, code = make_request("/api/iprocesses", {"host": ui_url, "command": "bash"})
     check_response({"status": "OK"}, response)
 
     process_id = response["process_id"]
     debug_log("process_id: " + process_id)
 
-    response, code = make_request("/api/iprocess/", method="GET", add_headers={"PROCESS-ID": process_id})
+    response, code = make_request("/api/iprocesses/", method="GET", add_headers={"PROCESS-ID": process_id})
     check_response({"status": "OK"}, response)
 
-    response, code = make_request("/api/iprocess", method="GET")
+    response, code = make_request("/api/iprocesses", method="GET")
     if len(response) == 0:
         return_critical("Listing user jobs didn't return anything", response)
 
-    response, code = make_request("/api/iprocess/", {"standard_input": "exit"}, method="PUT", add_headers={"PROCESS-ID": process_id})
+    response, code = make_request("/api/iprocesses/", {"standard_input": "exit"}, method="PUT", add_headers={"PROCESS-ID": process_id})
     check_response({"status": "OK"}, response)
 
     finished = response["finished"]
@@ -150,7 +150,7 @@ def iprocess_sequence():
 
     while not finished:
         time.sleep(1)
-        response, code = make_request("/api/iprocess/", method="GET", add_headers={"PROCESS-ID": process_id})
+        response, code = make_request("/api/iprocesses/", method="GET", add_headers={"PROCESS-ID": process_id})
         check_response({"status": "OK"}, response)
         finished = response["finished"]
         count += 1
@@ -250,7 +250,7 @@ if __name__ == "__main__":
     timeout = options.timeout
 
     process_sequence()
-    iprocess_sequence()
+    iprocesses_sequence()
     job_sequence()
     job_cancel_sequence()
 
