@@ -70,7 +70,7 @@ public class InteractiveRunControllerTest {
 		then().
 			log().all().
 			contentType(JSON).
-			statusCode(200).
+			statusCode(201).
 		extract().
 			path("process_id");
 		log.info("Obtained process id is {}", processId);
@@ -156,7 +156,7 @@ public class InteractiveRunControllerTest {
 		then().
 			log().all().
 			contentType(JSON).
-			statusCode(200).
+			statusCode(201).
 		extract().
 			path("process_id");
 		log.info("Obtained process id is {}", processId);
