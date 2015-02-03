@@ -94,6 +94,9 @@ def make_request(path, payload=None, method="POST", add_headers=None):
         payload) + ", with additional headers: " + str(add_headers))
 
     conn = httplib.HTTPSConnection(rimrock_url)
+    if debug:
+        conn.set_debuglevel(1)
+        
     try:
         body = None
         if payload is not None:
