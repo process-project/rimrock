@@ -7,6 +7,8 @@ import java.security.KeyFactory;
 import java.security.PrivateKey;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -19,6 +21,7 @@ import org.ietf.jgss.GSSCredential;
 import org.ietf.jgss.GSSException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -27,13 +30,38 @@ public class ProxyHelper {
 	
 	public static final String PROXY_PARTS_PATTERN = "(.+)-----BEGIN PRIVATE KEY-----(.*)-----END PRIVATE KEY-----(.+)";
 	public static final String LOGIN_FROM_DN_PATTERN = ".+,CN=(plg.*?)(,.*$|$)";
-	
+
+    @Value("${proxy.dn.mapping}") private String rawDNMapping;
+
+    private Map<String, String> getMapping() {
+        Map<String, String> result = new HashMap<>();
+        for (String element : rawDNMapping.split(";")) {
+            String[] pair = element.split("&");
+            if (pair.length != 2) {
+                log.warn("Skipping invalid mapping entry: {}", element);
+                continue;
+            }
+            result.put(pair[0], pair[1]);
+        }
+        return result;
+    }
+
+
 	public String getUserLogin(String proxyValue) throws CredentialException {
 		String dn = getX509Credential(proxyValue).getIssuer();
 		Pattern pattern = Pattern.compile(LOGIN_FROM_DN_PATTERN);
 		Matcher matcher = pattern.matcher(dn);
-		
-		if(matcher.matches()) {
+        Map<String, String> mapping = getMapping();
+
+        for (String key : mapping.keySet()) {
+            if (dn.startsWith(key)) {
+                String login = mapping.get(key);
+                log.debug("Returning mapped entry: {} {}", dn, login);
+                return login;
+            }
+        }
+
+        if(matcher.matches()) {
 			String login = matcher.group(1);
 			log.debug("Extracted user login from certificate subject {} is {}", dn, login);
 			
