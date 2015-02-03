@@ -71,7 +71,8 @@ def check_response(desired_result, desired_code, result, code):
     test_name = inspect.stack()[2][4][0].strip()
     if desired_code is not None and desired_code != code:
         return_critical(
-            "Wrong status code for " + test_name + "\ngot:\n" + str(code) + "\ndesired code:\n" + str(desired_code))
+            "Wrong status code for " + test_name + "\ngot:\n" + str(code) + "\ndesired code:\n" + str(
+                desired_code) + "\nactual result:\n" + str(result) + "\ndesired response:\n" + str(desired_result))
     if result is None and desired_result != result:
         return_critical("Empty response for " + test_name + "\ndesired response:\n" + str(desired_result))
     for k, v in desired_result.items():
