@@ -33,7 +33,7 @@ public class ProxyHelper {
 
     @Value("${proxy.dn.mapping}") private String rawDNMapping;
 
-    private Map<String, String> getMapping() {
+    private Map<String, String> getDNMapping() {
         Map<String, String> result = new HashMap<>();
         for (String element : rawDNMapping.split(";")) {
             String[] pair = element.split("&");
@@ -46,32 +46,47 @@ public class ProxyHelper {
         return result;
     }
 
-
-	public String getUserLogin(String proxyValue) throws CredentialException {
-		String dn = getX509Credential(proxyValue).getIssuer();
-		Pattern pattern = Pattern.compile(LOGIN_FROM_DN_PATTERN);
-		Matcher matcher = pattern.matcher(dn);
-        Map<String, String> mapping = getMapping();
-
+    private String getUserLoginFromMapping(String dn) {
+        Map<String, String> mapping = getDNMapping();
         for (String key : mapping.keySet()) {
             if (dn.startsWith(key)) {
                 String login = mapping.get(key);
-                log.debug("Returning mapped entry: {} {}", dn, login);
+                log.debug("Mapped login based on dn: {} {}", login, dn);
                 return login;
             }
         }
+        return null;
+    }
 
-        if(matcher.matches()) {
-			String login = matcher.group(1);
-			log.debug("Extracted user login from certificate subject {} is {}", dn, login);
-			
-			return login;
-		} else {
-			throw new IllegalArgumentException("Could not extract user name from the supplied user proxy");
-		}
-	}
-	
-	public String decodeProxy(String proxy) {
+    private String getUserLoginFromDN(String dn) {
+        Pattern pattern = Pattern.compile(LOGIN_FROM_DN_PATTERN);
+        Matcher matcher = pattern.matcher(dn);
+        if (matcher.matches()) {
+            String login = matcher.group(1);
+            log.debug("Extracted login from dn: {} {}", login, dn);
+            return login;
+        } else {
+            return null;
+        }
+    }
+
+
+    public String getUserLogin(String proxyValue) throws CredentialException {
+        String dn = getX509Credential(proxyValue).getIssuer();
+
+        String login = getUserLoginFromMapping(dn);
+        if (login == null) {
+            login = getUserLoginFromDN(dn);
+        }
+        if (login == null) {
+            throw new IllegalArgumentException("Could not extract user name from the supplied user proxy");
+        } else {
+            log.debug("User login from certificate subject {} is {}", dn, login);
+            return login;
+        }
+    }
+
+    public String decodeProxy(String proxy) {
 		return new String(Base64.getDecoder().decode(proxy), Charset.forName("utf-8"));
 	}
 
