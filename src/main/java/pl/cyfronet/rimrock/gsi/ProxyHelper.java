@@ -6,9 +6,8 @@ import java.nio.charset.Charset;
 import java.security.KeyFactory;
 import java.security.PrivateKey;
 import java.security.spec.PKCS8EncodedKeySpec;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -46,44 +45,46 @@ public class ProxyHelper {
         return result;
     }
 
-    private String getUserLoginFromMapping(String dn) {
+    private Function<String, String> getUserLoginFromDNMapping = dn -> {
         Map<String, String> mapping = getDNMapping();
         for (String key : mapping.keySet()) {
             if (dn.startsWith(key)) {
                 String login = mapping.get(key);
-                log.debug("Mapped login based on dn: {} {}", login, dn);
+                log.debug("Mapped dn to login: {} {}", dn, login);
                 return login;
             }
         }
         return null;
-    }
+    };
 
-    private String getUserLoginFromDN(String dn) {
+    private Function<String, String> getUserLoginFromDNField = dn -> {
         Pattern pattern = Pattern.compile(LOGIN_FROM_DN_PATTERN);
         Matcher matcher = pattern.matcher(dn);
         if (matcher.matches()) {
             String login = matcher.group(1);
-            log.debug("Extracted login from dn: {} {}", login, dn);
+            log.debug("DN contained login: {} {}", dn, login);
             return login;
         } else {
             return null;
         }
-    }
-
+    };
 
     public String getUserLogin(String proxyValue) throws CredentialException {
         String dn = getX509Credential(proxyValue).getIssuer();
+        List<Function<String, String>> converters = Arrays.asList(
+                getUserLoginFromDNMapping,
+                getUserLoginFromDNField
+        );
 
-        String login = getUserLoginFromMapping(dn);
-        if (login == null) {
-            login = getUserLoginFromDN(dn);
+        for (Function<String, String> converter : converters) {
+            String login = converter.apply(dn);
+            if (login != null) {
+                log.debug("DN was converted to login: {} {}", dn, login);
+                return login;
+            }
         }
-        if (login == null) {
-            throw new IllegalArgumentException("Could not extract user name from the supplied user proxy");
-        } else {
-            log.debug("User login from certificate subject {} is {}", dn, login);
-            return login;
-        }
+
+        throw new IllegalArgumentException("Could not extract user name from the supplied user proxy");
     }
 
     public String decodeProxy(String proxy) {
