@@ -6,7 +6,11 @@ import java.nio.charset.Charset;
 import java.security.KeyFactory;
 import java.security.PrivateKey;
 import java.security.spec.PKCS8EncodedKeySpec;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -30,9 +34,9 @@ public class ProxyHelper {
 	public static final String PROXY_PARTS_PATTERN = "(.+)-----BEGIN PRIVATE KEY-----(.*)-----END PRIVATE KEY-----(.+)";
 	public static final String LOGIN_FROM_DN_PATTERN = ".+,CN=(plg.*?)(,.*$|$)";
 
-    @Value("${proxy.dn.mapping}") private String rawDNMapping;
+    @Value("${proxy.dn.mapping}") private static String rawDNMapping;
 
-    private Map<String, String> getDNMapping() {
+    private static Map<String, String> getDNMapping() {
         Map<String, String> result = new HashMap<>();
         for (String element : rawDNMapping.split(";")) {
             String[] pair = element.split("&");
@@ -45,7 +49,7 @@ public class ProxyHelper {
         return result;
     }
 
-    private Function<String, String> getUserLoginFromDNMapping = dn -> {
+    private static Function<String, String> getUserLoginFromDNMapping = dn -> {
         Map<String, String> mapping = getDNMapping();
         for (String key : mapping.keySet()) {
             if (dn.startsWith(key)) {
@@ -57,7 +61,7 @@ public class ProxyHelper {
         return null;
     };
 
-    private Function<String, String> getUserLoginFromDNField = dn -> {
+    private static Function<String, String> getUserLoginFromDNField = dn -> {
         Pattern pattern = Pattern.compile(LOGIN_FROM_DN_PATTERN);
         Matcher matcher = pattern.matcher(dn);
         if (matcher.matches()) {
