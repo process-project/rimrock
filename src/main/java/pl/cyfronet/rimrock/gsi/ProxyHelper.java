@@ -34,9 +34,9 @@ public class ProxyHelper {
 	public static final String PROXY_PARTS_PATTERN = "(.+)-----BEGIN PRIVATE KEY-----(.*)-----END PRIVATE KEY-----(.+)";
 	public static final String LOGIN_FROM_DN_PATTERN = ".+,CN=(plg.*?)(,.*$|$)";
 
-    @Value("${proxy.dn.mapping}") private static String rawDNMapping;
+    @Value("${proxy.dn.mapping}") private String rawDNMapping;
 
-    private static Map<String, String> getDNMapping() {
+    private Map<String, String> getDNMapping() {
         Map<String, String> result = new HashMap<>();
         for (String element : rawDNMapping.split(";")) {
             String[] pair = element.split("&");
@@ -49,7 +49,7 @@ public class ProxyHelper {
         return result;
     }
 
-    private static Function<String, String> getUserLoginFromDNMapping = dn -> {
+    private Function<String, String> getUserLoginFromDNMapping = dn -> {
         Map<String, String> mapping = getDNMapping();
         for (String key : mapping.keySet()) {
             if (dn.startsWith(key)) {
@@ -61,7 +61,7 @@ public class ProxyHelper {
         return null;
     };
 
-    private static Function<String, String> getUserLoginFromDNField = dn -> {
+    private Function<String, String> getUserLoginFromDNField = dn -> {
         Pattern pattern = Pattern.compile(LOGIN_FROM_DN_PATTERN);
         Matcher matcher = pattern.matcher(dn);
         if (matcher.matches()) {
