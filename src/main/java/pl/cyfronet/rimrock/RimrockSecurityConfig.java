@@ -103,7 +103,7 @@ public class RimrockSecurityConfig extends WebSecurityConfigurerAdapter {
 			int serverPort = startLocalLdapServer();
 	
 			DefaultSpringSecurityContextSource contextSource = new DefaultSpringSecurityContextSource("ldap://127.0.0.1:" + serverPort
-					+ "/dc=Cyfronet,dc=plgrid,dc=pl");
+					+ "/" + ldapDnBase);
 			contextSource.afterPropertiesSet();
 			log.info("Embedded LDAP server started on port " + serverPort);
 	
