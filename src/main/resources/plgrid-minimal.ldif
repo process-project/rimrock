@@ -94,12 +94,12 @@ objectclass: organizationalUnit
 objectclass: top
 ou: syntaxes
 
-dn: ou=People,dc=Cyfronet,dc=plgrid,dc=pl
+dn: ou=People,dc=global,dc=plgrid,dc=pl
 objectClass: organizationalUnit
 objectClass: top
 ou: People
 
-dn: uid=plgharezlak,ou=People,dc=Cyfronet,dc=plgrid,dc=pl
+dn: uid=plgharezlak,ou=People,dc=global,dc=plgrid,dc=pl
 objectClass: top
 objectClass: person
 objectClass: inetOrgPerson
@@ -110,7 +110,7 @@ cn: Daniel Harezlak
 plgridAccessService: PLG_OTHER_REMAINING_RIMROCK
 plgridSite: cyfronet
 
-dn: uid=plgtesthar,ou=People,dc=Cyfronet,dc=plgrid,dc=pl
+dn: uid=plgtesthar,ou=People,dc=global,dc=plgrid,dc=pl
 objectClass: top
 objectClass: person
 objectClass: inetOrgPerson
