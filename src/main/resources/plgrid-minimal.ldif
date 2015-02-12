@@ -82,7 +82,7 @@ m-oid: 1.3.6.1.4.1.16635.505.100.1.4
 m-name: plgridAccessService
 m-typeObjectClass: AUXILIARY
 m-must: plgridSite
-m-must: plgridService
+m-must: plgridAccessService
 
 dn: ou=syntaxcheckers, cn=plgrid-minimal, ou=schema
 objectclass: organizationalUnit
@@ -107,7 +107,7 @@ objectClass: plgridAccessService
 uid: plgharezlak
 sn: Harezlak
 cn: Daniel Harezlak
-plgridService: rimrock
+plgridAccessService: PLG_OTHER_REMAINING_RIMROCK
 plgridSite: cyfronet
 
 dn: uid=plgtesthar,ou=People,dc=Cyfronet,dc=plgrid,dc=pl
@@ -118,5 +118,5 @@ objectClass: plgridAccessService
 uid: plgtesthar
 sn: Harezlak
 cn: Daniel Harezlak
-plgridService: rimrock
+plgridAccessService: PLG_OTHER_REMAINING_RIMROCK
 plgridSite: cyfronet

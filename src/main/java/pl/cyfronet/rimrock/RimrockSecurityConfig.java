@@ -34,6 +34,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.Resource;
 import org.springframework.ldap.core.LdapTemplate;
+import org.springframework.ldap.core.support.LdapContextSource;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -54,6 +55,10 @@ public class RimrockSecurityConfig extends WebSecurityConfigurerAdapter {
 	@Value("${unsecure.api.resources}")	private String unsecureApiResources;
 	@Value("classpath:plgrid-minimal.ldif")	private Resource ldapData;
 	@Value("${ldap.integration.enabled}") private boolean ldapEbabled;
+	@Value("${ldap.dn.base}") private String ldapDnBase;
+	@Value("${ldap.endpoint}") private String ldapEndpoint;
+	@Value("${ldap.user}") private String ldapUser;
+	@Value("${ldap.password}") private String ldapPassword;
 
 	private LdapServer localLdapServer;
 
@@ -113,7 +118,13 @@ public class RimrockSecurityConfig extends WebSecurityConfigurerAdapter {
 	@Profile("production")
 	protected LdapTemplate productionLdapTemplate() throws Exception {
 		if(ldapEbabled) {
-			return new LdapTemplate();
+			LdapContextSource contextSource = new LdapContextSource();
+			contextSource.setUrl(ldapEndpoint);
+			contextSource.setBase(ldapDnBase);
+			contextSource.setUserDn(ldapUser);
+			contextSource.setPassword(ldapPassword);
+			
+			return new LdapTemplate(contextSource);
 		}
 		
 		return null;
@@ -139,7 +150,6 @@ public class RimrockSecurityConfig extends WebSecurityConfigurerAdapter {
 		int serverPort = 8081;
 		
 		if(localLdapServer == null) {
-			String root = "dc=Cyfronet,dc=plgrid,dc=pl";
 			DefaultDirectoryService service = new DefaultDirectoryService();
 			List<Interceptor> list = new ArrayList<Interceptor>();
 			list.add(new NormalizationInterceptor());
@@ -153,7 +163,7 @@ public class RimrockSecurityConfig extends WebSecurityConfigurerAdapter {
 			
 			JdbmPartition partition = new JdbmPartition();
 			partition.setId("rootPartition");
-			partition.setSuffix(root);
+			partition.setSuffix(ldapDnBase);
 			service.addPartition(partition);
 			service.setExitVmOnShutdown(false);
 			service.setShutdownHookEnabled(false);
@@ -167,8 +177,8 @@ public class RimrockSecurityConfig extends WebSecurityConfigurerAdapter {
 			service.startup();
 			localLdapServer.start();
 			
-			LdapDN dn = new LdapDN(root);
-			String dc = root.substring(3, root.indexOf(','));
+			LdapDN dn = new LdapDN(ldapDnBase);
+			String dc = ldapDnBase.substring(3, ldapDnBase.indexOf(','));
 			ServerEntry entry = service.newEntry(dn);
 			entry.add("objectClass", "top", "domain", "extensibleObject");
 			entry.add("dc", dc);

@@ -1,5 +1,6 @@
 v 1.2.0
   - Logging level set in the application.properties file
+  - LDAP authorization integrated
 
 v 1.1.1
   - Interactive process global GET method fixed
