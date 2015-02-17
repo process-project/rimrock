@@ -105,7 +105,7 @@ public class JobsControllerMvcTest {
 	
 	@Test
 	public void testRetrievalNotOwnedJob() throws Exception {
-		Job job = new Job("not_owned_job", "FINISHED", "", "", "other_user_login", "zeus.cyfronet.pl");
+		Job job = new Job("not_owned_job", "FINISHED", "", "", "other_user_login", "zeus.cyfronet.pl", null);
 		jobRepository.save(job);		
 		
 		mockMvc.perform(get("/api/jobs/not_owned_job")

@@ -3,6 +3,7 @@ v 1.2.0
   - LDAP authorization integrated
   - Exception handling added to interactive process script
   - Third-party server certificate validation enforced
+  - Simple tagging of jobs and interactive processes is now possible
 
 v 1.1.1
   - Interactive process global GET method fixed

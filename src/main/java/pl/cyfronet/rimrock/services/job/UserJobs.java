@@ -70,7 +70,7 @@ public class UserJobs {
 	 * @throws CertificateException 
 	 * @throws KeyStoreException 
 	 */
-	public Job submit(String host, String workingDirectory, String script) throws FileManagerException, CredentialException, RunException, KeyStoreException, CertificateException {
+	public Job submit(String host, String workingDirectory, String script, String tag) throws FileManagerException, CredentialException, RunException, KeyStoreException, CertificateException {
 		String rootPath = buildRootPath(host, workingDirectory, proxy);
 		log.debug("Starting {} user job in {}:{} ", new Object[] {userLogin, host, rootPath});
 
@@ -84,7 +84,7 @@ public class UserJobs {
 		
 		if ("OK".equals(submitResult.getResult())) {
 			return jobRepository.save(new Job(submitResult.getJobId(), "QUEUED", submitResult.getStandardOutputLocation(),
-					submitResult.getStandardErrorLocation(), userLogin, host));
+					submitResult.getStandardErrorLocation(), userLogin, host, tag));
 		} else {
 			throw new RunException(submitResult.getErrorMessage(), result);
 		}
@@ -94,6 +94,7 @@ public class UserJobs {
 	 * Update job statuses started on selected hosts.
 	 * 
 	 * @param hosts Jobs started on these hosts will be updated.
+	 * @param tag 
 	 * 
 	 * @return Updated jobs.
 	 * 
@@ -103,7 +104,7 @@ public class UserJobs {
 	 * @throws KeyStoreException 
 	 * @throws RunException 
 	 */
-	public List<Job> update(List<String> hosts) throws CredentialException,
+	public List<Job> update(List<String> hosts, String tag) throws CredentialException,
 			FileManagerException, RunException, KeyStoreException, CertificateException {
 		if (hosts == null || hosts.size() == 0) {
 			return Arrays.asList();
@@ -121,11 +122,19 @@ public class UserJobs {
 			statuses.addAll(statusResult.getStatuses());
 		}
 
-		List<Job> jobs = jobRepository.findByUsernameOnHosts(userLogin, hosts);
+		List<Job> jobs = null;
+		
+		if(tag != null) {
+			jobs = jobRepository.findByUsernameAndTagOnHosts(userLogin, tag, hosts);
+
+		} else {
+			jobs = jobRepository.findByUsernameOnHosts(userLogin, hosts);
+		}
+		
 		Map<String, Status> mappedStatusJobIds = statuses.stream()
 				.collect(Collectors.toMap(Status::getJobId, Function.<Status> identity()));
 
-		for (Job job : jobs) {
+		for(Job job : jobs) {
 			Status status = mappedStatusJobIds.get(job.getJobId());
 			
 			if(!Arrays.asList("FINISHED", "ABORTED").contains(job.getStatus())) {

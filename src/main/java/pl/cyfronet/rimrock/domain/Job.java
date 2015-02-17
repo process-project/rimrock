@@ -14,17 +14,19 @@ public class Job {
 	@Column(nullable = false) private String userLogin;
 	@Column(nullable = false) private String host;
 	@Column(nullable = false) private String status;
+	private String tag;
 
 	protected Job() {
 	}
 	
-	public Job(String jobId, String status, String standardOutputLocation, String standardErrorLocation, String userLogin, String host) {
+	public Job(String jobId, String status, String standardOutputLocation, String standardErrorLocation, String userLogin, String host, String tag) {
 		this.jobId = jobId;
 		this.status = status;
 		this.standardOutputLocation = standardOutputLocation;
 		this.standardErrorLocation = standardErrorLocation;
 		this.userLogin = userLogin;
 		this.host = host;
+		this.tag = tag;
 	}
 	
 	public Long getId() {
@@ -79,5 +81,13 @@ public class Job {
 	public String toString() {
 		return "Job [id=" + id + ", jobId=" + jobId + ", userLogin=" + userLogin
 				+ ", host=" + host + ", status=" + status + "]";
+	}
+
+	public String getTag() {
+		return tag;
+	}
+
+	public void setTag(String tag) {
+		this.tag = tag;
 	}
 }

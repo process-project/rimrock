@@ -81,7 +81,8 @@
   "job_id":"50463091.batch.grid.cyf-kr.edu.pl",
   "stdout_path":"https://data.plgrid.pl/download//stdout/path",
   "stderr_path":"https://data.plgrid.pl/download//stderr/path",
-  "status":"QUEUED"
+  "status":"QUEUED",
+  "tag":null
 }
   								</pre>
 							</td>
@@ -103,7 +104,8 @@
   "exit_code":-1,
   "standard_output":"whatever was printed before timeout",
   "error_output":"",
-  "error_message":"timeout occurred..."
+  "error_message":"timeout occurred...",
+  "tag":null
 }
   					</pre>
 							</td>
@@ -132,7 +134,7 @@ curl -k -X POST --data '{"host":"zeus.cyfronet.pl", "script":"#!/bin/bash\\necho
 					<table class="table table-bordered">
 						<tr>
 							<th th:text="#{example.url}"></th>
-							<td><code>/api/jobs</code></td>
+							<td><code>/api/jobs?tag={tag}</code></td>
 						</tr>
 						<tr>
 							<th th:text="#{example.method}"></th>
@@ -140,7 +142,7 @@ curl -k -X POST --data '{"host":"zeus.cyfronet.pl", "script":"#!/bin/bash\\necho
 						</tr>
 						<tr>
 							<th th:text="#{example.url_params}"></th>
-							<td><em th:text="#{example.url_params.none}"></em></td>
+							<td><em>tag</em> - <span th:text="#{jobs.statuses.param.tag}"></span></td>
 						</tr>
 						<tr>
 							<th th:text="#{example.data_params}"></th>
@@ -161,12 +163,14 @@ curl -k -X POST --data '{"host":"zeus.cyfronet.pl", "script":"#!/bin/bash\\necho
     "job_id":"50463091.batch.grid.cyf-kr.edu.pl",
     "stdout_path":"https://data.plgrid.pl/download//stdout/path",
     "stderr_path":"https://data.plgrid.pl/download//stderr/path",
-    "status":"QUEUED"
+    "status":"QUEUED",
+    "tag":null
   }, {
     "job_id":"61473291.batch.grid.cyf-kr.edu.pl",
     "stdout_path":"https://data.plgrid.pl/download//stdout/path",
     "stderr_path":"https://data.plgrid.pl/download//stderr/path",
-    "status":"FINISHED"
+    "status":"FINISHED",
+    "tag":null
   }
 ]
   					</pre>
@@ -189,7 +193,8 @@ curl -k -X POST --data '{"host":"zeus.cyfronet.pl", "script":"#!/bin/bash\\necho
   "exit_code": 0,
   "standard_output": "",
   "error_output": "",
-  "error_message": "Job with 1234.batch.grid.cyf-kr.edu.pl not found"
+  "error_message": "Job with 1234.batch.grid.cyf-kr.edu.pl not found",
+  "tag":null
 }
   					</pre>
 							</td>
@@ -202,7 +207,7 @@ curl -k -X POST --data '{"host":"zeus.cyfronet.pl", "script":"#!/bin/bash\\necho
 								</p> <pre>
 proxy="`cat {path-to-proxy-file} | base64 | tr -d '\n'`"
 
-curl -k -X GET --header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpServletRequest.serverName} + @{~/api/jobs/50463091.batch.grid.cyf-kr.edu.pl}" />
+curl -k -X GET --header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpServletRequest.serverName} + @{~/api/jobs}" />
   					</pre>
 							</td>
 						</tr>
@@ -246,7 +251,8 @@ curl -k -X GET --header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpSe
   "job_id":"50463091.batch.grid.cyf-kr.edu.pl",
   "stdout_path":"https://data.plgrid.pl/download//stdout/path",
   "stderr_path":"https://data.plgrid.pl/download//stderr/path",
-  "status":"QUEUED"
+  "status":"QUEUED",
+  "tag":null
 }
   					</pre>
 							</td>
@@ -268,7 +274,8 @@ curl -k -X GET --header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpSe
   "exit_code": 0,
   "standard_output": "",
   "error_output": "",
-  "error_message": "Job with 1234.batch.grid.cyf-kr.edu.pl not found"
+  "error_message": "Job with 1234.batch.grid.cyf-kr.edu.pl not found",
+  "tag":null
 }
   					</pre>
 							</td>
@@ -334,7 +341,8 @@ curl -k -X GET --header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpSe
   "exit_code": 0,
   "standard_output": "",
   "error_output": "",
-  "error_message": "Job with 1234.batch.grid.cyf-kr.edu.pl not found"
+  "error_message": "Job with 1234.batch.grid.cyf-kr.edu.pl not found",
+  "tag":null
 }
   					</pre>
 							</td>
@@ -412,7 +420,8 @@ curl -k -X DELETE --header "PROXY:$proxy" <th:block th:text="'https://' + ${#htt
   "exit_code": 0,
   "standard_output": "",
   "error_output": "",
-  "error_message": "Job with 1234.batch.grid.cyf-kr.edu.pl not found"
+  "error_message": "Job with 1234.batch.grid.cyf-kr.edu.pl not found",
+  "tag":null
 }
   								</pre>
 							</td>

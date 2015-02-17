@@ -6,6 +6,7 @@ public class SubmitRequest {
 	private String host;
 	private String script;
 	@JsonProperty(value = "working_directory") private String workingDirectory;
+	private String tag;
 	
 	public String getHost() {
 		return host;
@@ -29,5 +30,11 @@ public class SubmitRequest {
 	@Override
 	public String toString() {
 		return "SubmitRequest [host=" + host + ", script=" + script + ", workingDirectory=" + workingDirectory + "]";
+	}
+	public String getTag() {
+		return tag;
+	}
+	public void setTag(String tag) {
+		this.tag = tag;
 	}
 }
