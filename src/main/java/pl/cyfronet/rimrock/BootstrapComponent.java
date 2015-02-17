@@ -46,6 +46,7 @@ public class BootstrapComponent implements ApplicationListener<ContextRefreshedE
 			SSLContext sc = SSLContext.getInstance("SSL");
 			sc.init(null, trustAllCerts, new java.security.SecureRandom());
 			HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+			SSLContext.setDefault(sc);
 		} catch (Exception e) {
 			//ignoring
 		}

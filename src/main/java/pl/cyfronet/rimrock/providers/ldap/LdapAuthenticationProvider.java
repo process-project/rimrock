@@ -26,6 +26,7 @@ public class LdapAuthenticationProvider implements AuthenticationProvider {
 	
 	@Value("${ldap.rimrock.name}") private String ldapRimrockName;
 	@Value("${ldap.integration.enabled}") private boolean ldapEbabled;
+	@Value("${ldap.service.field.name}") private String ldapServiceFieldName;
 
 	@Autowired private LdapTemplate ldapTemplate;
 	@Autowired private ProxyHelper proxyHelper;
@@ -49,7 +50,7 @@ public class LdapAuthenticationProvider implements AuthenticationProvider {
 			List<String> services = new ArrayList<>();
 			user.setServices(services);
 
-			Attribute attribute = attributes.get("plgridService");
+			Attribute attribute = attributes.get(ldapServiceFieldName);
 			
 			if(attribute != null && attribute.size() > 0) {
 				for(int i = 0; i < attribute.size(); i++) {

@@ -1,5 +1,6 @@
 v 1.2.0
   - Logging level set in the application.properties file
+  - LDAP authorization integrated
   - Exception handling added to interactive process script
 
 v 1.1.1

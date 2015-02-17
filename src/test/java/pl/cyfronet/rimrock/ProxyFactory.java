@@ -71,7 +71,10 @@ public class ProxyFactory {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		credential.save(out);
 
-		return new String(out.toByteArray());
+		String proxyValue = new String(out.toByteArray());
+		log.info("Generated proxy: {}", proxyValue);
+		
+		return proxyValue;
 	}
 	
 	private String getProxyPayload() throws IOException {
