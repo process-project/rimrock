@@ -9,6 +9,7 @@ public class InteractiveProcessResponse {
 	@JsonProperty("error_message") private String errorMessage;
 	private Status status;
 	private boolean finished;
+	private String tag;
 	
 	public enum Status {
 		OK,
@@ -61,5 +62,13 @@ public class InteractiveProcessResponse {
 
 	public void setFinished(boolean finished) {
 		this.finished = finished;
+	}
+
+	public String getTag() {
+		return tag;
+	}
+
+	public void setTag(String tag) {
+		this.tag = tag;
 	}
 }

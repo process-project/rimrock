@@ -14,6 +14,7 @@ public class InteractiveProcess {
 	private boolean finished;
 	private String userLogin;
 	private String secret;
+	private String tag;
 	
 	public Long getId() {
 		return id;
@@ -62,5 +63,11 @@ public class InteractiveProcess {
 	}
 	public void setSecret(String secret) {
 		this.secret = secret;
+	}
+	public String getTag() {
+		return tag;
+	}
+	public void setTag(String tag) {
+		this.tag = tag;
 	}
 }

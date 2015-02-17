@@ -30,6 +30,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
@@ -116,10 +117,12 @@ public class InteractiveRunController {
 		interactiveProcess.setProcessId(processId);
 		interactiveProcess.setSecret(secret);
 		interactiveProcess.setUserLogin(proxyHelper.getUserLogin(decodedProxy));
+		interactiveProcess.setTag(request.getTag());
 		processRepository.save(interactiveProcess);
 		
 		InteractiveProcessResponse response = new InteractiveProcessResponse(Status.OK, null);
 		response.setProcessId(processId);
+		response.setTag(interactiveProcess.getTag());
 		
 		return new ResponseEntity<InteractiveProcessResponse>(response, CREATED);
 	}
@@ -148,17 +151,24 @@ public class InteractiveRunController {
 		response.setStandardError(error);
 		response.setFinished(process.isFinished());
 		response.setProcessId(processId);
+		response.setTag(process.getTag());
 		
 		return new ResponseEntity<InteractiveProcessResponse>(response, OK);
 	}
 	
 	@RequestMapping(value = "/api/iprocesses", method = GET, produces = APPLICATION_JSON_VALUE)
 	@SuppressWarnings({"rawtypes", "unchecked"})
-	public ResponseEntity getInteractiveProcesses(@RequestHeader("PROXY") String proxy) 
+	public ResponseEntity getInteractiveProcesses(@RequestHeader("PROXY") String proxy, @RequestParam(value = "tag", required = false) String tag) 
 			throws CredentialException, GSSException, KeyStoreException, CertificateException, IOException {
 		String decodedProxy = proxyHelper.decodeProxy(proxy);
 		String userLogin = proxyHelper.getUserLogin(decodedProxy);
-		List<InteractiveProcess> processes = processRepository.findByUserLogin(userLogin);
+		List<InteractiveProcess> processes = null;
+		
+		if(tag != null) {
+			processes = processRepository.findByUserLoginAndTag(userLogin, tag);
+		} else {
+			processes = processRepository.findByUserLogin(userLogin);
+		}
 		
 		List<InteractiveProcessResponse> response = processes.stream().
 			<InteractiveProcessResponse>map(process -> {
@@ -173,6 +183,7 @@ public class InteractiveRunController {
 				processResponse.setStandardError(error);
 				processResponse.setFinished(process.isFinished());
 				processResponse.setProcessId(process.getProcessId());
+				processResponse.setTag(process.getTag());
 				
 				return processResponse;
 			}).
@@ -205,6 +216,7 @@ public class InteractiveRunController {
 		response.setStandardError(error);
 		response.setFinished(process.isFinished());
 		response.setProcessId(processId);
+		response.setTag(process.getTag());
 		
 		return new ResponseEntity<InteractiveProcessResponse>(response, OK);
 	}
