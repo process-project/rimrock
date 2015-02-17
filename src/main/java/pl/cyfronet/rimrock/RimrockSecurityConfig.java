@@ -123,6 +123,7 @@ public class RimrockSecurityConfig extends WebSecurityConfigurerAdapter {
 			contextSource.setBase(ldapDnBase);
 			contextSource.setUserDn(ldapUser);
 			contextSource.setPassword(ldapPassword);
+			contextSource.afterPropertiesSet();
 			
 			return new LdapTemplate(contextSource);
 		}
@@ -137,9 +138,9 @@ public class RimrockSecurityConfig extends WebSecurityConfigurerAdapter {
 	
 	@PreDestroy
 	private void stopLdapServer() throws Exception {
-		log.info("Gracefully shutting down local LDAP server");
-		
 		if(localLdapServer != null && localLdapServer.isStarted()) {
+			log.info("Gracefully shutting down local LDAP server");
+			
 			localLdapServer.getDirectoryService().shutdown();
 			localLdapServer.stop();
 			localLdapServer = null;
