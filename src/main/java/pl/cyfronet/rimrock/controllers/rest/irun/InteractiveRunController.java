@@ -105,7 +105,7 @@ public class InteractiveRunController {
 		log.debug("Attempting to start new interactive process with id {} and reporting URL {} with secret {}", processId, internalUrl, secret);
 		
 		RunResults runResults = runner.run(request.getHost(), decodedProxy,
-				String.format("module load plgrid/tools/python/3.3.2; (url='%s' secret='%s' processId='%s' command='%s' timeout='%s' certPath='%s' nohup python3 " + scriptFilePath + " &)",
+				String.format("module load plgrid/tools/python/3.3.2; (url='%s' secret='%s' processId='%s' command='%s' timeout='%s' certPath='%s' nohup python3 " + scriptFilePath + " >> .rimrock/iwrapper.log 2>&1 &)",
 						internalUrl, secret, processId, request.getCommand(), iprocessTimeoutSeconds, certFilePath), 5000);
 		
 		if(runResults.isTimeoutOccured() || runResults.getExitCode() != 0) {
