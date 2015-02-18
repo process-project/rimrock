@@ -163,7 +163,7 @@ def iprocesses_sequence():
         finished = response["finished"]
         count += 1
         if count > 20:
-            return_critical("Process did not finish in 20 seconds, after issuing exit command!")
+            return_critical("Iprocess did not finish in 20 seconds, after issuing exit command!")
 
 
 def job_sequence():
