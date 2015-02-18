@@ -1,16 +1,22 @@
 package pl.cyfronet.rimrock;
 
-import java.security.cert.X509Certificate;
+import java.io.IOException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
 
-import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
+import javax.net.ssl.TrustManagerFactory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
 
 /**
@@ -21,31 +27,36 @@ import org.springframework.stereotype.Component;
 public class BootstrapComponent implements ApplicationListener<ContextRefreshedEvent>{
 	private static final Logger log = LoggerFactory.getLogger(BootstrapComponent.class);
 	
+	@Value("classpath:certs/TERENASSLCA")	private Resource terenaCert;
+	@Value("classpath:certs/SIMPLECA") private Resource simpleCaCert;
+	
 	@Override
 	public void onApplicationEvent(ContextRefreshedEvent event) {
-		enableSSL();
+		try {
+			enableTrustedSSL();
+		} catch (Exception e) {
+			log.error("Could not properly configure trust manager", e);
+		}
 	}
 	
-	private void enableSSL() {
-		log.info("Configuring SSL context to trust all server certificates");
+	private void enableTrustedSSL() throws NoSuchAlgorithmException, KeyStoreException, CertificateException, IOException {
+		log.info("Configuring SSL context to trust TERENA and SIMPLECA");
+		CertificateFactory certFactory = CertificateFactory.getInstance("X.509");
+		Certificate terenaCertificate = certFactory.generateCertificate(terenaCert.getInputStream());
+		Certificate simpleCaCertificate = certFactory.generateCertificate(simpleCaCert.getInputStream());
 		
-		TrustManager[] trustAllCerts = new TrustManager[] {
-				new X509TrustManager() {
-					public X509Certificate[] getAcceptedIssuers() {
-						return null;
-					}
+		KeyStore store = KeyStore.getInstance(KeyStore.getDefaultType());
+		store.load(null, null);
+		store.setCertificateEntry("terena", terenaCertificate);
+		store.setCertificateEntry("simpleca", simpleCaCertificate);
 		
-					public void checkClientTrusted(X509Certificate[] certs, String authType) {
-					}
+		TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+		tmf.init(store);
 		
-					public void checkServerTrusted(X509Certificate[] certs, String authType) {
-					}
-				}};
-
 		try {
 			SSLContext sc = SSLContext.getInstance("SSL");
-			sc.init(null, trustAllCerts, new java.security.SecureRandom());
-			HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+			sc.init(null, tmf.getTrustManagers(), new java.security.SecureRandom());
+			SSLContext.setDefault(sc);
 		} catch (Exception e) {
 			//ignoring
 		}

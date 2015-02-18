@@ -33,6 +33,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import pl.cyfronet.rimrock.controllers.rest.ErrorResponse;
 import pl.cyfronet.rimrock.controllers.rest.RestHelper;
@@ -76,7 +77,7 @@ public class JobsController {
 		UserJobs manager = userJobsFactory.get(proxyHelper.decodeProxy(proxy));
 
 		Job job = manager.submit(submitRequest.getHost(),
-				submitRequest.getWorkingDirectory(), submitRequest.getScript());
+				submitRequest.getWorkingDirectory(), submitRequest.getScript(), submitRequest.getTag());
 
 		return new ResponseEntity<JobInfo>(new JobInfo(job, plgDataUrl), CREATED);
 	}
@@ -94,22 +95,22 @@ public class JobsController {
 			throw new JobNotFoundException(jobId);
 		}
 			
-		manager.update(Arrays.asList(job.getHost()));
+		manager.update(Arrays.asList(job.getHost()), null);
 		job = manager.get(jobId);
 		
 		return new ResponseEntity<JobInfo>(new JobInfo(job, plgDataUrl), OK);
 	}
 
 	@RequestMapping(value = "/api/jobs", method = GET, produces = APPLICATION_JSON_VALUE)
-	public ResponseEntity<List<JobInfo>> globalStatus(@RequestHeader("PROXY") String proxy) 
+	public ResponseEntity<List<JobInfo>> globalStatus(@RequestHeader("PROXY") String proxy, @RequestParam(value = "tag", required = false) String tag) 
 			throws CredentialException, InvalidStateException, GSSException, FileManagerException, 
 			IOException, InterruptedException, KeyStoreException, CertificateException {
 		List<String> hosts = jobRepository.getHosts();
 		UserJobs manager = userJobsFactory.get(proxyHelper.decodeProxy(proxy));
-		List<Job> jobs = manager.update(hosts);
-		List<JobInfo> infos = jobs.stream()
-				.map(job -> new JobInfo(job, plgDataUrl))
-				.collect(Collectors.toList());
+		List<Job> jobs = manager.update(hosts, tag);
+		List<JobInfo> infos = jobs.stream().
+				map(job -> new JobInfo(job, plgDataUrl)).
+				collect(Collectors.toList());
 		
 		return new ResponseEntity<List<JobInfo>>(infos, OK);
 	}

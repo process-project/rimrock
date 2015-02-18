@@ -78,7 +78,7 @@ public class UserJobsTest {
 						eq("cd /home/dir/; chmod +x start; ./start script.sh"),
 						anyInt())).thenReturn(result);
 
-		Job job = userJobs.submit("host", "/home/dir", "script payload");
+		Job job = userJobs.submit("host", "/home/dir", "script payload", null);
 
 		verify(fileManager).cp(eq("/home/dir/script.sh"), any(Resource.class));
 		verify(fileManager).cp(eq("/home/dir/start"), any(Resource.class));
@@ -97,7 +97,7 @@ public class UserJobsTest {
 				any(Resource.class));
 
 		try {
-			userJobs.submit("host", "/home/dir", "script payload");
+			userJobs.submit("host", "/home/dir", "script payload", null);
 			fail();
 		} catch (FileManagerException e) {
 			// ok should be thrown
@@ -112,7 +112,7 @@ public class UserJobsTest {
 						anyInt())).thenThrow(new GSSException(1));
 
 		try {
-			userJobs.submit("host", "/home/dir", "script payload");
+			userJobs.submit("host", "/home/dir", "script payload", null);
 			fail();
 		} catch (RunException e) {
 			// ok should be thrown
@@ -132,7 +132,7 @@ public class UserJobsTest {
 						anyInt())).thenReturn(result);
 
 		try {
-			userJobs.submit("host", "/home/dir", "script payload");
+			userJobs.submit("host", "/home/dir", "script payload", null);
 			fail();
 		} catch (RunException e) {
 			// ok should be thrown
@@ -167,7 +167,7 @@ public class UserJobsTest {
 						eq("cd /people/userLogin/.rimrock; chmod +x status; ./status"),
 						anyInt())).thenReturn(uiResult);
 
-		userJobs.update(Arrays.asList("zeus.cyfronet.pl", "ui.cyfronet.pl"));
+		userJobs.update(Arrays.asList("zeus.cyfronet.pl", "ui.cyfronet.pl"), null);
 
 		assertEquals("RUNNING", jobStatus("1"));
 		assertEquals("FINISHED", jobStatus("2"));
@@ -178,7 +178,7 @@ public class UserJobsTest {
 
 	@Test
 	public void testUpdateJobStatusesWhenNoHosts() throws Exception {
-		List<Job> jobs = userJobs.update(Arrays.asList());
+		List<Job> jobs = userJobs.update(Arrays.asList(), null);
 		
 		assertEquals(0, jobs.size());
 	}
@@ -200,7 +200,7 @@ public class UserJobsTest {
 
 	@Test
 	public void testDeleteFinishedJob() throws Exception {
-		Job job = new Job("finished_to_delete", "FINISHED", "", "", userLogin, "zeus.cyfronet.pl");
+		Job job = new Job("finished_to_delete", "FINISHED", "", "", userLogin, "zeus.cyfronet.pl", null);
 		jobRepository.save(job);
 
 		userJobs.delete("finished_to_delete");
@@ -231,7 +231,7 @@ public class UserJobsTest {
 	}
 	
 	private Job createJob(String id, String username, String hostname) {
-		Job job = new Job(id, "QUEUED", "", "", username, hostname);
+		Job job = new Job(id, "QUEUED", "", "", username, hostname, null);
 		jobRepository.save(job);
 
 		return job;

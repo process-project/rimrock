@@ -66,9 +66,15 @@ def load_proxy(file_path):
     return base64.encodestring(a.strip()).replace("\n", "")
 
 
-def check_response(desired_result, result):
+def check_response(desired_result, desired_code, result, code):
     # this returns name of function calling check_response()
     test_name = inspect.stack()[2][4][0].strip()
+    if desired_code is not None and desired_code != code:
+        return_critical(
+            "Wrong status code for " + test_name + "\ngot:\n" + str(code) + "\ndesired code:\n" + str(
+                desired_code) + "\nactual result:\n" + str(result) + "\ndesired response:\n" + str(desired_result))
+    if result is None and desired_result != result:
+        return_critical("Empty response for " + test_name + "\ndesired response:\n" + str(desired_result))
     for k, v in desired_result.items():
         if result[k] != v:
             return_critical("Response for " + test_name + " contains errors",
@@ -84,9 +90,13 @@ def make_request(path, payload=None, method="POST", add_headers=None):
     if add_headers is not None:
         headers.update(add_headers)
 
-    debug_log("Request: " + path + ", method: " + method + ", with payload: " + str(payload))
+    debug_log("Request: " + rimrock_url + path + ", method: " + method + ", with payload: " + str(
+        payload) + ", with additional headers: " + str(add_headers))
 
     conn = httplib.HTTPSConnection(rimrock_url)
+    if debug:
+        conn.set_debuglevel(1)
+        
     try:
         body = None
         if payload is not None:
@@ -95,7 +105,7 @@ def make_request(path, payload=None, method="POST", add_headers=None):
         # conn.set_debuglevel(1)
         resp = conn.getresponse()
     except Exception, e1:
-        return_critical("Unable to do a post request for process_sequence", e1)
+        return_critical("Unable to do a post request", e1)
 
     response = resp.read()
 
@@ -105,7 +115,7 @@ def make_request(path, payload=None, method="POST", add_headers=None):
         try:
             parsed_response = simplejson.loads(response)
         except Exception, e2:
-            return_critical("Unable to parse response of process_sequence", "response:" + response + "\n" + str(e2))
+            return_critical("Unable to parse response", "response:" + response + "\n" + str(e2))
 
         debug_log("Response: " + str(parsed_response) + ", code:" + str(resp.status))
         return (parsed_response, resp.status)
@@ -123,33 +133,33 @@ def process_sequence():
     }
 
     response, code = make_request("/api/process", payload)
-    check_response(desired_response, response)
+    check_response(desired_response, 200, response, code)
 
 
-def iprocess_sequence():
-    response, code = make_request("/api/iprocess", {"host": ui_url, "command": "bash"})
-    check_response({"status": "OK"}, response)
+def iprocesses_sequence():
+    response, code = make_request("/api/iprocesses", {"host": ui_url, "command": "bash"})
+    check_response({"status": "OK"}, None, response, code)
 
     process_id = response["process_id"]
     debug_log("process_id: " + process_id)
 
-    response, code = make_request("/api/iprocess/", method="GET", add_headers={"PROCESS-ID": process_id})
-    check_response({"status": "OK"}, response)
+    response, code = make_request("/api/iprocesses/" + process_id, method="GET")
+    check_response({"status": "OK"}, 200, response, code)
 
-    response, code = make_request("/api/iprocess", method="GET")
+    response, code = make_request("/api/iprocesses", method="GET")
     if len(response) == 0:
         return_critical("Listing user jobs didn't return anything", response)
 
-    response, code = make_request("/api/iprocess/", {"standard_input": "exit"}, method="PUT", add_headers={"PROCESS-ID": process_id})
-    check_response({"status": "OK"}, response)
+    response, code = make_request("/api/iprocesses/" + process_id, {"standard_input": "exit"}, method="PUT")
+    check_response({"status": "OK"}, 200, response, code)
 
     finished = response["finished"]
     count = 0
 
     while not finished:
         time.sleep(1)
-        response, code = make_request("/api/iprocess/", method="GET", add_headers={"PROCESS-ID": process_id})
-        check_response({"status": "OK"}, response)
+        response, code = make_request("/api/iprocesses/" + process_id, method="GET")
+        check_response({"status": "OK"}, None, response, code)
         finished = response["finished"]
         count += 1
         if count > 20:
@@ -248,7 +258,7 @@ if __name__ == "__main__":
     timeout = options.timeout
 
     process_sequence()
-    iprocess_sequence()
+    iprocesses_sequence()
     job_sequence()
     job_cancel_sequence()
 

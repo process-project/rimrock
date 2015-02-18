@@ -38,7 +38,7 @@ public class DbBasicTest {
 	
 	@Test
 	public void testJobCrud() {
-		Job job = new Job("jobId", "ACTIVE", "putput", "error", "user", "host");
+		Job job = new Job("jobId", "ACTIVE", "putput", "error", "user", "host", "tag");
 		jobRepository.save(job);
 		assertNotNull(job.getId());
 		assertTrue(job.getId() > 0);
@@ -74,6 +74,6 @@ public class DbBasicTest {
 	}
 	
 	private Job userJob(String id, String username, String hostname) {
-		return new Job(id, "ACTIVE", "", "", username, hostname);
+		return new Job(id, "ACTIVE", "", "", username, hostname, null);
 	}
 }

@@ -1,6 +1,7 @@
 package pl.cyfronet.rimrock.controllers.rest.irun;
 
 import static org.springframework.http.HttpStatus.OK;
+import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
@@ -12,6 +13,7 @@ import java.security.KeyStoreException;
 import java.security.cert.CertificateException;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
@@ -28,6 +30,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
@@ -90,19 +93,21 @@ public class InteractiveRunController {
 			throw new ValidationException(errors);
 		}
 		
+		String processId = UUID.randomUUID().toString();
 		String decodedProxy = proxyHelper.decodeProxy(proxy);
 		FileManager fileManager = fileManagerFactory.get(decodedProxy);
-		fileManager.cp(PathHelper.getRootPath(request.getHost(), proxyHelper.getUserLogin(decodedProxy)) + ".rimrock/iwrapper.py", new ClassPathResource("scripts/iwrapper.py"));
-		fileManager.cp(PathHelper.getRootPath(request.getHost(), proxyHelper.getUserLogin(decodedProxy)) + ".rimrock/TERENASSLCA", new ClassPathResource("certs/TERENASSLCA"));
+		String certFilePath = ".rimrock/TERENASSLCA-" + processId;
+		String scriptFilePath = ".rimrock/iwrapper-" + processId + ".py";
+		fileManager.cp(PathHelper.getRootPath(request.getHost(), proxyHelper.getUserLogin(decodedProxy)) + certFilePath, new ClassPathResource("certs/TERENASSLCA"));
+		fileManager.cp(PathHelper.getRootPath(request.getHost(), proxyHelper.getUserLogin(decodedProxy)) + scriptFilePath, new ClassPathResource("scripts/iwrapper.py"));
 		
-		String processId = UUID.randomUUID().toString();
 		String secret = UUID.randomUUID().toString();
 		String internalUrl = MvcUriComponentsBuilder.fromMethodCall(on(InteractiveRunController.class).update(null)).build().toUriString();
 		log.debug("Attempting to start new interactive process with id {} and reporting URL {} with secret {}", processId, internalUrl, secret);
 		
 		RunResults runResults = runner.run(request.getHost(), decodedProxy,
-				String.format("module load plgrid/tools/python/3.3.2; (url='%s' secret='%s' processId='%s' command='%s' timeout='%s' nohup python3 .rimrock/iwrapper.py &)",
-						internalUrl, secret, processId, request.getCommand(), iprocessTimeoutSeconds), 5000);
+				String.format("module load plgrid/tools/python/3.3.2; (url='%s' secret='%s' processId='%s' command='%s' timeout='%s' certPath='%s' nohup python3 " + scriptFilePath + " >> .rimrock/iwrapper.log 2>&1 &)",
+						internalUrl, secret, processId, request.getCommand(), iprocessTimeoutSeconds, certFilePath), 5000);
 		
 		if(runResults.isTimeoutOccured() || runResults.getExitCode() != 0) {
 			throw new RunException("Interactive process could not be properly executed", runResults);			
@@ -112,12 +117,14 @@ public class InteractiveRunController {
 		interactiveProcess.setProcessId(processId);
 		interactiveProcess.setSecret(secret);
 		interactiveProcess.setUserLogin(proxyHelper.getUserLogin(decodedProxy));
+		interactiveProcess.setTag(request.getTag());
 		processRepository.save(interactiveProcess);
 		
 		InteractiveProcessResponse response = new InteractiveProcessResponse(Status.OK, null);
 		response.setProcessId(processId);
+		response.setTag(interactiveProcess.getTag());
 		
-		return new ResponseEntity<InteractiveProcessResponse>(response, OK);	
+		return new ResponseEntity<InteractiveProcessResponse>(response, CREATED);
 	}
 
 	@RequestMapping(value = "/api/iprocesses/{iprocessId:.+}", method = GET, produces = APPLICATION_JSON_VALUE)
@@ -144,19 +151,45 @@ public class InteractiveRunController {
 		response.setStandardError(error);
 		response.setFinished(process.isFinished());
 		response.setProcessId(processId);
+		response.setTag(process.getTag());
 		
 		return new ResponseEntity<InteractiveProcessResponse>(response, OK);
 	}
 	
 	@RequestMapping(value = "/api/iprocesses", method = GET, produces = APPLICATION_JSON_VALUE)
 	@SuppressWarnings({"rawtypes", "unchecked"})
-	public ResponseEntity getInteractiveProcesses(@RequestHeader("PROXY") String proxy) 
+	public ResponseEntity getInteractiveProcesses(@RequestHeader("PROXY") String proxy, @RequestParam(value = "tag", required = false) String tag) 
 			throws CredentialException, GSSException, KeyStoreException, CertificateException, IOException {
 		String decodedProxy = proxyHelper.decodeProxy(proxy);
 		String userLogin = proxyHelper.getUserLogin(decodedProxy);
-		List<InteractiveProcess> processes = processRepository.findByUserLogin(userLogin);
+		List<InteractiveProcess> processes = null;
+		
+		if(tag != null) {
+			processes = processRepository.findByUserLoginAndTag(userLogin, tag);
+		} else {
+			processes = processRepository.findByUserLogin(userLogin);
+		}
+		
+		List<InteractiveProcessResponse> response = processes.stream().
+			<InteractiveProcessResponse>map(process -> {
+				String output = process.getOutput();
+				String error = process.getError();
+				process.setOutput("");
+				process.setError("");
+				processRepository.save(process);
+				
+				InteractiveProcessResponse processResponse = new InteractiveProcessResponse(Status.OK, null);
+				processResponse.setStandardOutput(output);
+				processResponse.setStandardError(error);
+				processResponse.setFinished(process.isFinished());
+				processResponse.setProcessId(process.getProcessId());
+				processResponse.setTag(process.getTag());
+				
+				return processResponse;
+			}).
+			collect(Collectors.toList());
 			
-		return new ResponseEntity(processes, OK);
+		return new ResponseEntity(response, OK);
 	}
 
 	@RequestMapping(value = "/api/iprocesses/{iprocessId:.+}", method = PUT, consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
@@ -183,6 +216,7 @@ public class InteractiveRunController {
 		response.setStandardError(error);
 		response.setFinished(process.isFinished());
 		response.setProcessId(processId);
+		response.setTag(process.getTag());
 		
 		return new ResponseEntity<InteractiveProcessResponse>(response, OK);
 	}

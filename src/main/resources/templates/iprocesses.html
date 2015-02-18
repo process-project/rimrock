@@ -73,7 +73,8 @@
   "finished":false,
   "standard_output":null,
   "standard_error":null,
-  "error_message":null
+  "error_message":null,
+  "tag":null
 }
   					</pre>
 							</td>
@@ -96,7 +97,8 @@
   "finished":false,
   "standard_output":null,
   "standard_error":null,
-  "error_message":"Timeout occurred"
+  "error_message":"Timeout occurred",
+  "tag":null
 }
   					</pre>
 							</td>
@@ -156,7 +158,8 @@ curl -k -X POST --data '{"host":"zeus.cyfronet.pl", "command":"bash"}' \
   "finished":false,
   "standard_output":"some output",
   "standard_error":null,
-  "error_message":null
+  "error_message":null,
+  "tag":null
 }
   					</pre>
 							</td>
@@ -178,7 +181,8 @@ curl -k -X POST --data '{"host":"zeus.cyfronet.pl", "command":"bash"}' \
   "finished":false,
   "standard_output":null,
   "standard_error":null,
-  "error_message":"Process with given id could not be found"
+  "error_message":"Process with given id could not be found",
+  "tag":null
 }
   					</pre>
 							</td>
@@ -206,7 +210,7 @@ curl -k -X GET --header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpSe
 					<table class="table table-bordered">
 						<tr>
 							<th th:text="#{example.url}"></th>
-							<td><code>/api/iprocesses</code></td>
+							<td><code>/api/iprocesses?tag={tag}</code></td>
 						</tr>
 						<tr>
 							<th th:text="#{example.method}"></th>
@@ -214,7 +218,7 @@ curl -k -X GET --header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpSe
 						</tr>
 						<tr>
 							<th th:text="#{example.url_params}"></th>
-							<td><em th:text="#{example.url_params.none}"></em></td>
+							<td><em>tag</em> - <span th:text="#{iprocesses.statuses.param.tag}"></span></td>
 						</tr>
 						<tr>
 							<th th:text="#{example.data_params}"></th>
@@ -237,7 +241,8 @@ curl -k -X GET --header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpSe
     "finished":false,
     "standard_output":"some output",
     "standard_error":null,
-    "error_message":null
+    "error_message":null,
+    "tag":null
   },
   {
     "process_id":"905fab54-d0b8-43f4-9e44-7ba7dfc71d74",
@@ -245,7 +250,8 @@ curl -k -X GET --header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpSe
     "finished":true,
     "standard_output":"another output",
     "standard_error":null,
-    "error_message":null
+    "error_message":null,
+    "tag":null
   }
 ]
   					</pre>
@@ -268,7 +274,8 @@ curl -k -X GET --header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpSe
   "finished":false,
   "standard_output":null,
   "standard_error":null,
-  "error_message":"Given proxy certificate is invalid"
+  "error_message":"Given proxy certificate is invalid",
+  "tag":null
 }
   					</pre>
 							</td>
@@ -336,7 +343,8 @@ curl -k -X GET --header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpSe
   "finished":false,
   "standard_output":null,
   "standard_error":null,
-  "error_message":null
+  "error_message":null,
+  "tag":null
 }
   					</pre>
 							</td>
@@ -359,7 +367,8 @@ curl -k -X GET --header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpSe
   "finished":false,
   "standard_output":null,
   "standard_error":null,
-  "error_message":"Process with given id could not be found"
+  "error_message":"Process with given id could not be found",
+  "tag":null
 }
   					</pre>
 							</td>

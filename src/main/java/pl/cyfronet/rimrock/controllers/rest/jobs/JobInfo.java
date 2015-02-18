@@ -5,7 +5,6 @@ import pl.cyfronet.rimrock.domain.Job;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class JobInfo {
-
 	@JsonProperty("job_id")
 	private String jobId;
 
@@ -17,14 +16,15 @@ public class JobInfo {
 
 	@JsonProperty("status")
 	private String status;
+	private String tag;
 
 	public JobInfo() {
-
 	}
 
 	public JobInfo(Job job, String plgdataUrl) {
 		this.jobId = job.getJobId();
 		this.status = job.getStatus();
+		this.tag = job.getTag();
 		this.stdOutPath = downloadUrl(plgdataUrl,
 				job.getStandardOutputLocation());
 		this.stdErrPath = downloadUrl(plgdataUrl,
@@ -65,5 +65,13 @@ public class JobInfo {
 
 	private String downloadUrl(String plgdataUrl, String filePath) {
 		return String.format("%s/download/%s", plgdataUrl, filePath);
+	}
+
+	public String getTag() {
+		return tag;
+	}
+
+	public void setTag(String tag) {
+		this.tag = tag;
 	}
 }
