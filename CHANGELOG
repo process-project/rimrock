@@ -1,3 +1,7 @@
+v 1.2.1
+  - Logging of proxy parsing errors was improved
+  - Minor spelling errors were corrected
+
 v 1.2.0
   - Logging level set in the application.properties file
   - LDAP authorization integrated
