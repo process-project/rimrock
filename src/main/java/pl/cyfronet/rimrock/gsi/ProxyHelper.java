@@ -88,7 +88,7 @@ public class ProxyHelper {
             }
         }
 
-        throw new IllegalArgumentException("Could not extract user name from the supplied user proxy");
+        throw new IllegalArgumentException("Could not extract user name from the supplied user proxy with DN " + dn);
     }
 
     public String decodeProxy(String proxy) {
