@@ -1,3 +1,7 @@
+v 1.2.3
+  - Monitoring account mapping was moved to the main property file
+  - Monitoring account DN matching uses prefixing instead of exact matching
+
 v 1.2.2
   - Mapping support for many monitoring accounts was added
 
