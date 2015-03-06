@@ -8,9 +8,7 @@ import java.security.PrivateKey;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Arrays;
 import java.util.Base64;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -24,8 +22,10 @@ import org.ietf.jgss.GSSCredential;
 import org.ietf.jgss.GSSException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import pl.cyfronet.rimrock.MonitoringAccounts;
 
 @Service
 public class ProxyHelper {
@@ -34,39 +34,26 @@ public class ProxyHelper {
 	public static final String PROXY_PARTS_PATTERN = "(.+)-----BEGIN PRIVATE KEY-----(.*)-----END PRIVATE KEY-----(.+)";
 	public static final String LOGIN_FROM_DN_PATTERN = ".+,CN=(plg.*?)(,.*$|$)";
 
-    @Value("${proxy.dn.mapping}") private String rawDNMapping;
-
-    private Map<String, String> getDNMapping() {
-        Map<String, String> result = new HashMap<>();
-        for (String element : rawDNMapping.split(";")) {
-            String[] pair = element.split("&");
-            if (pair.length != 2) {
-                log.warn("Skipping invalid mapping entry: {}", element);
-                continue;
-            }
-            result.put(pair[0], pair[1]);
-        }
-        return result;
-    }
+    @Autowired MonitoringAccounts monitoringAccounts;
 
     private Function<String, String> getUserLoginFromDNMapping = dn -> {
-        Map<String, String> mapping = getDNMapping();
-        for (String key : mapping.keySet()) {
-            if (dn.startsWith(key)) {
-                String login = mapping.get(key);
-                log.debug("Mapped dn to login: {} {}", dn, login);
-                return login;
-            }
+        for(String login : monitoringAccounts.getMapping().keySet()) {
+        	if(monitoringAccounts.getMapping().get(login).equals(dn)) {
+        		return login;
+        	}
         }
+        
         return null;
     };
 
     private Function<String, String> getUserLoginFromDNField = dn -> {
         Pattern pattern = Pattern.compile(LOGIN_FROM_DN_PATTERN);
         Matcher matcher = pattern.matcher(dn);
-        if (matcher.matches()) {
+        
+        if(matcher.matches()) {
             String login = matcher.group(1);
             log.debug("DN contained login: {} {}", dn, login);
+            
             return login;
         } else {
             return null;
