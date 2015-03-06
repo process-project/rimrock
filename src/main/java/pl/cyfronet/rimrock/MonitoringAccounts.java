@@ -7,7 +7,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 @Component
-@ConfigurationProperties(merge = false, locations = "classpath:monitoring-accounts-mapping.properties")
+@ConfigurationProperties
 public class MonitoringAccounts {
 	private Map<String, String> mapping;
 	
