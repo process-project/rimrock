@@ -1,3 +1,6 @@
+v 1.2.2
+  - Mapping support for many monitoring accounts was added
+
 v 1.2.1
   - Logging of proxy parsing errors was improved
   - Minor spelling errors were corrected
