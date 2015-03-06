@@ -38,7 +38,7 @@ public class ProxyHelper {
 
     private Function<String, String> getUserLoginFromDNMapping = dn -> {
         for(String login : monitoringAccounts.getMapping().keySet()) {
-        	if(monitoringAccounts.getMapping().get(login).equals(dn)) {
+        	if(dn != null && dn.startsWith(monitoringAccounts.getMapping().get(login))) {
         		return login;
         	}
         }
