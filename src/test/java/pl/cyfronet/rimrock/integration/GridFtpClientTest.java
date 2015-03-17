@@ -29,13 +29,18 @@ public class GridFtpClientTest {
 	
 	@Test
 	public void shouldCopyFile() throws Exception {
-		GridFTPClient client = new GridFTPClient("zeus.cyfronet.pl", 2811);
+		GridFTPClient client = new GridFTPClient("reef.man.poznan.pl", 2811);
 		X509Credential proxy = new X509Credential(new ByteArrayInputStream(
 				proxyFactory.getProxy().getBytes()));
 		GSSCredential gsscredential = new GlobusGSSCredentialImpl(proxy, GSSCredential.INITIATE_ONLY);
 		client.authenticate(gsscredential);
 		client.setPassive();
 		client.setLocalActive();
+		
+		if(!client.exists(".rimrock")) {
+			client.makeDir(".rimrock");
+		}
+		
 		log.info("Current folder: {}", client.getCurrentDir());
 		
 		for(Object o : client.list()) {

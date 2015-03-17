@@ -35,14 +35,19 @@ public class RimrockApplication extends WebMvcConfigurerAdapter {
 		new SpringApplicationBuilder(RimrockApplication.class).run(args);
 		log.info("rimrock application successfully started");
 	}
+	
+	@Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(localeChangeInterceptor());
+    }
 
 	@Bean
-	public RestTemplate getRestTemplate() {
+	RestTemplate getRestTemplate() {
 		return new RestTemplate();
 	}
 	
 	@Bean
-    public LocaleResolver localeResolver() {
+    LocaleResolver localeResolver() {
 		CookieLocaleResolver clr = new CookieLocaleResolver();
         clr.setDefaultLocale(Locale.US);
         clr.setCookieName("rimrock-lang");
@@ -50,15 +55,10 @@ public class RimrockApplication extends WebMvcConfigurerAdapter {
     }
  
     @Bean
-    public LocaleChangeInterceptor localeChangeInterceptor() {
+    LocaleChangeInterceptor localeChangeInterceptor() {
         LocaleChangeInterceptor lci = new LocaleChangeInterceptor();
         lci.setParamName("lang");
         return lci;
-    }
-	
-    @Override
-    public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(localeChangeInterceptor());
     }
     
 	/*
@@ -75,7 +75,7 @@ public class RimrockApplication extends WebMvcConfigurerAdapter {
 	}
 	
 	@Bean
-	public EmbeddedServletContainerCustomizer containerCustomizer() {
+	EmbeddedServletContainerCustomizer containerCustomizer() {
 	    return new EmbeddedServletContainerCustomizer() {
 			@Override
 			public void customize(ConfigurableEmbeddedServletContainer container) {
@@ -90,5 +90,10 @@ public class RimrockApplication extends WebMvcConfigurerAdapter {
 				}
 			}
 		};
+	}
+	
+	@Bean
+	JSagaGridWorkerServer jSagaGridWorker() {
+		return new JSagaGridWorkerServer();
 	}
 }
