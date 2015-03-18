@@ -51,12 +51,11 @@ import com.sshtools.j2ssh.util.InvalidStateException;
 public class JobsController {
 	private static final Logger log = LoggerFactory.getLogger(JobsController.class);
 	
-	@Value("${plgridData.url}")	private String plgDataUrl;
-	
 	private JobRepository jobRepository;
 	private UserJobsFactory userJobsFactory;
 	private ProxyHelper proxyHelper;
 	
+	@Value("${plgridData.url}")	private String plgDataUrl;
 	
 	@Autowired
 	public JobsController(JobRepository jobRepository, UserJobsFactory userJobsFactory, ProxyHelper proxyHelper) {
