@@ -28,16 +28,16 @@
 		<tomcat.version>8.0.17</tomcat.version>
 		<gatling.version>2.0.0</gatling.version>
 		<jglobus.version>2.1.0</jglobus.version>
-		<grid.worker.api.version>0.1.0-SNAPSHOT</grid.worker.api.version>
-		<jsaga.grid.worker.version>0.1.0-SNAPSHOT</jsaga.grid.worker.version>
+		<rimrock.api.version>0.1.0</rimrock.api.version>
+		<jsaga.grid.worker.version>0.1.0</jsaga.grid.worker.version>
 	</properties>
 
 	<dependencies>
 		<!-- Inner dependencies -->
 		<dependency>
 			<groupId>pl.cyfronet.rimrock</groupId>
-			<artifactId>grid-worker-api</artifactId>
-			<version>${grid.worker.api.version}</version>
+			<artifactId>rimrock-api</artifactId>
+			<version>${rimrock.api.version}</version>
 		</dependency>
 
 		<!-- Basic spring dependencies -->
@@ -208,7 +208,7 @@
 							<artifactItems>
 								<artifactItem>
 									<groupId>pl.cyfronet.rimrock</groupId>
-									<artifactId>jsaga-grid-worker</artifactId>
+									<artifactId>rimrock-jsaga-grid-worker</artifactId>
 									<version>${jsaga.grid.worker.version}</version>
 									<type>jar</type>
 									<overWrite>true</overWrite>
