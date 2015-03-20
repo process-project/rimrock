@@ -29,7 +29,7 @@ public class JSagaGridWorkerServer implements InitializingBean {
 	public void afterPropertiesSet() throws Exception {
 		log.info("Starting JSaga grid worker instance with version {}...", jSagaGridWorkerVersion);
 		File dir = new File("jsaga-grid-worker");
-		String jarName = "jsaga-grid-worker-" + jSagaGridWorkerVersion + ".jar";
+		String jarName = "rimrock-jsaga-grid-worker-" + jSagaGridWorkerVersion + ".jar";
 		
 		if(!dir.exists()) {
 			dir.mkdir();
