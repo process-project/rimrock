@@ -28,9 +28,25 @@
 		<tomcat.version>8.0.17</tomcat.version>
 		<gatling.version>2.0.0</gatling.version>
 		<jglobus.version>2.1.0</jglobus.version>
+		<rimrock.api.version>0.1.0</rimrock.api.version>
+		<jsaga.grid.worker.version>0.1.0</jsaga.grid.worker.version>
 	</properties>
+	
+	<repositories>
+		<repository>
+			<id>dice-mvnrepo</id>
+			<url>http://dev.cyfronet.pl/mvnrepo</url>
+		</repository>
+	</repositories>
 
 	<dependencies>
+		<!-- Inner dependencies -->
+		<dependency>
+			<groupId>pl.cyfronet.rimrock</groupId>
+			<artifactId>rimrock-api</artifactId>
+			<version>${rimrock.api.version}</version>
+		</dependency>
+
 		<!-- Basic spring dependencies -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -184,6 +200,31 @@
 				<configuration>
 					<simulationClass>test.RimrocTestSimulation</simulationClass>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>copy</id>
+						<phase>generate-resources</phase>
+						<goals>
+							<goal>copy</goal>
+						</goals>
+						<configuration>
+							<artifactItems>
+								<artifactItem>
+									<groupId>pl.cyfronet.rimrock</groupId>
+									<artifactId>rimrock-jsaga-grid-worker</artifactId>
+									<version>${jsaga.grid.worker.version}</version>
+									<type>jar</type>
+									<overWrite>true</overWrite>
+									<outputDirectory>${project.build.directory}/classes/workers</outputDirectory>
+								</artifactItem>
+							</artifactItems>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>
