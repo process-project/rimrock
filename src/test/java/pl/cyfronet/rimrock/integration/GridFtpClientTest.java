@@ -55,8 +55,6 @@ public class GridFtpClientTest {
 			client.setPassive();
 			client.setLocalActive();
 			
-			client.changeDir("/storage/plgtesthar/.rimrock/d9ebf669-a1be-4cbc-aacb-58fac9379d66");
-			
 			for(Object o : client.list()) {
 				FileInfo fileInfo = (FileInfo) o;
 				log.info("File {} of type {}", fileInfo.getName(), fileInfo.isDirectory() ? "directory" : "file");
