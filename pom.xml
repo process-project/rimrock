@@ -31,6 +31,13 @@
 		<rimrock.api.version>0.1.0</rimrock.api.version>
 		<jsaga.grid.worker.version>0.1.0</jsaga.grid.worker.version>
 	</properties>
+	
+	<repositories>
+		<repository>
+			<id>dice-mvnrepo</id>
+			<url>http://dev.cyfronet.pl/mvnrepo</url>
+		</repository>
+	</repositories>
 
 	<dependencies>
 		<!-- Inner dependencies -->
