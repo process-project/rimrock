@@ -32,6 +32,9 @@ public class BootstrapComponent implements ApplicationListener<ContextRefreshedE
 	
 	@Override
 	public void onApplicationEvent(ContextRefreshedEvent event) {
+		//see https://www.aquaclusters.com/app/home/project/public/aquadatastudio/discussion/GeneralDiscussions/post/25/Java-6u29-bug-prevents-SSL-connection-to-SQL-Server-2008-R2
+		System.setProperty("jsse.enableCBCProtection", "false");
+		
 		try {
 			enableTrustedSSL();
 		} catch (Exception e) {
