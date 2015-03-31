@@ -14,7 +14,6 @@ import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 import static org.springframework.web.bind.annotation.RequestMethod.PUT;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
@@ -33,8 +32,6 @@ import org.globus.ftp.GridFTPClient;
 import org.globus.ftp.exception.ClientException;
 import org.globus.ftp.exception.ServerException;
 import org.globus.gsi.CredentialException;
-import org.globus.gsi.X509Credential;
-import org.globus.gsi.gssapi.GlobusGSSCredentialImpl;
 import org.ietf.jgss.GSSCredential;
 import org.ietf.jgss.GSSException;
 import org.slf4j.Logger;
@@ -88,14 +85,13 @@ public class GridJobsController {
 		String jobId = UUID.randomUUID().toString();
 		GLiteJobStatus result = new GLiteJobStatus();
 		Map<String, String> uploadedFiles = null;
+		String decodedProxy = decodeProxy(encodedProxy);
 		
 		if(jobSubmission.getFiles() != null && jobSubmission.getFiles().size() > 0) {
-			uploadedFiles = uploadFiles(jobSubmission.getFiles(), encodedProxy, jobId);
+			uploadedFiles = uploadFiles(jobSubmission.getFiles(), decodedProxy, jobId);
 		}
 		
 		GridJob gridJob = new GridJob();
-		String decodedProxy = decodeProxy(encodedProxy);
-		log.debug("Proxy: {}", decodedProxy);
 		gridJob.setUserProxy(decodedProxy);
 		gridJob.getAttributes().put(GridJob.EXECUTABLE, jobSubmission.getExecutable());
 		gridJob.getAttributes().put(GridJob.OUTPUT_FILE_NAME, jobSubmission.getStdOutput());
@@ -214,9 +210,8 @@ public class GridJobsController {
 				GridFTPClient client = null;
 				
 				try {
+					GSSCredential gsscredential = proxyHelper.getGssCredential(decodedProxy);
 					client = new GridFTPClient(gridFtpHost, 2811);
-					X509Credential credential = new X509Credential(new ByteArrayInputStream(decodedProxy.getBytes()));
-					GSSCredential gsscredential = new GlobusGSSCredentialImpl(credential, GSSCredential.INITIATE_ONLY);
 					client.authenticate(gsscredential);
 					client.setPassive();
 					client.setLocalActive();
@@ -294,17 +289,14 @@ public class GridJobsController {
 		return proxyHelper.decodeProxy(proxy).trim();
 	}
 	
-	private Map<String, String> uploadFiles(List<MultipartFile> files, String proxy, String jobId) throws IOException, ServerException, CredentialException,
-			GSSException, ClientException {
+	private Map<String, String> uploadFiles(List<MultipartFile> files, String decodedProxy, String jobId) throws CredentialException,
+			GSSException, ClientException, ServerException, IOException {
 		GridFTPClient client = null;
 		Map<String, String> result = new HashMap<>();
 		
 		try {
+			GSSCredential gsscredential = proxyHelper.getGssCredential(decodedProxy);
 			client = new GridFTPClient(gridFtpHost, 2811);
-			
-			String decodedProxy = decodeProxy(proxy);
-			X509Credential credential = new X509Credential(new ByteArrayInputStream(decodedProxy.getBytes()));
-			GSSCredential gsscredential = new GlobusGSSCredentialImpl(credential, GSSCredential.INITIATE_ONLY);
 			client.authenticate(gsscredential);
 			client.setPassive();
 			client.setLocalActive();
@@ -329,9 +321,16 @@ public class GridJobsController {
 				client.setLocalActive();
 				result.put(file.getOriginalFilename(), createGridFtpPath(file.getOriginalFilename(), jobId, decodedProxy));
 			}
+			
+			client.setPassive();
+			client.setLocalActive();
 		} finally {
 			if(client != null) {
-				client.close();
+				try {
+					client.close();
+				} catch(Exception e) {
+					log.warn("GridFTP client close error", e);
+				}
 			}
 		}
 		
