@@ -10,4 +10,5 @@ public interface GridJobRepository extends CrudRepository<GridJob, Long> {
 	List<GridJob> findByUserLogin(String userLogin);
 	GridJob findOneByJobId(String jobId);
 	GridJob findOneByJobIdAndUserLogin(String jobId, String userLogin);
+	List<GridJob> findByUserLoginAndTag(String userLogin, String tag);
 }

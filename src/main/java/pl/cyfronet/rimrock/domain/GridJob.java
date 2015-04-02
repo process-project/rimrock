@@ -16,6 +16,7 @@ public class GridJob {
 	private String jobId;
 	private String nativeJobId;
 	private String userLogin;
+	private String tag;
 	
 	public Long getId() {
 		return id;
@@ -46,5 +47,11 @@ public class GridJob {
 	}
 	public void setJdl(String jdl) {
 		this.jdl = jdl;
+	}
+	public String getTag() {
+		return tag;
+	}
+	public void setTag(String tag) {
+		this.tag = tag;
 	}
 }

@@ -46,6 +46,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -134,6 +135,7 @@ public class GridJobsController {
 		result.setJobId(jobId);
 		result.setNativeJobId(status.getJobId());
 		result.setStatus(status.getStatus());
+		result.setTag(jobSubmission.getTag());
 		log.debug("Submitted job jdl is {}", status.getJdl());
 		
 		pl.cyfronet.rimrock.domain.GridJob dbGridJob = new pl.cyfronet.rimrock.domain.GridJob();
@@ -141,16 +143,24 @@ public class GridJobsController {
 		dbGridJob.setNativeJobId(status.getJobId());
 		dbGridJob.setUserLogin(proxyHelper.getUserLogin(decodedProxy));
 		dbGridJob.setJdl(status.getJdl());
+		dbGridJob.setTag(jobSubmission.getTag());
 		gridJobRepository.save(dbGridJob);
 		
 		return new ResponseEntity<GLiteJobStatus>(result, CREATED);
 	}
 
 	@RequestMapping(value = "/api/gridjobs", method = GET, produces = APPLICATION_JSON_VALUE)
-	public ResponseEntity<List<GLiteJobStatus>> getGridJobs(@RequestHeader("PROXY") String encodedProxy) throws RemoteException, CredentialException {
+	public ResponseEntity<List<GLiteJobStatus>> getGridJobs(@RequestHeader("PROXY") String encodedProxy,
+			@RequestParam(value = "tag", required = false) String tag) throws RemoteException, CredentialException {
 		List<GLiteJobStatus> result = new ArrayList<GLiteJobStatus>();
 		String decodedProxy = decodeProxy(encodedProxy);
-		List<pl.cyfronet.rimrock.domain.GridJob> gridJobs = gridJobRepository.findByUserLogin(proxyHelper.getUserLogin(decodedProxy));
+		List<pl.cyfronet.rimrock.domain.GridJob> gridJobs = null;
+		
+		if(tag != null) {
+			gridJobs = gridJobRepository.findByUserLoginAndTag(proxyHelper.getUserLogin(decodedProxy), tag);
+		} else {
+			gridJobs = gridJobRepository.findByUserLogin(proxyHelper.getUserLogin(decodedProxy));
+		}
 		
 		for(pl.cyfronet.rimrock.domain.GridJob gridJob : gridJobs) {
 			GridJobStatus gridJobStatus = gridWorkerService.getGridJobStatus(gridJob.getNativeJobId(), decodedProxy);
@@ -158,6 +168,7 @@ public class GridJobsController {
 			jobStatus.setJobId(gridJob.getJobId());
 			jobStatus.setNativeJobId(gridJob.getNativeJobId());
 			jobStatus.setStatus(gridJobStatus.getStatus());
+			jobStatus.setTag(gridJob.getTag());
 			result.add(jobStatus);
 		}
 		
