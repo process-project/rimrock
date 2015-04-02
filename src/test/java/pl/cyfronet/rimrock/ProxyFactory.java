@@ -64,9 +64,7 @@ public class ProxyFactory {
 		}
 
 		PrivateKey userKey = key.getPrivateKey();
-		X509Credential credential = factory.createCredential(
-				new X509Certificate[] { userCert }, userKey, 2048, 3600,
-				GSIConstants.CertificateType.GSI_2_PROXY);
+		X509Credential credential = factory.createCredential(new X509Certificate[] {userCert}, userKey, 1024, 3600, GSIConstants.CertificateType.GSI_2_PROXY);
 		
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		credential.save(out);
