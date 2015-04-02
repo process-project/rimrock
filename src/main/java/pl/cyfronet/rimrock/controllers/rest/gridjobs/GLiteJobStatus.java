@@ -5,11 +5,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class GLiteJobStatus {
 	@JsonProperty("job_id")
 	private String jobId;
-	
 	@JsonProperty("native_job_id")
 	private String nativeJobId;
-	
 	private String status;
+	private String tag;
 	
 	public String getJobId() {
 		return jobId;
@@ -28,5 +27,11 @@ public class GLiteJobStatus {
 	}
 	public void setStatus(String status) {
 		this.status = status;
+	}
+	public String getTag() {
+		return tag;
+	}
+	public void setTag(String tag) {
+		this.tag = tag;
 	}
 }

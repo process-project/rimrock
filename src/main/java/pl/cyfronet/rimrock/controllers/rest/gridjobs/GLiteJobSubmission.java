@@ -13,6 +13,7 @@ public class GLiteJobSubmission {
 	private String myProxyServer;
 	private List<String> arguments;
 	private List<String> candidateHosts;
+	private String tag;
 
 	public String getExecutable() {
 		return executable;
@@ -76,5 +77,13 @@ public class GLiteJobSubmission {
 
 	public void setArguments(List<String> arguments) {
 		this.arguments = arguments;
+	}
+
+	public String getTag() {
+		return tag;
+	}
+
+	public void setTag(String tag) {
+		this.tag = tag;
 	}
 }
