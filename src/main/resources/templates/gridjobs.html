@@ -187,7 +187,7 @@ echo -e '#!/bin/bash\ncat in1.txt in2.txt > result.txt' > run.sh
 
 curl -k -X POST --header "PROXY:$proxy" --form files=@run.sh --form files=@in1.txt --form files=@in2.txt \
 --form executable=run.sh --form outputSandbox=result.txt --form stdOutput=out.txt \
---form stdError=error.txt <th:block th:text="'https://' + ${#httpServletRequest.serverName} + @{~/api/jobs}" />
+--form stdError=error.txt <th:block th:text="'https://' + ${#httpServletRequest.serverName} + @{~/api/gridjobs}" />
   					</pre>
 							</td>
 						</tr>
@@ -433,7 +433,7 @@ curl -k -X GET --header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpSe
 								<pre>
 proxy="`cat {path-to-proxy-file} | base64 | tr -d '\n'`"
 
-curl -k -X GET --header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpServletRequest.serverName} + @{~/api/jobs/56cd0b82-2db4-4dd7-ad77-4ceb922f9a7a}" />
+curl -k -X GET --header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpServletRequest.serverName} + @{~/api/gridjobs/56cd0b82-2db4-4dd7-ad77-4ceb922f9a7a}" />
 </pre>
 							</td>
 						</tr>
@@ -576,7 +576,7 @@ curl -k -X GET --header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpSe
 								<pre>
 proxy="`cat {path-to-proxy-file} | base64 | tr -d '\n'`"
 
-curl -k -X DELETE --header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpServletRequest.serverName} + @{~/api/jobs/56cd0b82-2db4-4dd7-ad77-4ceb922f9a7a}" />
+curl -k -X DELETE --header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpServletRequest.serverName} + @{~/api/gridjobs/56cd0b82-2db4-4dd7-ad77-4ceb922f9a7a}" />
 </pre>
 							</td>
 						</tr>
@@ -653,7 +653,7 @@ curl -k -X DELETE --header "PROXY:$proxy" <th:block th:text="'https://' + ${#htt
 								</p> <pre>
 proxy="`cat {path-to-proxy-file} | base64 | tr -d '\n'`"
 
-curl -k -X PUT --data '{"action":"abort"}' --header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpServletRequest.serverName} + @{~/api/jobs/56cd0b82-2db4-4dd7-ad77-4ceb922f9a7a}" />
+curl -k -X PUT --data '{"action":"abort"}' --header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpServletRequest.serverName} + @{~/api/gridjobs/56cd0b82-2db4-4dd7-ad77-4ceb922f9a7a}" />
   					</pre>
 							</td>
 						</tr>
