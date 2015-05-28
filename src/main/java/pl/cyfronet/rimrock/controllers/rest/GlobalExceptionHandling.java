@@ -60,6 +60,7 @@ public class GlobalExceptionHandling {
 	@ExceptionHandler(RunException.class)
 	public ResponseEntity<ErrorResponse> handleRunError(RunException e) {
 		log.error("Global error intercepted", e);
+		log.error("Run exception details: \n\texit code: {}, \n\terror output: {}\n\tstandard output: {}", e.getExitCode(), e.getError(), e.getOutput());
 		
 		HttpStatus status = e.isTimeoutOccured() ? REQUEST_TIMEOUT : INTERNAL_SERVER_ERROR;
 		return new ResponseEntity<ErrorResponse>(new ErrorResponse(e), status);
