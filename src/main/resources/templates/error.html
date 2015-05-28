@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html 	xmlns:th="http://www.thymeleaf.org"
+		xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+	<head profile="http://www.w3.org/2005/10/profile">
+		<title layout:title-pattern="$DECORATOR_TITLE - $CONTENT_TITLE">RIMROCK</title>
+		<link rel="icon" type="image/png" th:href="@{/img/icon-64x64.png}"/>
+		
+		<link rel="stylesheet" th:href="@{/css/bootstrap.min.css}"/>
+		<link rel="stylesheet" th:href="@{/css/font-awesome.min.css}"/>
+		
+		<!-- Custom styles for this template -->
+		<link rel="stylesheet" th:href="@{/css/main.css}"/>
+		
+		<!-- rimrock custom styles and overrides -->
+		<link rel="stylesheet" th:href="@{/css/rimrock.css}"/>
+		
+		<script type="text/javascript" th:src="@{/js/jquery.min.js}"></script>
+		<script type="text/javascript" th:src="@{/js/hover.zoom.js}"></script>
+		<script type="text/javascript" th:src="@{/js/hover.zoom.conf.js}"></script>
+	</head>
+	<body>
+		<!-- Static navbar -->
+		<div class="navbar navbar-inverse navbar-fixed-top">
+			<div class="container cbp-af-inner">
+				<div class="navbar-header">
+					<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+					</button>
+					<a class="navbar-brand" th:href="@{/}">
+						<img th:src="@{/img/logo-280x126.png}"></img>
+					</a>
+				</div>
+				<div class="navbar-collapse collapse">
+					<ul class="nav navbar-nav navbar-right">
+						<li>
+							<div class="btn-group btn-group-xs navbar-btn">
+								<a href="?lang=pl" type="button" class="btn btn-default" th:attrappend="class=${lang == 'pl' ? ' active' : ''}">PL</a>								
+								<a href="?lang=en" type="button" class="btn btn-default" th:attrappend="class=${lang == 'en' ? ' active' : ''}">EN</a>								
+							</div>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+	
+		<div id="under_navbar"></div>
+	
+		<div class="container">
+			<div class="alert alert-warning error-panel">
+				<div class="panel-body">
+					<p><i class="fa fa-exclamation-circle fa-4x"></i></p>
+					<p class="lead" th:text="${status} + ' - ' + ${error}"></p>
+					<p th:text="#{error.page.message}"></p>
+					<div class="text-right">
+						<a class="btn btn-warning btn-lg" th:href="@{/}" th:text="#{error.page.go.to.main.label}"></a>
+					</div>
+				</div>
+			</div>
+		</div>
+	
+		<div id="footer">
+			<div class="container">
+				<div class="row">
+					<div class="col-lg-2">
+						<h4 th:text="#{contact.title}"></h4>
+						<p>
+							<a th:href="'mailto:' + #{contact.email}" th:text="#{contact.email}"></a>
+						</p>
+					</div>
+					<div class="col-lg-3">
+						<h4 th:text="#{contact.bunker}"></h4>
+						<p th:utext="#{contact.address}"></p>
+					</div>
+					<div class="col-lg-2">
+						<h4 th:text="#{links}"></h4>
+						<p>
+							<a th:href="#{dice.homepage}" th:text="#{dice.name}"></a>
+							<br/>
+							<a th:href="#{cyfronet.homepage}" th:text="#{cyfronet.name}"></a>
+							<br/>
+							<a th:href="#{agh.homepage}" th:text="#{agh.name}"></a>
+						</p>
+					</div>
+	
+					<div class="col-lg-5">
+						<h4 th:text="#{dice.about.title}"></h4>
+						<p th:text="#{dice.about.credo}"></p>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-lg-12 text-muted text-right"><span th:text="#{footer.version}"></span> <span th:text="${@environment.getProperty('application.version')}"></span></div>
+				</div>
+			</div>
+		</div>
+	
+		<script type="text/javascript" th:src="@{/js/bootstrap.min.js}"></script>
+		<script type="text/javascript" th:src="@{/js/classie.js}"></script>
+		<script type="text/javascript" th:src="@{/js/cbpAnimatedHeader.min.js}"></script>
+	</body>
+</html>

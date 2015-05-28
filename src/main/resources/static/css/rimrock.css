@@ -13,3 +13,11 @@
 	background-color: lightgray;
 	border-color: gray;
 }
+
+.error-panel {
+	margin: 100px 0px;
+}
+.error-panel .panel-body {
+	padding-left: 100px;
+	padding-right: 100px;
+}
