@@ -28,8 +28,9 @@
 		<tomcat.version>8.0.17</tomcat.version>
 		<gatling.version>2.0.0</gatling.version>
 		<jglobus.version>2.1.0</jglobus.version>
-		<rimrock.api.version>0.1.0</rimrock.api.version>
-		<jsaga.grid.worker.version>0.1.0</jsaga.grid.worker.version>
+		<rimrock.api.version>0.1.1-SNAPSHOT</rimrock.api.version>
+		<jsaga.grid.worker.version>0.1.1-SNAPSHOT</jsaga.grid.worker.version>
+		<qcg.grid.worker.version>0.1.1-SNAPSHOT</qcg.grid.worker.version>
 	</properties>
 	
 	<repositories>
@@ -215,8 +216,16 @@
 							<artifactItems>
 								<artifactItem>
 									<groupId>pl.cyfronet.rimrock</groupId>
-									<artifactId>rimrock-jsaga-grid-worker</artifactId>
+									<artifactId>rimrock-jsaga</artifactId>
 									<version>${jsaga.grid.worker.version}</version>
+									<type>jar</type>
+									<overWrite>true</overWrite>
+									<outputDirectory>${project.build.directory}/classes/workers</outputDirectory>
+								</artifactItem>
+								<artifactItem>
+									<groupId>pl.cyfronet.rimrock</groupId>
+									<artifactId>rimrock-qcg</artifactId>
+									<version>${qcg.grid.worker.version}</version>
 									<type>jar</type>
 									<overWrite>true</overWrite>
 									<outputDirectory>${project.build.directory}/classes/workers</outputDirectory>

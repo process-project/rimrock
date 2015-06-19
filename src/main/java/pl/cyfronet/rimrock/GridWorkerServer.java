@@ -13,23 +13,27 @@ import javax.annotation.PreDestroy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 
-public class JSagaGridWorkerServer implements InitializingBean {
-	private static final Logger log = LoggerFactory.getLogger(JSagaGridWorkerServer.class);
+public class GridWorkerServer implements InitializingBean {
+	private static final Logger log = LoggerFactory.getLogger(GridWorkerServer.class);
 	
 	private Process gridWorkerProcess;
-	
-	@Value("${jsaga.jar.version}") private String jSagaGridWorkerVersion;
 
+	private String artifactName;
+	private String artifactVersion;
 	private int serverPort;
+	
+	public GridWorkerServer(String artifactName, String artifactVersion) {
+		this.artifactName = artifactName;
+		this.artifactVersion = artifactVersion;
+	}
 	
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		log.info("Starting JSaga grid worker instance with version {}...", jSagaGridWorkerVersion);
-		File dir = new File("jsaga-grid-worker");
-		String jarName = "rimrock-jsaga-grid-worker-" + jSagaGridWorkerVersion + ".jar";
+		log.info("Starting {} grid worker instance with version {}...", artifactName, artifactVersion);
+		File dir = new File(artifactName);
+		String jarName = artifactName + "-" + artifactVersion + ".jar";
 		
 		if(!dir.exists()) {
 			dir.mkdir();
@@ -41,25 +45,25 @@ public class JSagaGridWorkerServer implements InitializingBean {
 			Files.copy(jarResource.getInputStream(), Paths.get(dir.getAbsolutePath(), jarName), StandardCopyOption.REPLACE_EXISTING);
 			serverPort = getFreePort();
 			String[] command = new String[] {"java", "-jar", jarName, "--rmi.registry.port=" + serverPort};
-			log.debug("Executing jsaga grid worker with command {}", Arrays.toString(command));
+			log.debug("Executing {} grid worker with command {}", artifactName, Arrays.toString(command));
 			
-			File logs = new File(dir, "jsaga-worker.log");
+			File logs = new File(dir, artifactName + ".log");
 			ProcessBuilder pb = new ProcessBuilder(command).
 					directory(new File(dir.getAbsolutePath())).
 					redirectError(logs).
 					redirectOutput(logs);
 			gridWorkerProcess = pb.start();
-			log.info("JSaga grid worker instance successfully started");
+			log.info("{} grid worker instance successfully started", artifactName);
 		} else {
-			throw new RuntimeException("JSaga grid worker jar file is missing. Cannot start.");
+			throw new RuntimeException(artifactName + " grid worker jar file is missing. Cannot start.");
 		}
 	}
 
 	@PreDestroy
 	void close() throws InterruptedException {
-		log.info("Shutting down JSaga grid worker instance...");
+		log.info("Shutting down {} grid worker instance...", artifactName);
 		gridWorkerProcess.destroy();
-		log.info("JSaga grid worker instance shutdown was successful");
+		log.info("{} grid worker instance shutdown was successful", artifactName);
 	}
 	
 	public int getRegistryPort() {

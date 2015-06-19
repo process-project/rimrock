@@ -5,6 +5,7 @@ import java.util.Locale;
 import org.apache.catalina.connector.Connector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
@@ -33,6 +34,8 @@ public class RimrockApplication extends WebMvcConfigurerAdapter {
 	private static final Logger log = LoggerFactory.getLogger(RimrockApplication.class);
 	
 	@Value("${max.header.size.bytes}") private int maxHeaderSizeBytes;
+	@Value("${jsaga.jar.version}") private String jSagaGridWorkerVersion;
+	@Value("${qcg.jar.version}") private String qcgGridWorkerVersion;
 
 	public static void main(String[] args) {
 		new SpringApplicationBuilder(RimrockApplication.class).run(args);
@@ -54,6 +57,7 @@ public class RimrockApplication extends WebMvcConfigurerAdapter {
 		CookieLocaleResolver clr = new CookieLocaleResolver();
         clr.setDefaultLocale(Locale.US);
         clr.setCookieName("rimrock-lang");
+        
         return clr;
     }
  
@@ -61,6 +65,7 @@ public class RimrockApplication extends WebMvcConfigurerAdapter {
     LocaleChangeInterceptor localeChangeInterceptor() {
         LocaleChangeInterceptor lci = new LocaleChangeInterceptor();
         lci.setParamName("lang");
+        
         return lci;
     }
     
@@ -96,14 +101,16 @@ public class RimrockApplication extends WebMvcConfigurerAdapter {
 	}
 	
 	@Bean
-	JSagaGridWorkerServer jSagaGridWorker() {
-		return new JSagaGridWorkerServer();
+	@Qualifier("jsaga")
+	GridWorkerServer jSagaGridWorker() {
+		return new GridWorkerServer("rimrock-jsaga", jSagaGridWorkerVersion);
 	}
 	
 	@Bean
-	GridWorkerService gridWorkerService(JSagaGridWorkerServer jSagaGridWorkerServer) throws InterruptedException {
+	@Qualifier("jsaga")
+	GridWorkerService jSagaGridWorkerService(@Qualifier("jsaga") GridWorkerServer gridWorkerServer) throws InterruptedException {
 		RmiProxyFactoryBean gridWorkerServiceFactory = new RmiProxyFactoryBean();
-		gridWorkerServiceFactory.setServiceUrl("rmi://localhost:" + jSagaGridWorkerServer.getRegistryPort() + "/jSagaGridWorkerService");
+		gridWorkerServiceFactory.setServiceUrl("rmi://localhost:" + gridWorkerServer.getRegistryPort() + "/jSagaGridWorkerService");
 		gridWorkerServiceFactory.setServiceInterface(GridWorkerService.class);
 		
 		while(true) {
@@ -113,6 +120,34 @@ public class RimrockApplication extends WebMvcConfigurerAdapter {
 				break;
 			} catch(Exception e) {
 				log.info("Waiting for the JSaga grid worker server...");
+			}
+			
+			Thread.sleep(500);
+		}
+		
+		return (GridWorkerService) gridWorkerServiceFactory.getObject();
+	}
+	
+	@Bean
+	@Qualifier("qcg")
+	GridWorkerServer qcgGridWorker() {
+		return new GridWorkerServer("rimrock-qcg", jSagaGridWorkerVersion);
+	}
+	
+	@Bean
+	@Qualifier("qcg")
+	GridWorkerService qcgGridWorkerService(@Qualifier("qcg") GridWorkerServer gridWorkerServer) throws InterruptedException {
+		RmiProxyFactoryBean gridWorkerServiceFactory = new RmiProxyFactoryBean();
+		gridWorkerServiceFactory.setServiceUrl("rmi://localhost:" + gridWorkerServer.getRegistryPort() + "/qcgGridWorkerService");
+		gridWorkerServiceFactory.setServiceInterface(GridWorkerService.class);
+		
+		while(true) {
+			try {
+				gridWorkerServiceFactory.afterPropertiesSet();
+				
+				break;
+			} catch(Exception e) {
+				log.info("Waiting for the QCG grid worker server...");
 			}
 			
 			Thread.sleep(500);

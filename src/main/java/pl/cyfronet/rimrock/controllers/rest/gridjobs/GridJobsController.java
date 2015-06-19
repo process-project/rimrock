@@ -37,6 +37,7 @@ import org.ietf.jgss.GSSException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
@@ -68,7 +69,7 @@ public class GridJobsController {
 	@Value("${grid.ftp.host}") private String gridFtpHost;
 	
 	@Autowired
-	public GridJobsController(GridWorkerService gridWorkerService, ProxyHelper proxyHelper, GridJobRepository gridJobRepository) {
+	public GridJobsController(@Qualifier("jsaga") GridWorkerService gridWorkerService, ProxyHelper proxyHelper, GridJobRepository gridJobRepository) {
 		this.gridWorkerService = gridWorkerService;
 		this.proxyHelper = proxyHelper;
 		this.gridJobRepository = gridJobRepository;
