@@ -29,7 +29,7 @@ import java.util.Vector;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import com.sshtools.j2ssh.configuration.ConfigurationException;
+
 import com.sshtools.j2ssh.configuration.ConfigurationLoader;
 
 

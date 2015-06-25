@@ -32,6 +32,8 @@ import java.util.Map;
 import com.sshtools.j2ssh.SshException;
 import com.sshtools.j2ssh.transport.cipher.SshCipher;
 import com.sshtools.j2ssh.transport.cipher.SshCipherFactory;
+import com.sshtools.j2ssh.transport.compression.SshCompression;
+import com.sshtools.j2ssh.transport.compression.SshCompressionFactory;
 import com.sshtools.j2ssh.transport.hmac.SshHmac;
 import com.sshtools.j2ssh.transport.hmac.SshHmacFactory;
 import com.sshtools.j2ssh.transport.kex.KeyExchangeException;
@@ -39,7 +41,6 @@ import com.sshtools.j2ssh.transport.kex.SshKeyExchange;
 import com.sshtools.j2ssh.transport.publickey.SshKeyPair;
 import com.sshtools.j2ssh.transport.publickey.SshKeyPairFactory;
 import com.sshtools.j2ssh.transport.publickey.SshPublicKey;
-import com.sshtools.j2ssh.transport.compression.*;
 
 /**
  *

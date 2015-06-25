@@ -10,9 +10,9 @@
 			<div class="container">
 				<div class="row">
 					<div class="col-lg-6 col-lg-offset-3 centered">
-						<h3 th:text="#{gridjobs.long_title}"></h3>
+						<h3 th:text="#{qcgjobs.long_title}"></h3>
 						<hr />
-						<p th:text="#{gridjobs.description}"></p>
+						<p th:text="#{qcgjobs.description}"></p>
 					</div>
 				</div>
 			</div>
@@ -22,99 +22,21 @@
 
 		<div class="container pt">
 			<ul class="nav nav-tabs" role="tablist">
-				<li class="active"><a href="#extend" role="tab" data-toggle="tab" th:text="#{gridjobs.extend.title}"></a></li>
-				<li><a href="#submit" role="tab" data-toggle="tab" th:text="#{gridjobs.submit.title}"></a></li>
-				<li><a href="#jdl" role="tab" data-toggle="tab" th:text="#{gridjobs.jdl.title}"></a></li>
-				<li><a href="#list_all" role="tab" data-toggle="tab" th:text="#{gridjobs.get_all.title}"></a></li>
-				<li><a href="#list_one" role="tab" data-toggle="tab" th:text="#{gridjobs.get.title}"></a></li>
-				<li><a href="#files" role="tab" data-toggle="tab" th:text="#{gridjobs.files.title}"></a></li>
-				<li><a href="#delete" role="tab" data-toggle="tab" th:text="#{gridjobs.delete.title}"></a></li>
-				<li><a href="#abort" role="tab" data-toggle="tab" th:text="#{gridjobs.abort.title}"></a></li>
+				<li class="active"><a href="#submit" role="tab" data-toggle="tab" th:text="#{qcgjobs.submit.title}"></a></li>
+				<li><a href="#jdl" role="tab" data-toggle="tab" th:text="#{qcgjobs.jdl.title}"></a></li>
+				<li><a href="#list_all" role="tab" data-toggle="tab" th:text="#{qcgjobs.get_all.title}"></a></li>
+				<li><a href="#list_one" role="tab" data-toggle="tab" th:text="#{qcgjobs.get.title}"></a></li>
+				<li><a href="#files" role="tab" data-toggle="tab" th:text="#{qcgjobs.files.title}"></a></li>
+				<li><a href="#delete" role="tab" data-toggle="tab" th:text="#{qcgjobs.delete.title}"></a></li>
+				<li><a href="#abort" role="tab" data-toggle="tab" th:text="#{qcgjobs.abort.title}"></a></li>
 			</ul>
 			
 			<div class="tab-content">
-				<div class="tab-pane fade in active" id="extend">
+				<div class="tab-pane fade in active" id="submit">
 					<table class="table table-bordered">
 						<tr>
 							<th th:text="#{example.url}"></th>
-							<td><code>/api/gridjobs/gridproxy/{vo}</code></td>
-						</tr>
-						<tr>
-							<th th:text="#{example.method}"></th>
-							<td><span class="label label-primary">GET</span></td>
-						</tr>
-						<tr>
-							<th th:text="#{example.url_params}"></th>
-							<td><em>vo</em> - <span th:text="#{gridjobs.extend.vo}"></span></td>
-						</tr>
-						<tr>
-							<th th:text="#{example.data_params}"></th>
-							<td><em th:text="#{gridjobs.extend.data_params}"></em></td>
-						</tr>
-						<tr>
-							<th th:text="#{example.success}"></th>
-							<td>
-								<p>
-									<strong th:text="|#{example.code}:|"></strong>
-									<em class="label label-success">200</em>
-								</p>
-								<p>
-									<strong th:text="|#{example.example}:|"></strong>
-								</p>
-								<pre>
------BEGIN CERTIFICATE-----
-...
-...
-...
------END CERTIFICATE-----</pre>
-							</td>
-						</tr>
-						<tr>
-							<th th:text="#{example.error}"></th>
-							<td>
-								<p>
-									<strong th:text="|#{example.error}:|"></strong>
-									<em class="label label-danger">408</em> |
-									<em class="label label-danger">422</em> |
-									<em class="label label-danger">500</em>
-								</p>
-								<p>
-									<strong th:text="|#{example.example}:|"></strong>
-								</p>
-								<pre>
-{
-  "status":"error",
-  "exit_code":0,
-  "error_message":"error message...",
-}
-</pre>
-							</td>
-						</tr>
-						<tr>
-							<th th:text="#{example.sample}"></th>
-							<td>
-								<p>
-									<strong th:text="#{example.sample_call.title}"></strong>
-								</p>
-								<pre>
-proxy="`cat {path-to-proxy-file} | base64 | tr -d '\n'`"
-
-curl -k -X GET --header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpServletRequest.serverName} + @{~/api/gridjobs/gridproxy/vo.plgrid.pl}"/>
-</pre>
-							</td>
-						</tr>
-						<tr>
-							<th th:text="#{example.notes}"></th>
-							<td><em th:text="#{gridjobs.extend.notes}"></em></td>
-						</tr>
-					</table>
-				</div>
-
-				<div class="tab-pane fade" id="submit">
-					<table class="table table-bordered">
-						<tr>
-							<th th:text="#{example.url}"></th>
-							<td><code>/api/gridjobs</code></td>
+							<td><code>/api/qcgjobs</code></td>
 						</tr>
 						<tr>
 							<th th:text="#{example.method}"></th>
@@ -128,9 +50,9 @@ curl -k -X GET --header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpSe
 							<th th:text="#{example.data_params}"></th>
 							<td>
 								<p>
-									<strong th:text="|#{gridjobs.submit.body.content.type}:|"></strong>									
+									<strong th:text="|#{qcgjobs.submit.body.content.type}:|"></strong>									
 								</p>
-								<pre th:text="#{gridjobs.submit.data_params}"></pre>
+								<pre th:text="#{qcgjobs.submit.data_params}"></pre>
 							</td>
 						</tr>
 						<tr>
@@ -147,7 +69,7 @@ curl -k -X GET --header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpSe
 {
   "status":"RUNNING",
   "job_id":"56cd0b82-2db4-4dd7-ad77-4ceb922f9a7a",
-  "native_job_id":"https://lb02.grid.cyf-kr.edu.pl:9000/6UVXM9J-Hwjli2WJSYmIKQ"
+  "native_job_id":"J1435215723375__9256"
 }
 </pre>
 							</td>
@@ -187,13 +109,13 @@ echo -e '#!/bin/bash\ncat in1.txt in2.txt > result.txt' > run.sh
 
 curl -k -X POST --header "PROXY:$proxy" --form files=@run.sh --form files=@in1.txt --form files=@in2.txt \
 --form executable=run.sh --form outputSandbox=result.txt --form stdOutput=out.txt \
---form stdError=error.txt <th:block th:text="'https://' + ${#httpServletRequest.serverName} + @{~/api/gridjobs}" />
+--form stdError=error.txt <th:block th:text="'https://' + ${#httpServletRequest.serverName} + @{~/api/qcgjobs}" />
   					</pre>
 							</td>
 						</tr>
 						<tr>
 							<th th:text="#{example.notes}"></th>
-							<td th:text="#{gridjobs.submit.notes}"></td>
+							<td th:text="#{qcgjobs.submit.notes}"></td>
 						</tr>
 					</table>
 				</div>
@@ -202,7 +124,7 @@ curl -k -X POST --header "PROXY:$proxy" --form files=@run.sh --form files=@in1.t
 					<table class="table table-bordered">
 						<tr>
 							<th th:text="#{example.url}"></th>
-							<td><code>/api/gridjobs/{job_id}/jdl</code></td>
+							<td><code>/api/qcgjobs/{job_id}/jobdescription</code></td>
 						</tr>
 						<tr>
 							<th th:text="#{example.method}"></th>
@@ -210,11 +132,11 @@ curl -k -X POST --header "PROXY:$proxy" --form files=@run.sh --form files=@in1.t
 						</tr>
 						<tr>
 							<th th:text="#{example.url_params}"></th>
-							<td><em>job_id</em> - <span th:text="#{gridjobs.jdl.job_id}"></span></td>
+							<td><em>job_id</em> - <span th:text="#{qcgjobs.jdl.job_id}"></span></td>
 						</tr>
 						<tr>
 							<th th:text="#{example.data_params}"></th>
-							<td><em th:text="#{gridjobs.jdl.data_params}"></em></td>
+							<td><em th:text="#{qcgjobs.jdl.data_params}"></em></td>
 						</tr>
 						<tr>
 							<th th:text="#{example.success}"></th>
@@ -227,13 +149,14 @@ curl -k -X POST --header "PROXY:$proxy" --form files=@run.sh --form files=@in1.t
 									<strong th:text="|#{example.example}:|"></strong>
 								</p>
 								<pre>
-[
-  Type = "Job";
-  JobType = "Normal";
-  Executable = "run.sh";
-  ...
-  ...        
-]
+&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;qcgJob appId=&quot;&quot;&gt;
+   &lt;task taskId=&quot;task&quot;&gt;
+      &lt;execution type=&quot;single&quot;&gt;
+      &lt;!-- ... --&gt;
+      &lt;/execution&gt;
+   &lt;/task&gt;
+&lt;/qcgJob&gt;
 </pre>
 							</td>
 						</tr>
@@ -267,13 +190,13 @@ curl -k -X POST --header "PROXY:$proxy" --form files=@run.sh --form files=@in1.t
 								<pre>
 proxy="`cat {path-to-proxy-file} | base64 | tr -d '\n'`"
 
-curl -k -X GET --header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpServletRequest.serverName} + @{~/api/gridjobs/56cd0b82-2db4-4dd7-ad77-4ceb922f9a7a/jdl}"/>
+curl -k -X GET --header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpServletRequest.serverName} + @{~/api/qcgjobs/56cd0b82-2db4-4dd7-ad77-4ceb922f9a7a/jobdescription}"/>
 </pre>
 							</td>
 						</tr>
 						<tr>
 							<th th:text="#{example.notes}"></th>
-							<td><em th:text="#{gridjobs.extend.notes}"></em></td>
+							<td><em th:text="#{qcgjobs.jdl.notes}"></em></td>
 						</tr>
 					</table>
 				</div>
@@ -282,7 +205,7 @@ curl -k -X GET --header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpSe
 					<table class="table table-bordered">
 						<tr>
 							<th th:text="#{example.url}"></th>
-							<td><code>/api/gridjobs?tag={tag}</code></td>
+							<td><code>/api/qcgjobs?tag={tag}</code></td>
 						</tr>
 						<tr>
 							<th th:text="#{example.method}"></th>
@@ -290,11 +213,11 @@ curl -k -X GET --header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpSe
 						</tr>
 						<tr>
 							<th th:text="#{example.url_params}"></th>
-							<td><em>tag</em> - <span th:text="#{gridjobs.get_all.param.tag}"></span></td>
+							<td><em>tag</em> - <span th:text="#{qcgjobs.get_all.param.tag}"></span></td>
 						</tr>
 						<tr>
 							<th th:text="#{example.data_params}"></th>
-							<td><em th:text="#{gridjobs.get_all.data_params}"></em></td>
+							<td><em th:text="#{qcgjobs.get_all.data_params}"></em></td>
 						</tr>
 						<tr>
 							<th th:text="#{example.success}"></th>
@@ -311,12 +234,12 @@ curl -k -X GET --header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpSe
   {
     "status":"RUNNING",
     "job_id":"295a49d3-b261-4acb-a508-fce3e1684494",
-    "native_job_id":"https://lb02.grid.cyf-kr.edu.pl:9000/e4QEAZLtYUwTzr1tblH57A"
+    "native_job_id":"J1435215723375__9256"
   },
   {
     "status":"RUNNING",
     "job_id":"56cd0b82-2db4-4dd7-ad77-4ceb922f9a7a",
-    "native_job_id":"https://lb02.grid.cyf-kr.edu.pl:9000/6UVXM9J-Hwjli2WJSYmIKQ"
+    "native_job_id":"J1435215723375__9256"
   }
 ]
 </pre>
@@ -353,13 +276,13 @@ curl -k -X GET --header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpSe
 								<pre>
 proxy="`cat {path-to-proxy-file} | base64 | tr -d '\n'`"
 
-curl -k -X GET --header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpServletRequest.serverName} + @{~/api/gridjobs}"/>
+curl -k -X GET --header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpServletRequest.serverName} + @{~/api/qcgjobs}"/>
 </pre>
 							</td>
 						</tr>
 						<tr>
 							<th th:text="#{example.notes}"></th>
-							<td><em th:text="#{gridjobs.get_all.notes}"></em></td>
+							<td><em th:text="#{qcgjobs.get_all.notes}"></em></td>
 						</tr>
 					</table>
 				</div>
@@ -368,7 +291,7 @@ curl -k -X GET --header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpSe
 					<table class="table table-bordered">
 						<tr>
 							<th th:text="#{example.url}"></th>
-							<td><code>/api/gridjobs/{job_id}</code></td>
+							<td><code>/api/qcgjobs/{job_id}</code></td>
 						</tr>
 						<tr>
 							<th th:text="#{example.method}"></th>
@@ -376,7 +299,7 @@ curl -k -X GET --header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpSe
 						</tr>
 						<tr>
 							<th th:text="#{example.url_params}"></th>
-							<td><em>job_id</em> - <span th:text="#{gridjobs.get.job_id}"></span></td>
+							<td><em>job_id</em> - <span th:text="#{qcgjobs.get.job_id}"></span></td>
 							
 						</tr>
 						<tr>
@@ -397,7 +320,7 @@ curl -k -X GET --header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpSe
 {
   "status":"RUNNING",
   "job_id":"56cd0b82-2db4-4dd7-ad77-4ceb922f9a7a",
-  "native_job_id":"https://lb02.grid.cyf-kr.edu.pl:9000/6UVXM9J-Hwjli2WJSYmIKQ"
+  "native_job_id":"J1435215723375__9256"
 }
 </pre>
 							</td>
@@ -433,13 +356,13 @@ curl -k -X GET --header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpSe
 								<pre>
 proxy="`cat {path-to-proxy-file} | base64 | tr -d '\n'`"
 
-curl -k -X GET --header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpServletRequest.serverName} + @{~/api/gridjobs/56cd0b82-2db4-4dd7-ad77-4ceb922f9a7a}" />
+curl -k -X GET --header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpServletRequest.serverName} + @{~/api/qcgjobs/56cd0b82-2db4-4dd7-ad77-4ceb922f9a7a}" />
 </pre>
 							</td>
 						</tr>
 						<tr>
 							<th th:text="#{example.notes}"></th>
-							<td><em th:text="#{gridjobs.get.notes}"></em></td>
+							<td><em th:text="#{qcgjobs.get.notes}"></em></td>
 						</tr>
 					</table>
 				</div>
@@ -448,7 +371,7 @@ curl -k -X GET --header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpSe
 					<table class="table table-bordered">
 						<tr>
 							<th th:text="#{example.url}"></th>
-							<td><code>/api/gridjobs/{job_id}/files/{file_name}</code></td>
+							<td><code>/api/qcgjobs/{job_id}/files/{file_name}</code></td>
 						</tr>
 						<tr>
 							<th th:text="#{example.method}"></th>
@@ -457,14 +380,14 @@ curl -k -X GET --header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpSe
 						<tr>
 							<th th:text="#{example.url_params}"></th>
 							<td>
-								<em>job_id</em> - <span th:text="#{gridjobs.files.job_id}"></span>
+								<em>job_id</em> - <span th:text="#{qcgjobs.files.job_id}"></span>
 								<br/>
-								<em>file_name</em> - <span th:text="#{gridjobs.files.file_name}"></span>
+								<em>file_name</em> - <span th:text="#{qcgjobs.files.file_name}"></span>
 							</td>
 						</tr>
 						<tr>
 							<th th:text="#{example.data_params}"></th>
-							<td><em th:text="#{gridjobs.files.data_params}"></em></td>
+							<td><em th:text="#{qcgjobs.files.data_params}"></em></td>
 						</tr>
 						<tr>
 							<th th:text="#{example.success}"></th>
@@ -476,7 +399,7 @@ curl -k -X GET --header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpSe
 								<p>
 									<strong th:text="|#{example.example}:|"></strong>
 								</p>
-								<pre th:text="#{gridjobs.files.file_contents}"></pre>
+								<pre th:text="#{qcgjobs.files.file_contents}"></pre>
 							</td>
 						</tr>
 						<tr>
@@ -509,13 +432,13 @@ curl -k -X GET --header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpSe
 								<pre>
 proxy="`cat {path-to-proxy-file} | base64 | tr -d '\n'`"
 
-curl -k -X GET --header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpServletRequest.serverName} + @{~/api/gridjobs/56cd0b82-2db4-4dd7-ad77-4ceb922f9a7a/files/result.txt}"/>
+curl -k -X GET --header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpServletRequest.serverName} + @{~/api/qcgjobs/56cd0b82-2db4-4dd7-ad77-4ceb922f9a7a/files/result.txt}"/>
 </pre>
 							</td>
 						</tr>
 						<tr>
 							<th th:text="#{example.notes}"></th>
-							<td><em th:text="#{gridjobs.extend.notes}"></em></td>
+							<td><em th:text="#{qcgjobs.files.notes}"></em></td>
 						</tr>
 					</table>
 				</div>
@@ -524,7 +447,7 @@ curl -k -X GET --header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpSe
 					<table class="table table-bordered">
 						<tr>
 							<th th:text="#{example.url}"></th>
-							<td><code>/api/gridjobs/{job_id}</code></td>
+							<td><code>/api/qcgjobs/{job_id}</code></td>
 						</tr>
 						<tr>
 							<th th:text="#{example.method}"></th>
@@ -532,11 +455,11 @@ curl -k -X GET --header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpSe
 						</tr>
 						<tr>
 							<th th:text="#{example.url_params}"></th>
-							<td><em>job_id</em> - <span th:text="#{gridjobs.delete.job_id}"></span></td>
+							<td><em>job_id</em> - <span th:text="#{qcgjobs.delete.job_id}"></span></td>
 						</tr>
 						<tr>
 							<th th:text="#{example.data_params}"></th>
-							<td><em th:text="#{gridjobs.delete.data_params}"></em></td>
+							<td><em th:text="#{qcgjobs.delete.data_params}"></em></td>
 						</tr>
 						<tr>
 							<th th:text="#{example.success}"></th>
@@ -576,13 +499,13 @@ curl -k -X GET --header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpSe
 								<pre>
 proxy="`cat {path-to-proxy-file} | base64 | tr -d '\n'`"
 
-curl -k -X DELETE --header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpServletRequest.serverName} + @{~/api/gridjobs/56cd0b82-2db4-4dd7-ad77-4ceb922f9a7a}" />
+curl -k -X DELETE --header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpServletRequest.serverName} + @{~/api/qcgjobs/56cd0b82-2db4-4dd7-ad77-4ceb922f9a7a}" />
 </pre>
 							</td>
 						</tr>
 						<tr>
 							<th th:text="#{example.notes}"></th>
-							<td><em th:text="#{gridjobs.delete.notes}"></em></td>
+							<td><em th:text="#{qcgjobs.delete.notes}"></em></td>
 						</tr>
 					</table>
 				</div>
@@ -591,7 +514,7 @@ curl -k -X DELETE --header "PROXY:$proxy" <th:block th:text="'https://' + ${#htt
 					<table class="table table-bordered">
 						<tr>
 							<th th:text="#{example.url}"></th>
-							<td><code>/api/gridjobs/{job_id}</code></td>
+							<td><code>/api/qcgjobs/{job_id}</code></td>
 						</tr>
 						<tr>
 							<th th:text="#{example.method}"></th>
@@ -599,14 +522,14 @@ curl -k -X DELETE --header "PROXY:$proxy" <th:block th:text="'https://' + ${#htt
 						</tr>
 						<tr>
 							<th th:text="#{example.url_params}"></th>
-							<td><em>job_id</em> - <span th:text="#{gridjobs.delete.job_id}"></span></td>
+							<td><em>job_id</em> - <span th:text="#{qcgjobs.delete.job_id}"></span></td>
 						</tr>
 						<tr>
 							<th th:text="#{example.data_params}"></th>
 							<td>
 								<p>
 									<strong th:text="|#{example.json}:|"></strong>
-								</p><pre th:text="#{gridjobs.put.action_params}"></pre><p>
+								</p><pre th:text="#{qcgjobs.put.action_params}"></pre><p>
 									<strong th:text="|#{example.example}:|"></strong>
 								</p>
 								<pre>
@@ -654,13 +577,13 @@ curl -k -X DELETE --header "PROXY:$proxy" <th:block th:text="'https://' + ${#htt
 proxy="`cat {path-to-proxy-file} | base64 | tr -d '\n'`"
 
 curl -k -X PUT --data '{"action":"abort"}' --header "Content-Type:application/json" \
---header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpServletRequest.serverName} + @{~/api/gridjobs/56cd0b82-2db4-4dd7-ad77-4ceb922f9a7a}" />
+--header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpServletRequest.serverName} + @{~/api/qcgjobs/56cd0b82-2db4-4dd7-ad77-4ceb922f9a7a}" />
 </pre>
 							</td>
 						</tr>
 						<tr>
 							<th th:text="#{example.notes}"></th>
-							<td><em th:text="#{gridjobs.delete.notes}"></em></td>
+							<td><em th:text="#{qcgjobs.delete.notes}"></em></td>
 						</tr>
 					</table>
 				</div>

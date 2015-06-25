@@ -21,21 +21,18 @@
 
 package com.sshtools.j2ssh.authentication;
 
-import com.sshtools.j2ssh.io.*;
-import java.io.*;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Properties;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.globus.common.CoGProperties;
-import org.globus.gsi.*;
-import org.globus.gsi.gssapi.*;
-import org.globus.gsi.gssapi.auth.*;
-import org.globus.tools.ProxyInit;
+import org.ietf.jgss.GSSContext;
+import org.ietf.jgss.GSSException;
+
+import com.sshtools.j2ssh.io.ByteArrayWriter;
 //import org.globus.tools.proxy.DefaultGridProxyModel;
-import org.globus.util.Util;
-import org.gridforum.jgss.ExtendedGSSContext;
-import org.gridforum.jgss.ExtendedGSSCredential;
-import org.ietf.jgss.*;
 
 public class GSSAPIKeyexAuthenticationClient extends SshAuthenticationClient
 {

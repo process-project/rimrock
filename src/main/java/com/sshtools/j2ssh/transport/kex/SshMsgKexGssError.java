@@ -24,7 +24,6 @@
 package com.sshtools.j2ssh.transport.kex;
 
 import java.io.IOException;
-import java.math.BigInteger;
 
 import com.sshtools.j2ssh.io.ByteArrayReader;
 import com.sshtools.j2ssh.io.ByteArrayWriter;

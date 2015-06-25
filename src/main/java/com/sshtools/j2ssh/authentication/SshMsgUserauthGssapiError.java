@@ -36,10 +36,13 @@
 
 package com.sshtools.j2ssh.authentication;
 
-import com.sshtools.j2ssh.io.*;
+import java.io.IOException;
+
+import com.sshtools.j2ssh.io.ByteArrayReader;
+import com.sshtools.j2ssh.io.ByteArrayWriter;
+import com.sshtools.j2ssh.io.UnsignedInteger32;
 import com.sshtools.j2ssh.transport.InvalidMessageException;
 import com.sshtools.j2ssh.transport.SshMessage;
-import java.io.IOException;
 
 public class SshMsgUserauthGssapiError extends SshMessage
 {

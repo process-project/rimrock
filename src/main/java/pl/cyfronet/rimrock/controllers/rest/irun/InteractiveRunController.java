@@ -1,7 +1,7 @@
 package pl.cyfronet.rimrock.controllers.rest.irun;
 
-import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
@@ -42,12 +42,12 @@ import pl.cyfronet.rimrock.controllers.rest.jobs.ValidationException;
 import pl.cyfronet.rimrock.domain.InteractiveProcess;
 import pl.cyfronet.rimrock.gsi.ProxyHelper;
 import pl.cyfronet.rimrock.repositories.InteractiveProcessRepository;
-import pl.cyfronet.rimrock.services.GsisshRunner;
-import pl.cyfronet.rimrock.services.RunException;
-import pl.cyfronet.rimrock.services.RunResults;
 import pl.cyfronet.rimrock.services.filemanager.FileManager;
 import pl.cyfronet.rimrock.services.filemanager.FileManagerException;
 import pl.cyfronet.rimrock.services.filemanager.FileManagerFactory;
+import pl.cyfronet.rimrock.services.gsissh.GsisshRunner;
+import pl.cyfronet.rimrock.services.gsissh.RunException;
+import pl.cyfronet.rimrock.services.gsissh.RunResults;
 
 import com.sshtools.j2ssh.util.InvalidStateException;
 

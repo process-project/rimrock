@@ -40,8 +40,8 @@ import pl.cyfronet.rimrock.controllers.rest.RestHelper;
 import pl.cyfronet.rimrock.domain.Job;
 import pl.cyfronet.rimrock.gsi.ProxyHelper;
 import pl.cyfronet.rimrock.repositories.JobRepository;
-import pl.cyfronet.rimrock.services.RunException;
 import pl.cyfronet.rimrock.services.filemanager.FileManagerException;
+import pl.cyfronet.rimrock.services.gsissh.RunException;
 import pl.cyfronet.rimrock.services.job.UserJobs;
 import pl.cyfronet.rimrock.services.job.UserJobsFactory;
 

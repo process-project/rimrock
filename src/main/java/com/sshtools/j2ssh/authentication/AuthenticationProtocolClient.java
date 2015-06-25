@@ -27,9 +27,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 
-import org.ietf.jgss.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.ietf.jgss.GSSContext;
+
 import com.sshtools.j2ssh.SshException;
 import com.sshtools.j2ssh.transport.MessageNotAvailableException;
 import com.sshtools.j2ssh.transport.MessageStoreEOFException;

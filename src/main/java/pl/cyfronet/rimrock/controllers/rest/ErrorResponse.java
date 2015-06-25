@@ -1,6 +1,6 @@
 package pl.cyfronet.rimrock.controllers.rest;
 
-import pl.cyfronet.rimrock.services.RunException;
+import pl.cyfronet.rimrock.services.gsissh.RunException;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
