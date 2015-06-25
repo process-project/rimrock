@@ -22,19 +22,19 @@
 
 package com.sshtools.j2ssh.transport.kex;
 
+import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.security.MessageDigest;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import com.sshtools.j2ssh.transport.AlgorithmNotSupportedException;
-import com.sshtools.j2ssh.configuration.SshConnectionProperties;
-
 import org.bouncycastle.util.encoders.Base64;
 import org.globus.gsi.gssapi.GSSConstants;
+
+import com.sshtools.j2ssh.configuration.SshConnectionProperties;
+import com.sshtools.j2ssh.transport.AlgorithmNotSupportedException;
 
 /**
  *

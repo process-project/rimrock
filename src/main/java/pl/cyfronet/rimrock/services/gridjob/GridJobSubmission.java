@@ -1,10 +1,10 @@
-package pl.cyfronet.rimrock.controllers.rest.gridjobs;
+package pl.cyfronet.rimrock.services.gridjob;
 
 import java.util.List;
 
 import org.springframework.web.multipart.MultipartFile;
 
-public class GLiteJobSubmission {
+public class GridJobSubmission {
 	private List<MultipartFile> files;
 	private String executable;
 	private String stdOutput;

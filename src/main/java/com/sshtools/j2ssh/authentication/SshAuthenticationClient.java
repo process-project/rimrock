@@ -24,6 +24,7 @@ package com.sshtools.j2ssh.authentication;
 
 import java.io.IOException;
 import java.util.Properties;
+
 import com.sshtools.j2ssh.configuration.SshConnectionProperties;
 
 /**

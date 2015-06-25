@@ -47,6 +47,13 @@ public class PageController {
 		return "gridjobs";
 	}
 	
+	@RequestMapping("/qcgjobs")
+	public String qcgJobs(Model model, HttpServletRequest request) {
+		fillLocale(model, request);
+		
+		return "qcgjobs";
+	}
+	
 	@RequestMapping("/team")
 	public String team(Model model, HttpServletRequest request) {
 		fillLocale(model, request);

@@ -21,10 +21,9 @@
 
 package com.sshtools.common.util;
 
-import java.util.StringTokenizer;
-
 import java.awt.Color;
 import java.awt.Font;
+import java.util.StringTokenizer;
 
 /**
  *

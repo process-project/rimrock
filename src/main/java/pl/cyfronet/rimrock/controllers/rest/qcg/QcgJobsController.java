@@ -1,4 +1,4 @@
-package pl.cyfronet.rimrock.controllers.rest.gridjobs;
+package pl.cyfronet.rimrock.controllers.rest.qcg;
 
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
@@ -13,6 +13,8 @@ import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 import static org.springframework.web.bind.annotation.RequestMethod.PUT;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
@@ -23,6 +25,13 @@ import java.util.Map;
 import java.util.Optional;
 
 import javax.validation.Valid;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.sax.SAXSource;
+import javax.xml.transform.stream.StreamResult;
 
 import org.globus.ftp.exception.ClientException;
 import org.globus.ftp.exception.ServerException;
@@ -43,6 +52,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.xml.sax.InputSource;
 
 import pl.cyfronet.rimrock.controllers.rest.jobs.JobActionRequest;
 import pl.cyfronet.rimrock.gridworkerapi.beans.GridJob;
@@ -53,26 +63,21 @@ import pl.cyfronet.rimrock.services.gridjob.GridJobInfo;
 import pl.cyfronet.rimrock.services.gridjob.GridJobSubmission;
 
 @RestController
-public class GridJobsController {
-	private static final Logger log = LoggerFactory.getLogger(GridJobsController.class);
+public class QcgJobsController {
+	private static final Logger log = LoggerFactory.getLogger(QcgJobsController.class);
 	
 	private GridWorkerService gridWorkerService;
 	private ProxyHelper proxyHelper;
 	private GridJobHelper gridJobHelper;
 	
 	@Autowired
-	public GridJobsController(@Qualifier("jsaga") GridWorkerService gridWorkerService, ProxyHelper proxyHelper, GridJobHelper gridJobHelper) {
+	public QcgJobsController(@Qualifier("qcg") GridWorkerService gridWorkerService, ProxyHelper proxyHelper, GridJobHelper gridJobHelper) {
 		this.gridWorkerService = gridWorkerService;
 		this.proxyHelper = proxyHelper;
 		this.gridJobHelper = gridJobHelper;
 	}
 	
-	@RequestMapping(value = "/api/gridjobs/gridproxy/{vo:.+}")
-	public String extendGridProxy(@RequestHeader("PROXY") String proxy, @PathVariable("vo") String vo) throws RemoteException {
-		return gridWorkerService.extendProxy(decodeProxy(proxy), vo);
-	}
-	
-	@RequestMapping(value = "/api/gridjobs",
+	@RequestMapping(value = "/api/qcgjobs",
 					method = POST,
 					consumes = {MULTIPART_FORM_DATA_VALUE, APPLICATION_FORM_URLENCODED_VALUE},
 					produces = APPLICATION_JSON_VALUE)
@@ -91,13 +96,16 @@ public class GridJobsController {
 			}
 		});
 		
-		GridJob gridJob = gridJobHelper.prepareGridJob(jobSubmission, uploadedFiles, jobId, decodedProxy, false);
+		GridJob gridJob = gridJobHelper.prepareGridJob(jobSubmission, uploadedFiles, jobId, decodedProxy, true);
+		gridJob.getAttributes().put(GridJob._STAGING_DIRECTORY, gridJobHelper.buildJobStagingDirectoryUrl(decodedProxy, jobId));
+		log.debug("Grid job bean being submitted to the underlying grid worker: {}", gridJob);
+		
 		GridJobInfo gridJobInfo = gridJobHelper.submitGridJob(gridJob, decodedProxy, jobId, jobSubmission.getTag(), gridWorkerService);
 		
 		return new ResponseEntity<GridJobInfo>(gridJobInfo, CREATED);
 	}
 
-	@RequestMapping(value = "/api/gridjobs",
+	@RequestMapping(value = "/api/qcgjobs",
 					method = GET,
 					produces = APPLICATION_JSON_VALUE)
 	public ResponseEntity<List<GridJobInfo>> getGridJobs(@RequestHeader("PROXY") String encodedProxy,
@@ -107,7 +115,7 @@ public class GridJobsController {
 		return new ResponseEntity<List<GridJobInfo>>(gridJobHelper.getGridJobs(gridWorkerService, decodedProxy, tag), OK);
 	}
 	
-	@RequestMapping(value = "/api/gridjobs/{jobId:.+}", method = GET, produces = APPLICATION_JSON_VALUE)
+	@RequestMapping(value = "/api/qcgjobs/{jobId:.+}", method = GET, produces = APPLICATION_JSON_VALUE)
 	public ResponseEntity<GridJobInfo> getGridJob(@PathVariable("jobId") String jobId, @RequestHeader("PROXY") String encodedProxy) throws RemoteException,
 			CredentialException {
 		log.debug("Retrieving job info for id {}", jobId);
@@ -121,20 +129,20 @@ public class GridJobsController {
 		}
 	}
 	
-	@RequestMapping(value = "/api/gridjobs/{jobId}/jdl", method = GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	@RequestMapping(value = "/api/qcgjobs/{jobId}/jobdescription", method = GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<String> getGridJobJdl(@PathVariable("jobId") String jobId, @RequestHeader("PROXY") String encodedProxy) throws RemoteException,
-			CredentialException {
+			CredentialException, TransformerException {
 		String decodedProxy = decodeProxy(encodedProxy);
 		String jobDescription = gridJobHelper.getJobDescription(gridWorkerService, decodedProxy, jobId);
 		
 		if(jobDescription != null) {
-			return new ResponseEntity<String>(jobDescription, OK);
+			return new ResponseEntity<String>(formatXml(jobDescription), OK);
 		} else {
 			return new ResponseEntity<String>(NOT_FOUND);
 		}
 	}
 	
-	@RequestMapping(value = "/api/gridjobs/{jobId}/files/{fileName:.+}", method = GET)
+	@RequestMapping(value = "/api/qcgjobs/{jobId}/files/{fileName:.+}", method = GET)
 	public ResponseEntity<InputStreamResource> getFile(@PathVariable("jobId") String jobId, @PathVariable("fileName") String fileName,
 				@RequestHeader("PROXY") String encodedProxy)
 			throws CredentialException, ServerException, IOException, GSSException, ClientException {
@@ -161,7 +169,7 @@ public class GridJobsController {
 		}
 	}
 	
-	@RequestMapping(value = "/api/gridjobs/{jobId:.+}", method = DELETE)
+	@RequestMapping(value = "/api/qcgjobs/{jobId:.+}", method = DELETE)
 	public ResponseEntity<Void> deleteGridJob(@PathVariable("jobId") String jobId, @RequestHeader("PROXY") String encodedProxy) throws RemoteException,
 			CredentialException {
 		log.debug("Retrieving job info for id {}", jobId);
@@ -175,7 +183,7 @@ public class GridJobsController {
 		}
 	}
 	
-	@RequestMapping(value = "/api/gridjobs/{jobId:.+}",
+	@RequestMapping(value = "/api/qcgjobs/{jobId:.+}",
 					method = PUT,
 					consumes = APPLICATION_JSON_VALUE)
 	public ResponseEntity<Void> abortGridJob(@PathVariable("jobId") String jobId, @RequestHeader("PROXY") String encodedProxy,
@@ -196,6 +204,17 @@ public class GridJobsController {
 		}
 	}
 	
+	private String formatXml(String source) throws TransformerException {
+		Transformer serializer = TransformerFactory.newInstance().newTransformer();
+        serializer.setOutputProperty(OutputKeys.INDENT, "yes");
+        
+        Source xmlSource = new SAXSource(new InputSource(new ByteArrayInputStream(source.getBytes())));
+        StreamResult res =  new StreamResult(new ByteArrayOutputStream());            
+        serializer.transform(xmlSource, res);
+        
+        return new String(((ByteArrayOutputStream)res.getOutputStream()).toByteArray());
+	}
+
 	private String decodeProxy(String proxy) {
 		return proxyHelper.decodeProxy(proxy).trim();
 	}

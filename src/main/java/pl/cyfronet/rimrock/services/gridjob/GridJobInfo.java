@@ -1,8 +1,8 @@
-package pl.cyfronet.rimrock.controllers.rest.gridjobs;
+package pl.cyfronet.rimrock.services.gridjob;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class GLiteJobStatus {
+public class GridJobInfo {
 	@JsonProperty("job_id")
 	private String jobId;
 	@JsonProperty("native_job_id")

@@ -11,8 +11,8 @@ import org.springframework.stereotype.Service;
 
 import pl.cyfronet.rimrock.gsi.ProxyHelper;
 import pl.cyfronet.rimrock.repositories.JobRepository;
-import pl.cyfronet.rimrock.services.GsisshRunner;
 import pl.cyfronet.rimrock.services.filemanager.FileManagerFactory;
+import pl.cyfronet.rimrock.services.gsissh.GsisshRunner;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 

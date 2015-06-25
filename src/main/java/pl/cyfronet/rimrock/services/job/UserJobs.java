@@ -22,12 +22,12 @@ import pl.cyfronet.rimrock.controllers.rest.jobs.JobNotFoundException;
 import pl.cyfronet.rimrock.domain.Job;
 import pl.cyfronet.rimrock.gsi.ProxyHelper;
 import pl.cyfronet.rimrock.repositories.JobRepository;
-import pl.cyfronet.rimrock.services.GsisshRunner;
-import pl.cyfronet.rimrock.services.RunException;
-import pl.cyfronet.rimrock.services.RunResults;
 import pl.cyfronet.rimrock.services.filemanager.FileManager;
 import pl.cyfronet.rimrock.services.filemanager.FileManagerException;
 import pl.cyfronet.rimrock.services.filemanager.FileManagerFactory;
+import pl.cyfronet.rimrock.services.gsissh.GsisshRunner;
+import pl.cyfronet.rimrock.services.gsissh.RunException;
+import pl.cyfronet.rimrock.services.gsissh.RunResults;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sshtools.j2ssh.util.InvalidStateException;

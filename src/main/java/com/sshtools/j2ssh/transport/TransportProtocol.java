@@ -21,9 +21,9 @@
  */
 
 package com.sshtools.j2ssh.transport;
-import org.ietf.jgss.*;
-
 import java.io.IOException;
+
+import org.ietf.jgss.GSSContext;
 
 /**
  *

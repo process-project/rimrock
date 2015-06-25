@@ -23,19 +23,17 @@
 package com.sshtools.j2ssh.authentication;
 
 import java.io.FilePermission;
-import com.sshtools.j2ssh.configuration.SshConnectionProperties;
 import java.security.AccessControlException;
 import java.security.AccessController;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import com.sshtools.j2ssh.configuration.ConfigurationException;
-import com.sshtools.j2ssh.configuration.ConfigurationLoader;
+
+import com.sshtools.j2ssh.configuration.SshConnectionProperties;
 import com.sshtools.j2ssh.transport.AlgorithmNotSupportedException;
 
 /**
