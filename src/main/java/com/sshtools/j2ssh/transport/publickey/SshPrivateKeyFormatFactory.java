@@ -21,21 +21,20 @@
 
 package com.sshtools.j2ssh.transport.publickey;
 
+import java.io.InputStream;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Properties;
 import java.util.Vector;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import com.sshtools.j2ssh.configuration.ConfigurationException;
+
 import com.sshtools.j2ssh.configuration.ConfigurationLoader;
-import java.util.Enumeration;
-import java.util.Properties;
-import java.net.URL;
-import java.io.InputStream;
-import java.util.Vector;
 import com.sshtools.j2ssh.io.IOUtil;
 
 /**

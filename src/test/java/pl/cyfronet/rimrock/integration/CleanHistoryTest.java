@@ -20,8 +20,8 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import pl.cyfronet.rimrock.ProxyFactory;
 import pl.cyfronet.rimrock.RimrockApplication;
-import pl.cyfronet.rimrock.services.GsisshRunner;
-import pl.cyfronet.rimrock.services.RunResults;
+import pl.cyfronet.rimrock.services.gsissh.GsisshRunner;
+import pl.cyfronet.rimrock.services.gsissh.RunResults;
 
 import com.sshtools.j2ssh.util.InvalidStateException;
 

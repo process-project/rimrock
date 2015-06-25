@@ -1,4 +1,4 @@
-package pl.cyfronet.rimrock.services;
+package pl.cyfronet.rimrock.services.gsissh;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

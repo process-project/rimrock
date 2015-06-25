@@ -28,9 +28,9 @@ import pl.cyfronet.rimrock.controllers.rest.RunResponse;
 import pl.cyfronet.rimrock.controllers.rest.RunResponse.Status;
 import pl.cyfronet.rimrock.controllers.rest.jobs.ValidationException;
 import pl.cyfronet.rimrock.gsi.ProxyHelper;
-import pl.cyfronet.rimrock.services.GsisshRunner;
-import pl.cyfronet.rimrock.services.RunException;
-import pl.cyfronet.rimrock.services.RunResults;
+import pl.cyfronet.rimrock.services.gsissh.GsisshRunner;
+import pl.cyfronet.rimrock.services.gsissh.RunException;
+import pl.cyfronet.rimrock.services.gsissh.RunResults;
 
 import com.sshtools.j2ssh.util.InvalidStateException;
 

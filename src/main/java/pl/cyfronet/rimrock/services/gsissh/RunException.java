@@ -1,4 +1,5 @@
-package pl.cyfronet.rimrock.services;
+package pl.cyfronet.rimrock.services.gsissh;
+
 
 public class RunException extends RuntimeException {
 

@@ -23,8 +23,8 @@
 package com.sshtools.j2ssh.transport;
 
 import java.io.BufferedInputStream;
-import java.io.IOException;
 import java.io.EOFException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.math.BigInteger;
@@ -33,6 +33,7 @@ import java.util.Iterator;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import com.sshtools.j2ssh.io.ByteArrayReader;
 import com.sshtools.j2ssh.io.ByteArrayWriter;
 import com.sshtools.j2ssh.transport.cipher.SshCipher;

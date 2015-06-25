@@ -23,8 +23,8 @@ import org.springframework.web.client.ResourceAccessException;
 
 import pl.cyfronet.rimrock.controllers.exceptions.ResourceNotFoundException;
 import pl.cyfronet.rimrock.controllers.rest.jobs.ValidationException;
-import pl.cyfronet.rimrock.services.RunException;
 import pl.cyfronet.rimrock.services.filemanager.FileManagerException;
+import pl.cyfronet.rimrock.services.gsissh.RunException;
 
 import com.sshtools.j2ssh.util.InvalidStateException;
 
