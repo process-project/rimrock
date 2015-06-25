@@ -37,7 +37,7 @@ import com.jayway.restassured.http.ContentType;
 @WebAppConfiguration
 @IntegrationTest
 @DirtiesContext
-@Ignore("Takes too long")
+@Ignore("Takes too long, use manually only")
 public class QcgJobsControllerMvcTest {
 	private static final Logger log = LoggerFactory.getLogger(QcgJobsControllerMvcTest.class);
 	
@@ -69,7 +69,6 @@ public class QcgJobsControllerMvcTest {
 				formParam("stdOutput", "out.txt").
 				formParam("stdError", "error.txt").
 				formParam("outputSandbox", "result.txt").
-				formParam("candidateHosts", "creamce.inula.man.poznan.pl").
 			when().
 				post("/api/qcgjobs").
 			then().
@@ -108,7 +107,7 @@ public class QcgJobsControllerMvcTest {
 			Thread.sleep(2000);
 		}
 		
-		assertEquals("DONE", status);
+		assertEquals("FINISHED", status);
 		
 		given().
 			header("PROXY", proxyHelper.encodeProxy(proxy)).
