@@ -9,6 +9,7 @@ public class GridJobInfo {
 	private String nativeJobId;
 	private String status;
 	private String tag;
+	private String error;
 	
 	public String getJobId() {
 		return jobId;
@@ -33,5 +34,11 @@ public class GridJobInfo {
 	}
 	public void setTag(String tag) {
 		this.tag = tag;
+	}
+	public String getError() {
+		return error;
+	}
+	public void setError(String error) {
+		this.error = error;
 	}
 }

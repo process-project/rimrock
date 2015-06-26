@@ -55,6 +55,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.xml.sax.InputSource;
 
 import pl.cyfronet.rimrock.controllers.rest.jobs.JobActionRequest;
+import pl.cyfronet.rimrock.domain.GridJob.Middleware;
 import pl.cyfronet.rimrock.gridworkerapi.beans.GridJob;
 import pl.cyfronet.rimrock.gridworkerapi.service.GridWorkerService;
 import pl.cyfronet.rimrock.gsi.ProxyHelper;
@@ -100,7 +101,7 @@ public class QcgJobsController {
 		gridJob.getAttributes().put(GridJob._STAGING_DIRECTORY, gridJobHelper.buildJobStagingDirectoryUrl(decodedProxy, jobId));
 		log.debug("Grid job bean being submitted to the underlying grid worker: {}", gridJob);
 		
-		GridJobInfo gridJobInfo = gridJobHelper.submitGridJob(gridJob, decodedProxy, jobId, jobSubmission.getTag(), gridWorkerService);
+		GridJobInfo gridJobInfo = gridJobHelper.submitGridJob(gridJob, decodedProxy, jobId, jobSubmission.getTag(), Middleware.qcg, gridWorkerService);
 		
 		return new ResponseEntity<GridJobInfo>(gridJobInfo, CREATED);
 	}
@@ -112,7 +113,7 @@ public class QcgJobsController {
 			@RequestParam(value = "tag", required = false) String tag) throws RemoteException, CredentialException {
 		String decodedProxy = decodeProxy(encodedProxy);
 		
-		return new ResponseEntity<List<GridJobInfo>>(gridJobHelper.getGridJobs(gridWorkerService, decodedProxy, tag), OK);
+		return new ResponseEntity<List<GridJobInfo>>(gridJobHelper.getGridJobs(gridWorkerService, Middleware.qcg, decodedProxy, tag), OK);
 	}
 	
 	@RequestMapping(value = "/api/qcgjobs/{jobId:.+}", method = GET, produces = APPLICATION_JSON_VALUE)
