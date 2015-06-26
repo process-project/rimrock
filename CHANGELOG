@@ -1,3 +1,9 @@
+v 1.4.1
+  - QCG and Grid job database ambiguity bug fixed 
+
+v 1.4.0
+  - QCG-based job management added
+
 v 1.3.0
   - Grid job handlers were implemented
   - Grid job API documentation added
