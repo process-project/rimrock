@@ -1,3 +1,6 @@
+v 1.4.2
+  - Database migration code cleanup applied
+
 v 1.4.1
   - QCG and Grid job database ambiguity bug fixed 
 
