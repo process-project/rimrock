@@ -17,6 +17,12 @@ public class GridJob {
 	private String nativeJobId;
 	private String userLogin;
 	private String tag;
+	private Middleware middleware;
+	
+	public enum Middleware {
+		qcg,
+		jsaga
+	}
 	
 	public Long getId() {
 		return id;
@@ -53,5 +59,11 @@ public class GridJob {
 	}
 	public void setTag(String tag) {
 		this.tag = tag;
+	}
+	public Middleware getMiddleware() {
+		return middleware;
+	}
+	public void setMiddleware(Middleware middleware) {
+		this.middleware = middleware;
 	}
 }

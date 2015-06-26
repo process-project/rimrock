@@ -45,6 +45,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import pl.cyfronet.rimrock.controllers.rest.jobs.JobActionRequest;
+import pl.cyfronet.rimrock.domain.GridJob.Middleware;
 import pl.cyfronet.rimrock.gridworkerapi.beans.GridJob;
 import pl.cyfronet.rimrock.gridworkerapi.service.GridWorkerService;
 import pl.cyfronet.rimrock.gsi.ProxyHelper;
@@ -92,7 +93,7 @@ public class GridJobsController {
 		});
 		
 		GridJob gridJob = gridJobHelper.prepareGridJob(jobSubmission, uploadedFiles, jobId, decodedProxy, false);
-		GridJobInfo gridJobInfo = gridJobHelper.submitGridJob(gridJob, decodedProxy, jobId, jobSubmission.getTag(), gridWorkerService);
+		GridJobInfo gridJobInfo = gridJobHelper.submitGridJob(gridJob, decodedProxy, jobId, jobSubmission.getTag(), Middleware.jsaga, gridWorkerService);
 		
 		return new ResponseEntity<GridJobInfo>(gridJobInfo, CREATED);
 	}
@@ -104,7 +105,7 @@ public class GridJobsController {
 			@RequestParam(value = "tag", required = false) String tag) throws RemoteException, CredentialException {
 		String decodedProxy = decodeProxy(encodedProxy);
 		
-		return new ResponseEntity<List<GridJobInfo>>(gridJobHelper.getGridJobs(gridWorkerService, decodedProxy, tag), OK);
+		return new ResponseEntity<List<GridJobInfo>>(gridJobHelper.getGridJobs(gridWorkerService, Middleware.jsaga, decodedProxy, tag), OK);
 	}
 	
 	@RequestMapping(value = "/api/gridjobs/{jobId:.+}", method = GET, produces = APPLICATION_JSON_VALUE)
