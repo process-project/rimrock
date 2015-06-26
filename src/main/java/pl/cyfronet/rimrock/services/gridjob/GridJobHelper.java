@@ -25,6 +25,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import pl.cyfronet.rimrock.domain.GridJob.Middleware;
 import pl.cyfronet.rimrock.gridworkerapi.beans.GridJob;
 import pl.cyfronet.rimrock.gridworkerapi.beans.GridJobStatus;
 import pl.cyfronet.rimrock.gridworkerapi.service.GridWorkerService;
@@ -149,7 +150,7 @@ public class GridJobHelper {
 		return gridJob;
 	}
 
-	public GridJobInfo submitGridJob(GridJob gridJob, String proxyValue, String jobId, String tag, GridWorkerService gridWorkerService) throws
+	public GridJobInfo submitGridJob(GridJob gridJob, String proxyValue, String jobId, String tag, Middleware middleware, GridWorkerService gridWorkerService) throws
 			CredentialException, RemoteException {
 		GridJobInfo result = new GridJobInfo();
 		GridJobStatus status = gridWorkerService.submitGridJob(gridJob);
@@ -165,27 +166,39 @@ public class GridJobHelper {
 		dbGridJob.setUserLogin(proxyHelper.getUserLogin(proxyValue));
 		dbGridJob.setJdl(status.getJdl());
 		dbGridJob.setTag(tag);
+		dbGridJob.setMiddleware(middleware);
 		gridJobRepository.save(dbGridJob);
 		
 		return result;
 	}
 
-	public List<GridJobInfo> getGridJobs(GridWorkerService gridWorkerService, String decodedProxy, String tag) throws CredentialException, RemoteException {
+	public List<GridJobInfo> getGridJobs(GridWorkerService gridWorkerService, Middleware middleware, String decodedProxy, String tag) throws CredentialException, RemoteException {
 		List<GridJobInfo> result = new ArrayList<>();
 		List<pl.cyfronet.rimrock.domain.GridJob> gridJobs = null;
 		
 		if(tag != null) {
-			gridJobs = gridJobRepository.findByUserLoginAndTag(proxyHelper.getUserLogin(decodedProxy), tag);
+			gridJobs = gridJobRepository.findByUserLoginAndTagAndMiddleware(proxyHelper.getUserLogin(decodedProxy), tag, middleware);
 		} else {
-			gridJobs = gridJobRepository.findByUserLogin(proxyHelper.getUserLogin(decodedProxy));
+			gridJobs = gridJobRepository.findByUserLoginAndMiddleware(proxyHelper.getUserLogin(decodedProxy), middleware);
 		}
 		
 		for(pl.cyfronet.rimrock.domain.GridJob gridJob : gridJobs) {
-			GridJobStatus gridJobStatus = gridWorkerService.getGridJobStatus(gridJob.getNativeJobId(), decodedProxy);
+			GridJobStatus gridJobStatus = null;
 			GridJobInfo jobStatus = new GridJobInfo();
+			
+			try {
+				gridJobStatus = gridWorkerService.getGridJobStatus(gridJob.getNativeJobId(), decodedProxy);
+			} catch(Exception e) {
+				jobStatus.setError("Status check error: " + e.getMessage());
+			}
+			
 			jobStatus.setJobId(gridJob.getJobId());
 			jobStatus.setNativeJobId(gridJob.getNativeJobId());
-			jobStatus.setStatus(gridJobStatus.getStatus());
+			
+			if(gridJobStatus != null) {
+				jobStatus.setStatus(gridJobStatus.getStatus());
+			}
+			
 			jobStatus.setTag(gridJob.getTag());
 			result.add(jobStatus);
 		}
