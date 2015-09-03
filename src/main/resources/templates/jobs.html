@@ -156,6 +156,9 @@ curl -k -X POST --data '{"host":"zeus.cyfronet.pl", "script":"#!/bin/bash\necho 
 									<em class="label label-success">200</em>
 								</p>
 								<p>
+									<div class="alert alert-warning">
+										<span th:utext="#{jobs.get.history_information}"></span>
+									</div>
 									<strong th:text="|#{example.example}:|"></strong>
 								</p> <pre>
 [
@@ -171,6 +174,18 @@ curl -k -X POST --data '{"host":"zeus.cyfronet.pl", "script":"#!/bin/bash\necho 
     "stderr_path":"https://data.plgrid.pl/download//stderr/path",
     "status":"FINISHED",
     "tag":null
+  }, {
+    "job_id":"34532479.batch.grid.cyf-kr.edu.pl",
+    "stdout_path":"https://data.plgrid.pl/download//stdout/path",
+    "stderr_path":"https://data.plgrid.pl/download//stderr/path",
+    "status":"FINISHED",
+    "tag":null,
+    "nodes": "1",
+    "cores": "12",
+    "start_time": "2015-01-07 15:00:11",
+    "end_time": "2015-01-07 15:01:11",
+    "wall_time": "00:01:00",
+    "queue_time": "00:10:00"
   }
 ]
   					</pre>
@@ -245,6 +260,9 @@ curl -k -X GET --header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpSe
 									<em class="label label-success">200</em>
 								</p>
 								<p>
+									<div class="alert alert-warning">
+										<span th:utext="#{jobs.get.history_information}"></span>
+									</div>
 									<strong th:text="|#{example.example}:|"></strong>
 								</p> <pre>
 {
@@ -252,7 +270,13 @@ curl -k -X GET --header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpSe
   "stdout_path":"https://data.plgrid.pl/download//stdout/path",
   "stderr_path":"https://data.plgrid.pl/download//stderr/path",
   "status":"QUEUED",
-  "tag":null
+  "tag":null,
+  "nodes": "1",
+  "cores": "12",
+  "start_time": "2015-01-07 15:00:11",
+  "end_time": "2015-01-07 15:01:11",
+  "wall_time": "00:01:00",
+  "queue_time": "00:10:00"
 }
   					</pre>
 							</td>

@@ -1,5 +1,8 @@
 #!/bin/bash
 
+QSTAT=/usr/bin/qstat
+ZJH=/opt/cyfronet/bin/zeus-jobs-history
+
 function usage {
 	echo "Usage: $0"
 }
@@ -20,8 +23,8 @@ then
 fi
 
 #do a qstat, output == jobids in new lines
-output=$(qstat -u $USER | tail -n +6 | cut -f 1 -d "." 2>&1)
-#output=$(qstat | head | tail -n +6 | cut -f 1 -d "." 2>&1)
+output=$($QSTAT -u $USER | tail -n +6 | cut -f 1 -d "." 2>&1)
+#output=$($QSTAT | head | tail -n +6 | cut -f 1 -d "." 2>&1)
 
 if [ $? -ne 0 ]
 then
@@ -36,18 +39,13 @@ state["E"]="ERROR"
 state["C"]="COMPLETED"
 
 declare -a job_list=(${output[@]})
-if [ ${#job_list[@]} -gt 0 ]
-then
-	last_element=${job_list[${#job_list[@]}-1]}
-else
-	last_element=""
-fi
 
 text_output=""
+text_output_history=""
 
 for job_id in "${job_list[@]}"
 do
-	job_state=$(qstat -f $job_id | grep job_state | cut -f 2 -d "=" | tr -d " " 2>&1)
+	job_state=$($QSTAT -f $job_id | grep job_state | cut -f 2 -d "=" | tr -d " " 2>&1)
 
 	if [ $? -ne 0 ]
 	then
@@ -55,12 +53,41 @@ do
 		exit 3
 	fi
 	#todo: calculate state
-	text_output="${text_output}\t\t{\n\t\t\t\"job_id\": \"${job_id}.batch.grid.cyf-kr.edu.pl\",\n\t\t\t\"job_state\": \"${state[${job_state}]}\"\n\t\t}"
-	if [ "${job_id}" != "${last_element}" ]
-	then
-		text_output="${text_output},"
-	fi
-	text_output="${text_output}\n"
+	text_output="${text_output}\t\t{\n\t\t\t\"job_id\": \"${job_id}.batch.grid.cyf-kr.edu.pl\",\n\t\t\t\"job_state\": \"${state[${job_state}]}\"\n\t\t},\n"
 done
 
-echo -e "{\n\t\"statuses\": [\n${text_output}\t],\n\t\"result\": \"OK\"\n}"
+#check for past job data in zeus-jobs-history, jobs here should not collide with jobs gathered from qstat
+
+output=$($ZJH -d 31 -u $USER | tail -n +3 | cut -d " " -f 1 2>&1)
+
+
+declare -a job_list=(${output[@]})
+for job_id in "${job_list[@]}"
+do
+	zjho=$($ZJH -f $job_id | tail -n 19)
+	job_nodes=$(echo "$zjho" | grep "Nodes:" | tr -s " " | cut -d " " -f 2 2>&1)
+	job_cores=$(echo "$zjho" | grep "Cores:" | tr -s " " | cut -d " " -f 2 2>&1)
+	job_walltime=$(echo "$zjho" | grep "Walltime:" | tr -s " " | cut -d " " -f 2 2>&1)
+	job_queuetime=$(echo "$zjho" | grep "Waited for start:" | tr -s " " | cut -d " " -f 4 2>&1)
+	job_starttime=$(echo "$zjho" | grep "Start:" | tr -s " " | cut -d " " -f 2,3 2>&1)
+	job_endtime=$(echo "$zjho" | grep "End:" | tr -s " " | cut -d " " -f 2,3 2>&1)
+
+	text_output_history="${text_output_history}\t\t{\n\t\t\t\"job_id\": \"${job_id}.batch.grid.cyf-kr.edu.pl\",\n\t\t\t\"job_nodes\": \"${job_nodes}\",\n\t\t\t\"job_cores\": \"${job_cores}\",\n\t\t\t\"job_walltime\": \"${job_walltime}\",\n\t\t\t\"job_queuetime\": \"${job_queuetime}\",\n\t\t\t\"job_starttime\": \"${job_starttime}\",\n\t\t\t\"job_endtime\": \"${job_endtime}\"\n\t\t},\n"
+done
+
+#remove last ,
+if [ -n "$text_output" ]
+then
+	text_output="$(echo "$text_output" | rev | cut -c 4- | rev)"
+fi
+text_output="${text_output}\n"
+
+#remove last ,
+if [ -n "$text_output_history" ]
+then
+	text_output_history="$(echo "$text_output_history" | rev | cut -c 4- | rev)"
+fi
+text_output_history="${text_output_history}\n"
+
+
+echo -e "{\n\t\"statuses\": [\n${text_output}\t],\n\t\"history\": [\n${text_output_history}\t],\n\t\"result\": \"OK\"\n}"

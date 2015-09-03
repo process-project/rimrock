@@ -6,7 +6,7 @@ public class Status {
 	@JsonProperty("job_id") private String jobId;
 	@JsonProperty("job_state") private String status;
 	@JsonProperty("error_message") private String errorMessage;
-	
+
 	public String getJobId() {
 		return jobId;
 	}
@@ -25,4 +25,13 @@ public class Status {
 	public void setErrorMessage(String errorMessage) {
 		this.errorMessage = errorMessage;
 	}
+
+    @Override
+    public String toString() {
+        return "Status{" +
+                "jobId='" + jobId + '\'' +
+                ", status='" + status + '\'' +
+                ", errorMessage='" + errorMessage + '\'' +
+                '}';
+    }
 }

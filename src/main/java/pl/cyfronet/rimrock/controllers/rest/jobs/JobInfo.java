@@ -1,9 +1,11 @@
 package pl.cyfronet.rimrock.controllers.rest.jobs;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import pl.cyfronet.rimrock.domain.Job;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class JobInfo {
 	@JsonProperty("job_id")
 	private String jobId;
@@ -18,6 +20,18 @@ public class JobInfo {
 	private String status;
 	private String tag;
 
+	private String nodes;
+	private String cores;
+	@JsonProperty("wall_time")
+	private String wallTime;
+	@JsonProperty("queue_time")
+	private String queueTime;
+	@JsonProperty("start_time")
+	private String startTime;
+	@JsonProperty("end_time")
+	private String endTime;
+
+
 	public JobInfo() {
 	}
 
@@ -29,6 +43,12 @@ public class JobInfo {
 				job.getStandardOutputLocation());
 		this.stdErrPath = downloadUrl(plgdataUrl,
 				job.getStandardErrorLocation());
+		this.nodes = job.getNodes();
+		this.cores = job.getCores();
+		this.wallTime = job.getWallTime();
+		this.queueTime = job.getQueueTime();
+		this.startTime = job.getStartTime();
+		this.endTime = job.getEndTime();
 	}
 
 	public String getJobId() {
@@ -73,5 +93,53 @@ public class JobInfo {
 
 	public void setTag(String tag) {
 		this.tag = tag;
+	}
+
+	public String getNodes() {
+		return nodes;
+	}
+
+	public void setNodes(String nodes) {
+		this.nodes = nodes;
+	}
+
+	public String getCores() {
+		return cores;
+	}
+
+	public void setCores(String cores) {
+		this.cores = cores;
+	}
+
+	public String getWallTime() {
+		return wallTime;
+	}
+
+	public void setWallTime(String wallTime) {
+		this.wallTime = wallTime;
+	}
+
+	public String getQueueTime() {
+		return queueTime;
+	}
+
+	public void setQueueTime(String queueTime) {
+		this.queueTime = queueTime;
+	}
+
+	public String getStartTime() {
+		return startTime;
+	}
+
+	public void setStartTime(String startTime) {
+		this.startTime = startTime;
+	}
+
+	public String getEndTime() {
+		return endTime;
+	}
+
+	public void setEndTime(String endTime) {
+		this.endTime = endTime;
 	}
 }

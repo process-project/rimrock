@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class StatusResult {
 	@JsonProperty("error_message") private String errorMessage;
 	private List<Status> statuses;
+	private List<History> history;
 	private String result;
 	
 	public String getErrorMessage() {
@@ -26,5 +27,13 @@ public class StatusResult {
 	}
 	public void setResult(String result) {
 		this.result = result;
+	}
+
+	public List<History> getHistory() {
+		return history;
+	}
+
+	public void setHistory(List<History> history) {
+		this.history = history;
 	}
 }
