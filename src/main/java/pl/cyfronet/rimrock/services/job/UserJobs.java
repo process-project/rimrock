@@ -44,8 +44,8 @@ public class UserJobs {
 	private FileManager fileManager;
 
 	public UserJobs(String proxy, FileManagerFactory fileManagerFactory,
-			GsisshRunner runner, JobRepository jobRepository,
-			ProxyHelper proxyHelper, ObjectMapper mapper)
+					GsisshRunner runner, JobRepository jobRepository,
+					ProxyHelper proxyHelper, ObjectMapper mapper)
 			throws CredentialException, GSSException, KeyStoreException, CertificateException, IOException {
 		this.proxy = proxy;
 		this.userLogin = proxyHelper.getUserLogin(proxy);
@@ -57,22 +57,20 @@ public class UserJobs {
 
 	/**
 	 * Submit new job into queues system.
-	 * 
-	 * @param host Host where job will be submitted
+	 *
+	 * @param host             Host where job will be submitted
 	 * @param workingDirectory Job working directory.
-	 * @param script Job script payload.
-	 * 
+	 * @param script           Job script payload.
 	 * @return Information about job status, std oud and std err file paths.
-	 * 
 	 * @throws FileManagerException Thrown when there is not possible to transfer start job scripts.
-	 * @throws CredentialException Thrown where it is not possible to log in into given host using user credentials.
-	 * @throws RunException Thrown when any error connected with executing job submissions on given host occurs.
-	 * @throws CertificateException 
-	 * @throws KeyStoreException 
+	 * @throws CredentialException  Thrown where it is not possible to log in into given host using user credentials.
+	 * @throws RunException         Thrown when any error connected with executing job submissions on given host occurs.
+	 * @throws CertificateException
+	 * @throws KeyStoreException
 	 */
 	public Job submit(String host, String workingDirectory, String script, String tag) throws FileManagerException, CredentialException, RunException, KeyStoreException, CertificateException {
 		String rootPath = buildRootPath(host, workingDirectory, proxy);
-		log.debug("Starting {} user job in {}:{} ", new Object[] {userLogin, host, rootPath});
+		log.debug("Starting {} user job in {}:{} ", new Object[]{userLogin, host, rootPath});
 
 		fileManager.cp(rootPath + "script.sh", new ByteArrayResource(script.getBytes()));
 		fileManager.cp(rootPath + "start", new ClassPathResource("scripts/start"));
@@ -81,7 +79,7 @@ public class UserJobs {
 		processRunExceptions(result);
 
 		SubmitResult submitResult = readResult(result.getOutput(), SubmitResult.class);
-		
+
 		if ("OK".equals(submitResult.getResult())) {
 			return jobRepository.save(new Job(submitResult.getJobId(), "QUEUED", submitResult.getStandardOutputLocation(),
 					submitResult.getStandardErrorLocation(), userLogin, host, tag));
@@ -92,17 +90,15 @@ public class UserJobs {
 
 	/**
 	 * Update job statuses started on selected hosts.
-	 * 
+	 *
 	 * @param hosts Jobs started on these hosts will be updated.
-	 * @param tag 
-	 * 
+	 * @param tag
 	 * @return Updated jobs.
-	 * 
-	 * @throws CredentialException Thrown where it is not possible to log in into given host using user credentials.
+	 * @throws CredentialException  Thrown where it is not possible to log in into given host using user credentials.
 	 * @throws FileManagerException Thrown when there is not possible to transfer start job scripts.
-	 * @throws CertificateException 
-	 * @throws KeyStoreException 
-	 * @throws RunException 
+	 * @throws CertificateException
+	 * @throws KeyStoreException
+	 * @throws RunException
 	 */
 	public List<Job> update(List<String> hosts, String tag) throws CredentialException,
 			FileManagerException, RunException, KeyStoreException, CertificateException {
@@ -111,7 +107,8 @@ public class UserJobs {
 		}
 
 		List<Status> statuses = new ArrayList<Status>();
-		
+		List<History> histories = new ArrayList<History>();
+
 		for (String host : hosts) {
 			StatusResult statusResult = getStatusResult(host);
 
@@ -120,27 +117,43 @@ public class UserJobs {
 			}
 
 			statuses.addAll(statusResult.getStatuses());
+			histories.addAll(statusResult.getHistory());
 		}
 
 		List<Job> jobs = null;
-		
-		if(tag != null) {
+
+		if (tag != null) {
 			jobs = jobRepository.findByUsernameAndTagOnHosts(userLogin, tag, hosts);
 
 		} else {
 			jobs = jobRepository.findByUsernameOnHosts(userLogin, hosts);
 		}
-		
-		Map<String, Status> mappedStatusJobIds = statuses.stream()
-				.collect(Collectors.toMap(Status::getJobId, Function.<Status> identity()));
 
-		for(Job job : jobs) {
+		Map<String, Status> mappedStatusJobIds = statuses.stream()
+				.collect(Collectors.toMap(Status::getJobId, Function.<Status>identity()));
+
+		Map<String, History> mappedHistoryJobIds = histories.stream()
+				.collect(Collectors.toMap(History::getJobId, Function.<History>identity()));
+
+		for (Job job : jobs) {
 			Status status = mappedStatusJobIds.get(job.getJobId());
-			
-			if(!Arrays.asList("FINISHED", "ABORTED").contains(job.getStatus())) {
-				job.setStatus(status != null ? status.getStatus() : "FINISHED");
+			History history = mappedHistoryJobIds.get(job.getJobId());
+
+			if (!Arrays.asList("FINISHED", "ABORTED").contains(job.getStatus())) {
+				job.setStatus((status != null && status.getStatus() != null) ? status.getStatus() : "FINISHED");
 				jobRepository.save(job);
 			}
+
+			if (Arrays.asList("FINISHED", "ABORTED").contains(job.getStatus()) && job.getCores() == null && history != null) {
+				job.setNodes(history.getJobNodes());
+				job.setCores(history.getJobCores());
+				job.setWallTime(history.getJobWalltime());
+				job.setQueueTime(history.getJobQueuetime());
+				job.setStartTime(history.getJobStarttime());
+				job.setEndTime(history.getJobEndtime());
+				jobRepository.save(job);
+			}
+
 		}
 
 		return jobs;
@@ -149,21 +162,20 @@ public class UserJobs {
 	/**
 	 * Delete job. If job is in state different then "FINISHED", than it is also
 	 * deleted from the infrastructure.
-	 * 
+	 *
 	 * @param jobId Job identifier.
-	 * 
 	 * @throws JobNotFoundException Thrown when job is not found in the database.
-	 * @throws CredentialException Thrown where it is not possible to log in into given host using user credentials.
+	 * @throws CredentialException  Thrown where it is not possible to log in into given host using user credentials.
 	 * @throws FileManagerException Thrown when there is not possible to transfer start job scripts.
-	 * @throws CertificateException 
-	 * @throws KeyStoreException 
-	 * @throws RunException 
+	 * @throws CertificateException
+	 * @throws KeyStoreException
+	 * @throws RunException
 	 */
 	public void delete(String jobId) throws JobNotFoundException, CredentialException, FileManagerException, RunException, KeyStoreException, CertificateException {
 		Job job = abortJob(jobId);
 		jobRepository.delete(job);
 	}
-	
+
 	public void abort(String jobId) throws CredentialException, RunException, FileManagerException, JobNotFoundException, KeyStoreException, CertificateException {
 		Job job = abortJob(jobId);
 		job.setStatus("ABORTED");
@@ -173,11 +185,11 @@ public class UserJobs {
 	private Job abortJob(String jobId) throws JobNotFoundException, FileManagerException, CredentialException, RunException, KeyStoreException, CertificateException {
 		Job job = jobRepository.findOneByJobId(jobId);
 
-		if(job == null) {
+		if (job == null) {
 			throw new JobNotFoundException(jobId);
 		}
 
-		if(!"FINISHED".equals(job.getStatus())) {
+		if (!"FINISHED".equals(job.getStatus())) {
 			String host = job.getHost();
 			String rootPath = PathHelper.getRootPath(host, userLogin);
 			fileManager.cp(rootPath + ".rimrock/stop", new ClassPathResource("scripts/stop"));
@@ -189,9 +201,9 @@ public class UserJobs {
 	}
 
 	public Job get(String jobId) {
-		return jobRepository.findOneByJobIdAndUserLogin(jobId, userLogin);		
+		return jobRepository.findOneByJobIdAndUserLogin(jobId, userLogin);
 	}
-	
+
 	private <T> T readResult(String output, Class<T> klass) {
 		try {
 			return mapper.readValue(output, klass);
@@ -221,7 +233,7 @@ public class UserJobs {
 		try {
 			RunResults runResults = runner.run(host, proxy, command, timeout);
 			log.debug("Run results for command [{}] are the following: {}", command, runResults);
-			
+
 			return runResults;
 		} catch (InvalidStateException | GSSException | IOException
 				| InterruptedException e) {
