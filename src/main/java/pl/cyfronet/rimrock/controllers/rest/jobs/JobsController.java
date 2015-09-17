@@ -93,10 +93,12 @@ public class JobsController {
 		if(job == null) {
 			throw new JobNotFoundException(jobId);
 		}
-			
-		manager.update(Arrays.asList(job.getHost()), null);
-		job = manager.get(jobId);
-		
+
+		if (!Arrays.asList("FINISHED", "ABORTED").contains(job.getStatus()) || job.getCores() == null) {
+			manager.update(Arrays.asList(job.getHost()), null);
+			job = manager.get(jobId);
+		}
+
 		return new ResponseEntity<JobInfo>(new JobInfo(job, plgDataUrl), OK);
 	}
 

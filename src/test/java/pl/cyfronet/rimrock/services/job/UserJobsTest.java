@@ -149,10 +149,14 @@ public class UserJobsTest {
 
 		RunResults zeusResult = new RunResults();
 		zeusResult
-				.setOutput("{\"statuses\": [{\"job_id\": \"1\", \"job_state\": \"RUNNING\"}], \"result\": \"OK\"}");
+				.setOutput("{\"statuses\": [{\"job_id\": \"1\", \"job_state\": \"RUNNING\"}]," +
+						"\"history\": []," +
+						"\"result\": \"OK\"}");
 
 		RunResults uiResult = new RunResults();
-		uiResult.setOutput("{\"statuses\": [{\"job_id\": \"3\", \"job_state\": \"ERROR\"}], \"result\": \"OK\"}");
+		uiResult.setOutput("{\"statuses\": [{\"job_id\": \"3\", \"job_state\": \"ERROR\"}]," +
+				"\"history\": []," +
+				"\"result\": \"OK\"}");
 
 		when(
 				runner.run(
@@ -175,6 +179,46 @@ public class UserJobsTest {
 		assertEquals("QUEUED", jobStatus("4"));
 		assertEquals("QUEUED", jobStatus("5"));
 	}
+
+	@Test
+	public void testUpdateJobHistory() throws Exception {
+		String jobId = "1";
+		createJob(jobId, userLogin, "zeus.cyfronet.pl", "FINISHED");
+
+		RunResults zeusResult = new RunResults();
+		zeusResult
+				.setOutput("{\"statuses\": [], " +
+						"\"history\": [{" +
+						"\"job_id\": \"1\"," +
+						"\"job_nodes\": \"1\"," +
+						"\"job_cores\": \"12\"," +
+						"\"job_walltime\": \"00:00:04\"," +
+						"\"job_queuetime\": \"00:00:25\"," +
+						"\"job_starttime\": \"2015-09-03 10:26:37\"," +
+						"\"job_endtime\": \"2015-09-03 10:26:40\"" +
+						"}], " +
+						"\"result\": \"OK\"}");
+
+		when(
+				runner.run(
+						eq("zeus.cyfronet.pl"),
+						eq(proxy),
+						eq("cd /people/userLogin/.rimrock; chmod +x status; ./status"),
+						anyInt())).thenReturn(zeusResult);
+
+		userJobs.update(Arrays.asList("zeus.cyfronet.pl"), null);
+
+		Job job = jobRepository.findOneByJobId(jobId);
+
+		assertEquals("FINISHED", job.getStatus());
+		assertEquals("1", job.getNodes());
+		assertEquals("12", job.getCores());
+		assertEquals("00:00:04", job.getWallTime());
+		assertEquals("00:00:25", job.getQueueTime());
+		assertEquals("2015-09-03 10:26:37", job.getStartTime());
+		assertEquals("2015-09-03 10:26:40", job.getEndTime());
+	}
+
 
 	@Test
 	public void testUpdateJobStatusesWhenNoHosts() throws Exception {
@@ -229,9 +273,13 @@ public class UserJobsTest {
 		
 		assertNull(job);
 	}
-	
+
 	private Job createJob(String id, String username, String hostname) {
-		Job job = new Job(id, "QUEUED", "", "", username, hostname, null);
+		return createJob(id, username, hostname, "QUEUED");
+	}
+
+	private Job createJob(String id, String username, String hostname, String status) {
+		Job job = new Job(id, status, "", "", username, hostname, null);
 		jobRepository.save(job);
 
 		return job;
