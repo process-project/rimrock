@@ -57,9 +57,12 @@ do
 done
 
 #check for past job data in zeus-jobs-history, jobs here should not collide with jobs gathered from qstat
+#for now the monitoring user is excluded to make the monitoring tests work
+
+if [ "plgmonitoring" != $USER ]
+then
 
 output=$($ZJH -d 31 -u $USER | tail -n +3 | cut -d " " -f 1 2>&1)
-
 
 declare -a job_list=(${output[@]})
 for job_id in "${job_list[@]}"
@@ -74,6 +77,8 @@ do
 
 	text_output_history="${text_output_history}\t\t{\n\t\t\t\"job_id\": \"${job_id}.batch.grid.cyf-kr.edu.pl\",\n\t\t\t\"job_nodes\": \"${job_nodes}\",\n\t\t\t\"job_cores\": \"${job_cores}\",\n\t\t\t\"job_walltime\": \"${job_walltime}\",\n\t\t\t\"job_queuetime\": \"${job_queuetime}\",\n\t\t\t\"job_starttime\": \"${job_starttime}\",\n\t\t\t\"job_endtime\": \"${job_endtime}\"\n\t\t},\n"
 done
+
+fi
 
 #remove last ,
 if [ -n "$text_output" ]
