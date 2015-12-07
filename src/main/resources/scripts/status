@@ -49,8 +49,9 @@ do
 
 	if [ ${PIPESTATUS[0]} -ne 0 ]
 	then
-		report_error "qstat error! $job_state"
-		exit 3
+		#report_error "qstat error! $job_state"
+		#exit 3
+		continue
 	fi
 	#todo: calculate state
 	text_output="${text_output}\t\t{\n\t\t\t\"job_id\": \"${job_id}.batch.grid.cyf-kr.edu.pl\",\n\t\t\t\"job_state\": \"${state[${job_state}]}\"\n\t\t},\n"
