@@ -131,7 +131,7 @@ public class RimrockApplication extends WebMvcConfigurerAdapter {
 	@Bean
 	@Qualifier("qcg")
 	GridWorkerServer qcgGridWorker() {
-		return new GridWorkerServer("rimrock-qcg", jSagaGridWorkerVersion, true);
+		return new GridWorkerServer("rimrock-qcg", qcgGridWorkerVersion, true);
 	}
 	
 	@Bean
