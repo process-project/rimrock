@@ -26,7 +26,7 @@ fi
 output=$($QSTAT -u $USER | tail -n +6 | cut -f 1 -d "." 2>&1)
 #output=$($QSTAT | head | tail -n +6 | cut -f 1 -d "." 2>&1)
 
-if [ $? -ne 0 ]
+if [ ${PIPESTATUS[0]} -ne 0 ]
 then
 	report_error "qstat listing error! $output"
 	exit 2
@@ -47,10 +47,11 @@ for job_id in "${job_list[@]}"
 do
 	job_state=$($QSTAT -f $job_id | grep job_state | cut -f 2 -d "=" | tr -d " " 2>&1)
 
-	if [ $? -ne 0 ]
+	if [ ${PIPESTATUS[0]} -ne 0 ]
 	then
-		report_error "qstat error! $job_state"
-		exit 3
+		#report_error "qstat error! $job_state"
+		#exit 3
+		continue
 	fi
 	#todo: calculate state
 	text_output="${text_output}\t\t{\n\t\t\t\"job_id\": \"${job_id}.batch.grid.cyf-kr.edu.pl\",\n\t\t\t\"job_state\": \"${state[${job_state}]}\"\n\t\t},\n"
