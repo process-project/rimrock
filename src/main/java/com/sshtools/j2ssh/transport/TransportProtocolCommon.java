@@ -415,8 +415,8 @@ public abstract class TransportProtocolCommon
       startBinaryPacketProtocol();
     }
     catch (Throwable e) {
-	log.info("The Transport Protocol thread threw an exception", e);
-	e.printStackTrace();
+    	log.info("The Transport Protocol thread threw an exception", e);
+    	
       if (e instanceof IOException) {
 	  state.setLastError( (IOException) e);
       } else {
