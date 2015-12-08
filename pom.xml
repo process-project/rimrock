@@ -29,7 +29,7 @@
 		<gatling.version>2.1.7</gatling.version>
 		<jglobus.version>2.1.0</jglobus.version>
 		<rimrock.api.version>0.1.1</rimrock.api.version>
-		<jsaga.grid.worker.version>0.1.1</jsaga.grid.worker.version>
+		<jsaga.grid.worker.version>0.1.2</jsaga.grid.worker.version>
 		<qcg.grid.worker.version>0.1.1</qcg.grid.worker.version>
 	</properties>
 	
