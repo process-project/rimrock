@@ -1,3 +1,11 @@
+v 1.4.5
+  - Internal gatling tests improved
+  - Unnecessary stack trace print removed
+  - Memory leak when importing CA certificates fixed 
+
+v 1.4.4
+  - Job history parsing improved for monitoring accounts
+
 v 1.4.3
   - Additional job parameters introduced
 
