@@ -204,7 +204,7 @@
 				<artifactId>gatling-maven-plugin</artifactId>
 				<version>${gatling.version}</version>
 				<configuration>
-					<simulationClass>test.RimrocTestSimulation</simulationClass>
+					<simulationClass>test.RimrockTestSimulation</simulationClass>
 				</configuration>
 			</plugin>
 			<plugin>
