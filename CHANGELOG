@@ -1,3 +1,6 @@
+v 1.4.6
+  - Test instance of local LDAP server started on random port to minimize bind exceptions
+
 v 1.4.5
   - Internal gatling tests improved
   - Unnecessary stack trace print removed
