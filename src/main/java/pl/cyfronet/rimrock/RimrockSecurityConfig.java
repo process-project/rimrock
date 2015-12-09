@@ -46,6 +46,7 @@ import org.springframework.security.ldap.DefaultSpringSecurityContextSource;
 import pl.cyfronet.rimrock.providers.ldap.CustomErrorAttributes;
 import pl.cyfronet.rimrock.providers.ldap.LdapAuthenticationProvider;
 import pl.cyfronet.rimrock.providers.ldap.ProxyHeaderPreAuthenticationProcessingFilter;
+import pl.cyfronet.rimrock.util.PortFinder;
 
 @Configuration
 @EnableWebMvcSecurity
@@ -148,7 +149,7 @@ public class RimrockSecurityConfig extends WebSecurityConfigurerAdapter {
 	}
 	
 	private int startLocalLdapServer() throws Exception, InvalidNameException, NamingException, IOException {
-		int serverPort = 8081;
+		int serverPort = PortFinder.getFreePort();
 		
 		if(localLdapServer == null) {
 			DefaultDirectoryService service = new DefaultDirectoryService();

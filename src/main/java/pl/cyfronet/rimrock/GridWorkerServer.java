@@ -21,6 +21,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.io.ClassPathResource;
 
+import pl.cyfronet.rimrock.util.PortFinder;
+
 public class GridWorkerServer implements InitializingBean {
 	private static final Logger log = LoggerFactory.getLogger(GridWorkerServer.class);
 	
@@ -51,7 +53,7 @@ public class GridWorkerServer implements InitializingBean {
 		
 		if(jarResource.exists()) {
 			Files.copy(jarResource.getInputStream(), Paths.get(dir.getAbsolutePath(), jarName), StandardCopyOption.REPLACE_EXISTING);
-			serverPort = getFreePort();
+			serverPort = PortFinder.getFreePort();
 			
 			List<String> command = null;
 			
@@ -145,17 +147,5 @@ public class GridWorkerServer implements InitializingBean {
 	
 	public int getRegistryPort() {
 		return serverPort;
-	}
-	
-	private int getFreePort() throws IOException {
-		ServerSocket socket = null;
-		
-		try {
-			socket = new ServerSocket(0);
-			
-			return socket.getLocalPort();
-		} finally {
-			socket.close();
-		}
 	}
 }
