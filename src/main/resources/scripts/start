@@ -2,6 +2,12 @@
 
 # $1 == job_script
 
+RM="unknown"
+QSUB=""
+QSTAT="qstat"
+SBATCH=""
+SCONTROL="scontrol"
+
 function usage {
 	echo "Usage: $0 job_script"
 }
@@ -14,36 +20,96 @@ function report_success {
 	echo -e "{\n\t\"result\": \"OK\",\n\t\"job_id\": \"$1\",\n\t\"standard_output\":\"$2\",\n\t\"standard_error\": \"$3\"\n}"
 }
 
+function detect_rm {
+	QSUB=$(which qsub 2>/dev/null)
+	if [ $? -eq 0 ]
+	then
+		RM="torque"
+	fi
+
+	SBATCH=$(which sbatch 2>/dev/null)
+	if [ $? -eq 0 ]
+	then
+		RM="slurm"
+	fi
+}
+
+function submit_torque {
+	output=$(${QSUB} $1 2>&1)
+
+	if [ $? -ne 0 ]
+	then
+		report_error "qsub error! $output"
+		exit 12
+	fi
+
+	job_id=$(echo "$output" | tail -n 1)
+
+	#ask for job details (lets hope it doesn't end too fast)
+	output=$(${QSTAT} -xf $job_id 2>&1)
+
+	if [ $? -ne 0 ]
+	then
+		report_error "qstat error! $output"
+		exit 13
+	fi
+
+	outline=$(echo "$output" | xmllint --format - | grep -oPm1 "(?<=<Output_Path>)[^<]+")
+	errline=$(echo "$output" | xmllint --format - | grep -oPm1 "(?<=<Error_Path>)[^<]+")
+
+	out=$(echo $outline | cut -f 2 -d ":")
+	err=$(echo $errline | cut -f 2 -d ":")
+
+	report_success $job_id $out $err
+}
+
+function submit_slurm {
+	output=$(${SBATCH} $1 2>&1)
+	if [ $? -ne 0 ]
+	then
+		report_error "sbatch error! $output"
+		exit 22
+	fi
+
+	job_id=$(echo "$output" | cut -d " " -f 4)
+
+	#ask for job details
+	output=$(script -eqfc "${SCONTROL} show job $job_id" 2>&1)
+
+	if [ $? -ne 0 ]
+	then
+		report_error "scontrol error! $output"
+		exit 23
+	fi
+
+	prefix=""
+	if [ $(hostname -a) == "login01.prometheus" ]
+	then
+        prefix="/prometheus"
+	fi
+
+	out=$prefix$(echo "$output" | grep StdOut | cut -c 11- | tr -d '[[:space:]]')
+	err=$prefix$(echo "$output" | grep StdErr | cut -c 11- | tr -d '[[:space:]]')
+
+	report_success $job_id $out $err
+}
+
 if [ -z "$1" ]
 then
 	usage
 	exit 1
 fi
 
-#do a qsub
-output=$(qsub $1 2>&1)
+detect_rm
 
-if [ $? -ne 0 ]
+if [ "$RM" == "torque" ]
 then
-	report_error "qsub error! $output"
+	submit_torque $1
+elif [ "$RM" == "slurm" ]
+then
+	submit_slurm $1
+else
+	report_error "Unable to determine resource manager"
 	exit 2
 fi
 
-job_id=$(echo "$output" | tail -n 1)
-
-#ask for job details (lets hope it doesn't end too fast)
-output=$(qstat -xf $job_id 2>&1)
-
-if [ $? -ne 0 ]
-then
-	report_error "qstat error! $output"
-	exit 3
-fi
-
-outline=$(echo "$output" | xmllint --format - | grep -oPm1 "(?<=<Output_Path>)[^<]+")
-errline=$(echo "$output" | xmllint --format - | grep -oPm1 "(?<=<Error_Path>)[^<]+")
-
-out=$(echo $outline | cut -f 2 -d ":")
-err=$(echo $errline | cut -f 2 -d ":")
-
-report_success $job_id $out $err

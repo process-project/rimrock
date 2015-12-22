@@ -4,6 +4,8 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Base64;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -19,6 +21,8 @@ public class FileManager {
 
 	private String proxyPayload;
 	private String plgridDataUrl;
+
+	private static final Logger log = LoggerFactory.getLogger(FileManager.class);
 	
 	RestTemplate restTemplate;
 	
@@ -34,9 +38,12 @@ public class FileManager {
 		values.add("recursive", true);
 		
 		HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(values, getHeders());
+		log.debug("REQUEST: {}", request.toString());
 		try {
-			restTemplate.postForEntity(uploadUrl(getFileDir(filePath)), request, null);
-		} catch(HttpClientErrorException e) {		
+			String fileDir = getFileDir(filePath);
+			log.debug("uploadUrl: {}", uploadUrl(fileDir));
+			restTemplate.postForEntity(uploadUrl(fileDir), request, null);
+		} catch(HttpClientErrorException e) {
 			throw new FileManagerException(e.getResponseBodyAsString());
 		}
 	}

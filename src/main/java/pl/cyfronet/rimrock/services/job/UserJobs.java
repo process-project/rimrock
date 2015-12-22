@@ -69,13 +69,15 @@ public class UserJobs {
 	 * @throws KeyStoreException
 	 */
 	public Job submit(String host, String workingDirectory, String script, String tag) throws FileManagerException, CredentialException, RunException, KeyStoreException, CertificateException {
-		String rootPath = buildRootPath(host, workingDirectory, proxy);
-		log.debug("Starting {} user job in {}:{} ", new Object[]{userLogin, host, rootPath});
+		PathHelper pathHelper = new PathHelper(host, userLogin);
+		String transferPath = buildPath(pathHelper.getTransferPath(), workingDirectory);
+		String fileRootPath = buildPath(pathHelper.getFileRootPath(), workingDirectory);
+		log.debug("Starting {} user job in {}:{} ", new Object[]{userLogin, host, transferPath});
 
-		fileManager.cp(rootPath + "script.sh", new ByteArrayResource(script.getBytes()));
-		fileManager.cp(rootPath + "start", new ClassPathResource("scripts/start"));
+		fileManager.cp(transferPath + ".rimrock/script.sh", new ByteArrayResource(script.getBytes()));
+		fileManager.cp(transferPath + ".rimrock/start", new ClassPathResource("scripts/start"));
 
-		RunResults result = run(host, String.format("cd %s; chmod +x start; ./start script.sh", rootPath), timeout);
+		RunResults result = run(host, String.format("cd %s.rimrock/; chmod +x start; ./start script.sh", fileRootPath), timeout);
 		processRunExceptions(result);
 
 		SubmitResult submitResult = readResult(result.getOutput(), SubmitResult.class);
@@ -191,10 +193,10 @@ public class UserJobs {
 
 		if (!"FINISHED".equals(job.getStatus())) {
 			String host = job.getHost();
-			String rootPath = PathHelper.getRootPath(host, userLogin);
-			fileManager.cp(rootPath + ".rimrock/stop", new ClassPathResource("scripts/stop"));
+			PathHelper pathHelper = new PathHelper(host, userLogin);
+			fileManager.cp(pathHelper.getTransferPath() + ".rimrock/stop", new ClassPathResource("scripts/stop"));
 
-			RunResults result = run(host, String.format("cd %s.rimrock; chmod +x stop; ./stop %s", rootPath, jobId), timeout);
+			RunResults result = run(host, String.format("cd %s.rimrock; chmod +x stop; ./stop %s", pathHelper.getFileRootPath(), jobId), timeout);
 			processRunExceptions(result);
 		}
 		return job;
@@ -214,9 +216,9 @@ public class UserJobs {
 
 	private StatusResult getStatusResult(String host)
 			throws CredentialException, RunException, FileManagerException, KeyStoreException, CertificateException {
-		String rootPath = PathHelper.getRootPath(host, userLogin);
-		fileManager.cp(rootPath + ".rimrock/status", new ClassPathResource("scripts/status"));
-		RunResults result = run(host, String.format("cd %s.rimrock; chmod +x status; ./status", rootPath), timeout);
+		PathHelper pathHelper = new PathHelper(host, userLogin);
+		fileManager.cp(pathHelper.getTransferPath() + ".rimrock/status", new ClassPathResource("scripts/status"));
+		RunResults result = run(host, String.format("cd %s.rimrock; chmod +x status; ./status", pathHelper.getFileRootPath()), timeout);
 
 		if (result.isTimeoutOccured() || result.getExitCode() != 0) {
 			StatusResult statusResult = new StatusResult();
@@ -241,14 +243,14 @@ public class UserJobs {
 		}
 	}
 
-	private String buildRootPath(String host, String workingDirectory, String proxy) throws CredentialException {
-		String rootPath = workingDirectory == null ? PathHelper.getRootPath(host, userLogin) : workingDirectory;
+	private String buildPath(String rootPath, String workingDirectory) throws CredentialException {
+		String path = workingDirectory == null ? rootPath : workingDirectory;
 
-		if (!rootPath.endsWith("/")) {
-			rootPath = rootPath + "/";
+		if (!path.endsWith("/")) {
+			path = path + "/";
 		}
 
-		return rootPath;
+		return path;
 	}
 
 	private void processRunExceptions(RunResults result) {

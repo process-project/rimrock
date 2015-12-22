@@ -98,8 +98,9 @@ public class InteractiveRunController {
 		FileManager fileManager = fileManagerFactory.get(decodedProxy);
 		String certFilePath = ".rimrock/TERENASSLCA-" + processId;
 		String scriptFilePath = ".rimrock/iwrapper-" + processId + ".py";
-		fileManager.cp(PathHelper.getRootPath(request.getHost(), proxyHelper.getUserLogin(decodedProxy)) + certFilePath, new ClassPathResource("certs/TERENASSLCA"));
-		fileManager.cp(PathHelper.getRootPath(request.getHost(), proxyHelper.getUserLogin(decodedProxy)) + scriptFilePath, new ClassPathResource("scripts/iwrapper.py"));
+		PathHelper pathHelper = new PathHelper(request.getHost(), proxyHelper.getUserLogin(decodedProxy));
+		fileManager.cp(pathHelper.getTransferPath() + certFilePath, new ClassPathResource("certs/TERENASSLCA"));
+		fileManager.cp(pathHelper.getTransferPath() + scriptFilePath, new ClassPathResource("scripts/iwrapper.py"));
 		
 		String secret = UUID.randomUUID().toString();
 		String internalUrl = MvcUriComponentsBuilder.fromMethodCall(on(InteractiveRunController.class).update(null)).build().toUriString();

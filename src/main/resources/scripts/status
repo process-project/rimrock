@@ -1,6 +1,7 @@
 #!/bin/bash
 
-QSTAT=/usr/bin/qstat
+QSTAT=''
+SQUEUE=''
 ZJH=/opt/cyfronet/bin/zeus-jobs-history
 
 function usage {
@@ -11,10 +12,154 @@ function report_error {
 	echo -e "{\n\t\"result\": \"ERROR\",\n\t\"error_message\": \"$1\"\n}"
 }
 
-function report_success {
-	echo -e "{\n\t\"result\": \"OK\",\n\t\"job_id\": \"$2\",\n\t\"stadard_output\":\"$2\"\n\t\"standard_error\": \"$3\"\n}"
-	echo ${1[@]}
+function detect_rm {
+	QSTAT=$(which qstat 2>/dev/null)
+	if [ $? -eq 0 ]
+	then
+		RM="torque"
+	fi
+
+	SQUEUE=$(which squeue 2>/dev/null)
+	if [ $? -eq 0 ]
+	then
+		RM="slurm"
+	fi
 }
+
+function status_torque {
+	#do a qstat, output == jobids in new lines
+	output=$($QSTAT -u $USER | tail -n +6 | cut -f 1 -d "." 2>&1)
+	#output=$($QSTAT | head | tail -n +6 | cut -f 1 -d "." 2>&1)
+
+	if [ ${PIPESTATUS[0]} -ne 0 ]
+	then
+		report_error "qstat listing error! $output"
+		exit 12
+	fi
+
+	declare -A state
+	state["Q"]="QUEUED"
+	state["R"]="RUNNING"
+	state["E"]="ERROR"
+	state["C"]="COMPLETED"
+
+	declare -a job_list=(${output[@]})
+
+	text_output=""
+	text_output_history=""
+
+	for job_id in "${job_list[@]}"
+	do
+		job_state=$($QSTAT -f $job_id | grep job_state | cut -f 2 -d "=" | tr -d " " 2>&1)
+
+		if [ $? -ne 0 ]
+		then
+			#report_error "qstat error! $job_state"
+			#exit 13
+			continue
+		fi
+		text_output="${text_output}\t\t{\n\t\t\t\"job_id\": \"${job_id}.batch.grid.cyf-kr.edu.pl\",\n\t\t\t\"job_state\": \"${state[${job_state}]}\"\n\t\t},\n"
+	done
+
+	#check for past job data in zeus-jobs-history, jobs here should not collide with jobs gathered from qstat
+	#for now the monitoring user is excluded to make the monitoring tests work
+
+	if [ "plgmonitoring" != $USER ]
+	then
+		output=$($ZJH -d 31 -u $USER | tail -n +3 | cut -d " " -f 1 2>&1)
+
+		declare -a job_list=(${output[@]})
+		for job_id in "${job_list[@]}"
+		do
+			zjho=$($ZJH -f $job_id | tail -n 19)
+			job_nodes=$(echo "$zjho" | grep "Nodes:" | tr -s " " | cut -d " " -f 2 2>&1)
+			job_cores=$(echo "$zjho" | grep "Cores:" | tr -s " " | cut -d " " -f 2 2>&1)
+			job_walltime=$(echo "$zjho" | grep "Walltime:" | tr -s " " | cut -d " " -f 2 2>&1)
+			job_queuetime=$(echo "$zjho" | grep "Waited for start:" | tr -s " " | cut -d " " -f 4 2>&1)
+			job_starttime=$(echo "$zjho" | grep "Start:" | tr -s " " | cut -d " " -f 2,3 2>&1)
+			job_endtime=$(echo "$zjho" | grep "End:" | tr -s " " | cut -d " " -f 2,3 2>&1)
+
+			text_output_history="${text_output_history}\t\t{\n\t\t\t\"job_id\": \"${job_id}.batch.grid.cyf-kr.edu.pl\",\n\t\t\t\"job_nodes\": \"${job_nodes}\",\n\t\t\t\"job_cores\": \"${job_cores}\",\n\t\t\t\"job_walltime\": \"${job_walltime}\",\n\t\t\t\"job_queuetime\": \"${job_queuetime}\",\n\t\t\t\"job_starttime\": \"${job_starttime}\",\n\t\t\t\"job_endtime\": \"${job_endtime}\"\n\t\t},\n"
+		done
+	fi
+
+	#remove last ,
+	if [ -n "$text_output" ]
+	then
+		text_output="$(echo "$text_output" | rev | cut -c 4- | rev)"
+	fi
+	text_output="${text_output}\n"
+
+	#remove last ,
+	if [ -n "$text_output_history" ]
+	then
+		text_output_history="$(echo "$text_output_history" | rev | cut -c 4- | rev)"
+	fi
+	text_output_history="${text_output_history}\n"
+
+
+	echo -e "{\n\t\"statuses\": [\n${text_output}\t],\n\t\"history\": [\n${text_output_history}\t],\n\t\"result\": \"OK\"\n}"
+}
+
+function status_slurm {
+	output=$(${SQUEUE} -h -u $USER -o %A)
+
+	if [ $? -ne 0 ]
+	then
+		report_error "squeue listing error! $output"
+		exit 12
+	fi
+
+	#translate slurm states to pbs states
+	declare -A state
+	state["PENDING"]="QUEUED"
+	state["RUNNING"]="RUNNING"
+	state["SUSPENDED"]="RUNNING"
+	state["CANCELLED"]="RUNNING"
+	state["COMPLETING"]="RUNNING"
+	state["COMPLETED"]="RUNNING"
+	state["CONFIGURING"]="RUNNING"
+	state["FAILED"]="ERROR"
+	state["TIMEOUT"]="ERROR"
+	state["PREEMPTED"]="ERROR"
+	state["NODE_FAIL"]="ERROR"
+	state["SPECIAL_EXIT"]="ERROR"
+
+	declare -a job_list=(${output[@]})
+
+	text_output=""
+	text_output_history=""
+
+	for job_id in "${job_list[@]}"
+	do
+		job_state=$($SQUEUE -h -u $USER -o "%T" -j $job_id 2>&1 | tr -d '[[:space:]]')
+
+		if [ $? -ne 0 ]
+		then
+			report_error "squeue error! $job_state"
+			exit 13
+		fi
+		text_output="${text_output}\t\t{\n\t\t\t\"job_id\": \"${job_id}\",\n\t\t\t\"job_state\": \"${state[${job_state}]}\"\n\t\t},\n"
+	done
+
+	#remove last ,
+	if [ -n "$text_output" ]
+	then
+		text_output="$(echo "$text_output" | rev | cut -c 4- | rev)"
+	fi
+	text_output="${text_output}\n"
+
+	#remove last ,
+	if [ -n "$text_output_history" ]
+	then
+		text_output_history="$(echo "$text_output_history" | rev | cut -c 4- | rev)"
+	fi
+	text_output_history="${text_output_history}\n"
+
+
+	echo -e "{\n\t\"statuses\": [\n${text_output}\t],\n\t\"history\": [\n${text_output_history}\t],\n\t\"result\": \"OK\"\n}"
+}
+
 
 if [ -n "$1" ]
 then
@@ -22,78 +167,16 @@ then
 	exit 1
 fi
 
-#do a qstat, output == jobids in new lines
-output=$($QSTAT -u $USER | tail -n +6 | cut -f 1 -d "." 2>&1)
-#output=$($QSTAT | head | tail -n +6 | cut -f 1 -d "." 2>&1)
+detect_rm
 
-if [ ${PIPESTATUS[0]} -ne 0 ]
+if [ "$RM" == "torque" ]
 then
-	report_error "qstat listing error! $output"
+	status_torque
+elif [ "$RM" == "slurm" ]
+then
+	status_slurm
+else
+	report_error "Unable to determine resource manager"
 	exit 2
 fi
 
-declare -A state
-state["Q"]="QUEUED"
-state["R"]="RUNNING"
-state["E"]="ERROR"
-state["C"]="COMPLETED"
-
-declare -a job_list=(${output[@]})
-
-text_output=""
-text_output_history=""
-
-for job_id in "${job_list[@]}"
-do
-	job_state=$($QSTAT -f $job_id | grep job_state | cut -f 2 -d "=" | tr -d " " 2>&1)
-
-	if [ ${PIPESTATUS[0]} -ne 0 ]
-	then
-		#report_error "qstat error! $job_state"
-		#exit 3
-		continue
-	fi
-	#todo: calculate state
-	text_output="${text_output}\t\t{\n\t\t\t\"job_id\": \"${job_id}.batch.grid.cyf-kr.edu.pl\",\n\t\t\t\"job_state\": \"${state[${job_state}]}\"\n\t\t},\n"
-done
-
-#check for past job data in zeus-jobs-history, jobs here should not collide with jobs gathered from qstat
-#for now the monitoring user is excluded to make the monitoring tests work
-
-if [ "plgmonitoring" != $USER ]
-then
-
-output=$($ZJH -d 31 -u $USER | tail -n +3 | cut -d " " -f 1 2>&1)
-
-declare -a job_list=(${output[@]})
-for job_id in "${job_list[@]}"
-do
-	zjho=$($ZJH -f $job_id | tail -n 19)
-	job_nodes=$(echo "$zjho" | grep "Nodes:" | tr -s " " | cut -d " " -f 2 2>&1)
-	job_cores=$(echo "$zjho" | grep "Cores:" | tr -s " " | cut -d " " -f 2 2>&1)
-	job_walltime=$(echo "$zjho" | grep "Walltime:" | tr -s " " | cut -d " " -f 2 2>&1)
-	job_queuetime=$(echo "$zjho" | grep "Waited for start:" | tr -s " " | cut -d " " -f 4 2>&1)
-	job_starttime=$(echo "$zjho" | grep "Start:" | tr -s " " | cut -d " " -f 2,3 2>&1)
-	job_endtime=$(echo "$zjho" | grep "End:" | tr -s " " | cut -d " " -f 2,3 2>&1)
-
-	text_output_history="${text_output_history}\t\t{\n\t\t\t\"job_id\": \"${job_id}.batch.grid.cyf-kr.edu.pl\",\n\t\t\t\"job_nodes\": \"${job_nodes}\",\n\t\t\t\"job_cores\": \"${job_cores}\",\n\t\t\t\"job_walltime\": \"${job_walltime}\",\n\t\t\t\"job_queuetime\": \"${job_queuetime}\",\n\t\t\t\"job_starttime\": \"${job_starttime}\",\n\t\t\t\"job_endtime\": \"${job_endtime}\"\n\t\t},\n"
-done
-
-fi
-
-#remove last ,
-if [ -n "$text_output" ]
-then
-	text_output="$(echo "$text_output" | rev | cut -c 4- | rev)"
-fi
-text_output="${text_output}\n"
-
-#remove last ,
-if [ -n "$text_output_history" ]
-then
-	text_output_history="$(echo "$text_output_history" | rev | cut -c 4- | rev)"
-fi
-text_output_history="${text_output_history}\n"
-
-
-echo -e "{\n\t\"statuses\": [\n${text_output}\t],\n\t\"history\": [\n${text_output_history}\t],\n\t\"result\": \"OK\"\n}"

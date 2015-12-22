@@ -2,6 +2,10 @@
 
 # $1 == job_id
 
+RM='unknown'
+QDEL=''
+SCANCEL=''
+
 function usage {
 	echo "Usage: $0 job_id"
 }
@@ -14,18 +18,59 @@ function report_success {
 	echo -e "{\n\t\"result\": \"OK\"\n}"
 }
 
+function detect_rm {
+	QDEL=$(which qdel 2>/dev/null)
+	if [ $? -eq 0 ]
+	then
+		RM="torque"
+	fi
+
+	SCANCEL=$(which scancel 2>/dev/null)
+	if [ $? -eq 0 ]
+	then
+		RM="slurm"
+	fi
+}
+
+function stop_torque {
+	output=$(${QDEL} $1 2>&1)
+
+	if [ $? -ne 0 ]
+	then
+		report_error "qsub error! $output"
+		exit 12
+	fi
+
+	report_success
+}
+
+function stop_slurm {
+	output=$(${SCANCEL} $1 2>&1)
+
+	if [ $? -ne 0 ]
+	then
+		report_error "scancel error! $output"
+		exit 22
+	fi
+
+	report_success
+}
+
 if [ -z "$1" ]
 then
 	usage
 	exit 1
 fi
 
-output=$(qdel $1 2>&1)
+detect_rm
 
-if [ $? -ne 0 ]
+if [ "$RM" == "torque" ]
 then
-	report_error "qsub error! $output"
+	stop_torque $1
+elif [ "$RM" == "slurm" ]
+then
+	stop_slurm $1
+else
+	report_error "Unable to determine resource manager"
 	exit 2
 fi
-
-report_success $1
