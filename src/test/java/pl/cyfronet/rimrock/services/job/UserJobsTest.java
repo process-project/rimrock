@@ -75,13 +75,13 @@ public class UserJobsTest {
 
 		when(
 				runner.run(eq("host"), eq(proxy),
-						eq("cd /home/dir/; chmod +x start; ./start script.sh"),
+						eq("cd /home/dir/.rimrock/; chmod +x start; ./start script.sh"),
 						anyInt())).thenReturn(result);
 
 		Job job = userJobs.submit("host", "/home/dir", "script payload", null);
 
-		verify(fileManager).cp(eq("/home/dir/script.sh"), any(Resource.class));
-		verify(fileManager).cp(eq("/home/dir/start"), any(Resource.class));
+		verify(fileManager).cp(eq("/home/dir/.rimrock/script.sh"), any(Resource.class));
+		verify(fileManager).cp(eq("/home/dir/.rimrock/start"), any(Resource.class));
 		
 		assertEquals("jobId", job.getJobId());
 		assertEquals("QUEUED", job.getStatus());
@@ -108,7 +108,7 @@ public class UserJobsTest {
 	public void testRunFailureWhenSubmittingJob() throws Exception {
 		when(
 				runner.run(eq("host"), eq(proxy),
-						eq("cd /home/dir/; chmod +x start; ./start script.sh"),
+						eq("cd /home/dir/.rimrock/; chmod +x start; ./start script.sh"),
 						anyInt())).thenThrow(new GSSException(1));
 
 		try {
@@ -128,7 +128,7 @@ public class UserJobsTest {
 
 		when(
 				runner.run(eq("host"), eq(proxy),							   
-						eq("cd /home/dir/; chmod +x start; ./start script.sh"),
+						eq("cd /home/dir/.rimrock/; chmod +x start; ./start script.sh"),
 						anyInt())).thenReturn(result);
 
 		try {
