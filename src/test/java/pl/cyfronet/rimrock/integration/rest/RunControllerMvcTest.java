@@ -137,7 +137,7 @@ public class RunControllerMvcTest {
 	}
 	
 	@Test
-	public void testTimout() throws Exception {
+	public void testTimeout() throws Exception {
 		RunRequest runRequest = new RunRequest();
 		runRequest.setCommand("echo 'going to sleep'; sleep " + ((runTimeoutMillis / 1000) + 5));
 		runRequest.setHost("zeus.cyfronet.pl");

@@ -10,21 +10,32 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.util.Arrays;
+import java.util.Collection;
+
 import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.http.MediaType;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.rules.SpringClassRule;
+import org.springframework.test.context.junit4.rules.SpringMethodRule;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import pl.cyfronet.rimrock.ProxyFactory;
 import pl.cyfronet.rimrock.RimrockApplication;
@@ -35,23 +46,64 @@ import pl.cyfronet.rimrock.domain.Job;
 import pl.cyfronet.rimrock.gsi.ProxyHelper;
 import pl.cyfronet.rimrock.repositories.JobRepository;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(Parameterized.class)
 @SpringApplicationConfiguration(classes = RimrockApplication.class)
 @WebAppConfiguration
 @DirtiesContext
 public class JobsControllerMvcTest {
 	private static final Logger log = LoggerFactory.getLogger(JobsControllerMvcTest.class);
 	
-	@Autowired private WebApplicationContext wac;
-	@Autowired private ObjectMapper mapper;
-	@Autowired private ProxyFactory proxyFactory;
-	@Autowired private ProxyHelper proxyHelper;
-	@Autowired private JobRepository jobRepository;
+	@ClassRule
+	public static final SpringClassRule SPRING_CLASS_RULE = new SpringClassRule();
+	
+	@Rule
+	public final SpringMethodRule springMethodRule = new SpringMethodRule();
+	
+	@Autowired
+	private WebApplicationContext wac;
+	
+	@Autowired
+	private ObjectMapper mapper;
+	
+	@Autowired
+	private ProxyFactory proxyFactory;
+	
+	@Autowired
+	private ProxyHelper proxyHelper;
+	
+	@Autowired
+	private JobRepository jobRepository;
 	
 	private MockMvc mockMvc;
+
+	private String host;
+
+	private String script;
+	
+	@Parameters
+    public static Collection<Object[]> data() {
+    	return
+			Arrays.asList(new Object[][] {     
+				{
+					"zeus.cyfronet.pl",
+					"#!/bin/bash\n" +
+					"echo hello\n" +
+					"exit 0"
+				}//,
+//				{
+//					"prometheus.cyfronet.pl",
+//					"#!/bin/bash\n" +
+//					"#SBATCH -A protest\n" +
+//					"echo hello\n" +
+//					"exit 0"
+//				}
+			});
+    }
+    
+    public JobsControllerMvcTest(String host, String script) {
+		this.host = host;
+		this.script = script;
+	}
 	
 	@Before
     public void setup() {
@@ -61,10 +113,8 @@ public class JobsControllerMvcTest {
 	@Test
 	public void testSimpleJobSubmission() throws JsonProcessingException, Exception {
 		SubmitRequest submitRequest = new SubmitRequest();
-		submitRequest.setHost("zeus.cyfronet.pl");
-		submitRequest.setScript("#!/bin/bash\n"
-				+ "echo hello\n"
-				+ "exit 0");
+		submitRequest.setHost(host);
+		submitRequest.setScript(script);
 		
 		MvcResult result = mockMvc.perform(post("/api/jobs")
 				.header("PROXY", proxyHelper.encodeProxy(proxyFactory.getProxy()))
@@ -105,7 +155,7 @@ public class JobsControllerMvcTest {
 	
 	@Test
 	public void testRetrievalNotOwnedJob() throws Exception {
-		Job job = new Job("not_owned_job", "FINISHED", "", "", "other_user_login", "zeus.cyfronet.pl", null);
+		Job job = new Job("not_owned_job", "FINISHED", "", "", "other_user_login", host, null);
 		jobRepository.save(job);		
 		
 		mockMvc.perform(get("/api/jobs/not_owned_job")
@@ -127,10 +177,8 @@ public class JobsControllerMvcTest {
 	@Test
 	public void testJobDeleting() throws JsonProcessingException, Exception {
 		SubmitRequest submitRequest = new SubmitRequest();
-		submitRequest.setHost("zeus.cyfronet.pl");
-		submitRequest.setScript("#!/bin/bash\n"
-				+ "echo hello\n"
-				+ "exit 0");
+		submitRequest.setHost(host);
+		submitRequest.setScript(script);
 		
 		MvcResult result = mockMvc.perform(post("/api/jobs")
 				.header("PROXY", proxyHelper.encodeProxy(proxyFactory.getProxy()))
@@ -159,10 +207,8 @@ public class JobsControllerMvcTest {
 	@Test
 	public void testJobAborting() throws JsonProcessingException, Exception {
 		SubmitRequest submitRequest = new SubmitRequest();
-		submitRequest.setHost("zeus.cyfronet.pl");
-		submitRequest.setScript("#!/bin/bash\n"
-				+ "echo hello\n"
-				+ "exit 0");
+		submitRequest.setHost(host);
+		submitRequest.setScript(script);
 		
 		MvcResult result = mockMvc.perform(post("/api/jobs")
 				.header("PROXY", proxyHelper.encodeProxy(proxyFactory.getProxy()))
