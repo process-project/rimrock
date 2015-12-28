@@ -4,6 +4,7 @@ import static com.jayway.restassured.RestAssured.given;
 import static com.jayway.restassured.http.ContentType.JSON;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import org.junit.Before;
@@ -187,7 +188,7 @@ public class InteractiveRunControllerTest {
 		log.info("Obtained process id is {}", processId);
 		
 		InteractiveProcessInputRequest ipir = new InteractiveProcessInputRequest();
-		ipir.setStandardInput("printf \"%0.sa\" {1..25}\nexit"); //25 times 'a'
+		ipir.setStandardInput("printf \"%0.sa\" {1..50}\nexit"); //25 times 'a'
 		given().
 			header("PROXY", proxyHelper.encodeProxy(proxyFactory.getProxy())).			
 			contentType(JSON).
@@ -227,6 +228,8 @@ public class InteractiveRunControllerTest {
 			fail("Proper response could not be acquired in the defined number of attempts");
 		}
 		
-		assertEquals("aaaaaaaaaaaaaaaaaaaa", output.trim()); //the output should be truncated to 20 'a' characters
+		assertEquals(40, output.trim().length()); //the output should be truncated to 40 'a' characters
+		assertTrue(output.trim().startsWith("aaa"));
+		assertTrue(output.trim().endsWith("aaa"));
 	}
 }
