@@ -43,9 +43,9 @@ public class LdapAuthenticationProvider implements AuthenticationProvider {
 		}
 	}
 	
-	private class PlgridUserAttributesMapper implements AttributesMapper {
+	private class PlgridUserAttributesMapper implements AttributesMapper<PlgridUser> {
 		@Override
-		public Object mapFromAttributes(Attributes attributes) throws NamingException {
+		public PlgridUser mapFromAttributes(Attributes attributes) throws NamingException {
 			PlgridUser user = new PlgridUser();
 			List<String> services = new ArrayList<>();
 			user.setServices(services);

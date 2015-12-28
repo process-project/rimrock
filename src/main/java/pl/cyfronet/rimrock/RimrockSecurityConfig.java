@@ -27,6 +27,7 @@ import org.apache.directory.server.protocol.shared.transport.TcpTransport;
 import org.apache.directory.shared.ldap.name.LdapDN;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.web.ErrorAttributes;
 import org.springframework.context.annotation.Bean;
@@ -38,8 +39,8 @@ import org.springframework.ldap.core.support.LdapContextSource;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.config.annotation.web.servlet.configuration.EnableWebMvcSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.ldap.DefaultSpringSecurityContextSource;
 
@@ -49,7 +50,7 @@ import pl.cyfronet.rimrock.providers.ldap.ProxyHeaderPreAuthenticationProcessing
 import pl.cyfronet.rimrock.util.PortFinder;
 
 @Configuration
-@EnableWebMvcSecurity
+@EnableWebSecurity
 public class RimrockSecurityConfig extends WebSecurityConfigurerAdapter {
 	private static final Logger log = LoggerFactory.getLogger(RimrockSecurityConfig.class);
 
@@ -62,6 +63,11 @@ public class RimrockSecurityConfig extends WebSecurityConfigurerAdapter {
 	@Value("${ldap.password}") private String ldapPassword;
 
 	private LdapServer localLdapServer;
+	
+	@Autowired
+	public void configure(AuthenticationManagerBuilder auth) throws Exception {
+		auth.authenticationProvider(ldapAuthenticationProvider());
+	}
 
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
@@ -80,11 +86,6 @@ public class RimrockSecurityConfig extends WebSecurityConfigurerAdapter {
 				and().
 			csrf().
 				disable();
-	}
-
-	@Override
-	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-		auth.authenticationProvider(ldapAuthenticationProvider());
 	}
 
 	@Bean

@@ -13,11 +13,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.IntegrationTest;
 import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.boot.test.WebIntegrationTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.web.WebAppConfiguration;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jayway.restassured.RestAssured;
+import com.jayway.restassured.response.Response;
 
 import pl.cyfronet.rimrock.ProxyFactory;
 import pl.cyfronet.rimrock.RimrockApplication;
@@ -25,15 +29,9 @@ import pl.cyfronet.rimrock.controllers.rest.irun.InteractiveProcessInputRequest;
 import pl.cyfronet.rimrock.controllers.rest.irun.InteractiveProcessRequest;
 import pl.cyfronet.rimrock.gsi.ProxyHelper;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jayway.restassured.RestAssured;
-import com.jayway.restassured.response.Response;
-
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = RimrockApplication.class)
-@WebAppConfiguration
-@IntegrationTest
+@WebIntegrationTest
 @DirtiesContext
 public class InteractiveRunControllerTest {
 	private static final Logger log = LoggerFactory.getLogger(InteractiveRunControllerTest.class);
