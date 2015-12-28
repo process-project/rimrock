@@ -196,7 +196,7 @@ public class InteractiveRunControllerTest {
 		log.info("Obtained process id is {}", processId);
 		
 		InteractiveProcessInputRequest ipir = new InteractiveProcessInputRequest();
-		ipir.setStandardInput("echo aaaaaaaaaaaaaaa\nexit"); //15 times 'a'
+		ipir.setStandardInput("printf \"%0.sa\" {1..25}\nexit"); //25 times 'a'
 		given().
 			header("PROXY", proxyHelper.encodeProxy(proxyFactory.getProxy())).			
 			contentType(JSON).
@@ -245,6 +245,6 @@ public class InteractiveRunControllerTest {
 			fail("Proper response could not be acquired in the defined number of attempts");
 		}
 		
-		assertEquals("aaaaaaaaaa", output.trim()); //the output should be truncated to 10 'a's
+		assertEquals("aaaaaaaaaaaaaaaaaaaa", output.trim()); //the output should be truncated to 20 'a' characters
 	}
 }
