@@ -173,4 +173,78 @@ public class InteractiveRunControllerTest {
 			statusCode(200).
 			body("standard_error", equalTo("Timeout occurred"));
 	}
+	
+	@Test
+	public void testMaxOutputBufferSize() throws JsonProcessingException, Exception {
+		InteractiveProcessRequest ipr = new InteractiveProcessRequest();
+		ipr.setHost("ui.cyfronet.pl");
+		ipr.setCommand("bash");
+		
+		String processId = 
+		given().
+			header("PROXY", proxyHelper.encodeProxy(proxyFactory.getProxy())).
+			contentType(JSON).
+			body(mapper.writeValueAsBytes(ipr)).
+		when().
+			post("/api/iprocesses").
+		then().
+			log().all().
+			contentType(JSON).
+			statusCode(201).
+		extract().
+			path("process_id");
+		log.info("Obtained process id is {}", processId);
+		
+		InteractiveProcessInputRequest ipir = new InteractiveProcessInputRequest();
+		ipir.setStandardInput("echo aaaaaaaaaaaaaaa\nexit"); //15 times 'a'
+		given().
+			header("PROXY", proxyHelper.encodeProxy(proxyFactory.getProxy())).			
+			contentType(JSON).
+			body(mapper.writeValueAsBytes(ipir)).
+		when().
+			put("/api/iprocesses/" + processId).
+		then().
+			log().all().
+			contentType(JSON).
+			statusCode(200);
+		
+		given().
+			header("PROXY", proxyHelper.encodeProxy(proxyFactory.getProxy())).
+		when().
+			get("/api/iprocesses").
+		then().
+			log().all().
+			contentType(JSON).
+			statusCode(200);
+		
+		boolean finished = false;
+		int attempts = 100;
+		String output = "";
+		
+		while(!finished && attempts-- > 0) {
+			Response response =
+			given().
+				header("PROXY", proxyHelper.encodeProxy(proxyFactory.getProxy())).
+			when().
+				get("/api/iprocesses/" + processId).
+			then().
+				log().all().
+				contentType(JSON).
+				statusCode(200).
+			extract().
+				response();
+			finished = response.<Boolean>path("finished");
+			
+			output += response.path("standard_output");
+			
+			//lets wait a bit
+			Thread.sleep(200);
+		}
+		
+		if(attempts < 0) {
+			fail("Proper response could not be acquired in the defined number of attempts");
+		}
+		
+		assertEquals("aaaaaaaaaa", output.trim()); //the output should be truncated to 10 'a's
+	}
 }

@@ -17,6 +17,7 @@ public class InteractiveProcess {
 	@Column(length = 10485760)
 	private String error;
 	
+	@Column(length = 10485760)
 	private String pendingInput;
 	
 	private boolean finished;
