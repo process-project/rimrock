@@ -188,7 +188,7 @@ public class InteractiveRunControllerTest {
 		log.info("Obtained process id is {}", processId);
 		
 		InteractiveProcessInputRequest ipir = new InteractiveProcessInputRequest();
-		ipir.setStandardInput("printf \"%0.sa\" {1..50}\nexit"); //25 times 'a'
+		ipir.setStandardInput("printf \"%0.sa\" {1..50}\nexit"); //50 times 'a'
 		given().
 			header("PROXY", proxyHelper.encodeProxy(proxyFactory.getProxy())).			
 			contentType(JSON).
