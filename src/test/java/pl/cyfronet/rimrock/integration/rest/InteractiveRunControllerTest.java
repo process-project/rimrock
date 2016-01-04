@@ -6,9 +6,16 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
+import java.util.Arrays;
+import java.util.Collection;
+
 import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +23,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.boot.test.WebIntegrationTest;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.rules.SpringClassRule;
+import org.springframework.test.context.junit4.rules.SpringMethodRule;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -29,20 +37,55 @@ import pl.cyfronet.rimrock.controllers.rest.irun.InteractiveProcessInputRequest;
 import pl.cyfronet.rimrock.controllers.rest.irun.InteractiveProcessRequest;
 import pl.cyfronet.rimrock.gsi.ProxyHelper;
 
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(Parameterized.class)
 @SpringApplicationConfiguration(classes = RimrockApplication.class)
 @WebIntegrationTest
 @DirtiesContext
 public class InteractiveRunControllerTest {
 	private static final Logger log = LoggerFactory.getLogger(InteractiveRunControllerTest.class);
 	
-	@Autowired private ProxyFactory proxyFactory;
-	@Autowired private ProxyHelper proxyHelper;
-	@Autowired private ObjectMapper mapper;
+	@ClassRule
+	public static final SpringClassRule SPRING_CLASS_RULE = new SpringClassRule();
 	
-	@Value("${local.server.port}") private int serverPort;
-	@Value("${test.server.bind.address}") private String serverAddress;
-	@Value("${irun.timeout.seconds}") private int irunTimeoutSeconds;
+	@Rule
+	public final SpringMethodRule springMethodRule = new SpringMethodRule();
+	
+	@Autowired
+	private ProxyFactory proxyFactory;
+	
+	@Autowired
+	private ProxyHelper proxyHelper;
+	
+	@Autowired
+	private ObjectMapper mapper;
+	
+	@Value("${local.server.port}")
+	private int serverPort;
+	
+	@Value("${test.server.bind.address}")
+	private String serverAddress;
+	
+	@Value("${irun.timeout.seconds}")
+	private int irunTimeoutSeconds;
+
+	private String host;
+	
+	@Parameters
+    public static Collection<Object[]> data() {
+    	return
+			Arrays.asList(new Object[][] {     
+				{
+					"zeus.cyfronet.pl"
+				},
+				{
+					"prometheus.cyfronet.pl"
+				}
+			});
+    }
+    
+    public InteractiveRunControllerTest(String host) {
+		this.host = host;
+	}
 	
 	@Before
 	public void setup() {
@@ -55,7 +98,7 @@ public class InteractiveRunControllerTest {
 	@Test
 	public void testInteractiveRun() throws JsonProcessingException, Exception {
 		InteractiveProcessRequest ipr = new InteractiveProcessRequest();
-		ipr.setHost("ui.cyfronet.pl");
+		ipr.setHost(host);
 		ipr.setCommand("bash");
 		
 		String processId = 
@@ -141,7 +184,7 @@ public class InteractiveRunControllerTest {
 	@Test
 	public void testTimeout() throws JsonProcessingException, Exception {
 		InteractiveProcessRequest ipr = new InteractiveProcessRequest();
-		ipr.setHost("ui.cyfronet.pl");
+		ipr.setHost(host);
 		ipr.setCommand("bash");
 		
 		String processId = 

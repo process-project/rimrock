@@ -1,5 +1,6 @@
 package pl.cyfronet.rimrock.integration.rest;
 
+import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -10,27 +11,35 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.util.Arrays;
+import java.util.Collection;
+
 import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.http.MediaType;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.rules.SpringClassRule;
+import org.springframework.test.context.junit4.rules.SpringMethodRule;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import pl.cyfronet.rimrock.ProxyFactory;
 import pl.cyfronet.rimrock.RimrockApplication;
 import pl.cyfronet.rimrock.controllers.rest.run.RunRequest;
 import pl.cyfronet.rimrock.gsi.ProxyHelper;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * DH: Consider using https://code.google.com/p/rest-assured/ for RESt tests
@@ -38,19 +47,52 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author daniel
  *
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(Parameterized.class)
 @SpringApplicationConfiguration(classes = RimrockApplication.class)
 @WebAppConfiguration
 @DirtiesContext
 public class RunControllerMvcTest {
-	@Autowired private WebApplicationContext wac;
-	@Autowired private ObjectMapper mapper;
-	@Autowired private ProxyFactory proxyFactory;
-	@Autowired private ProxyHelper proxyHelper;
+	@ClassRule
+	public static final SpringClassRule SPRING_CLASS_RULE = new SpringClassRule();
 	
-	@Value("${run.timeout.millis}") private int runTimeoutMillis;
+	@Rule
+	public final SpringMethodRule springMethodRule = new SpringMethodRule();
+	
+	@Autowired
+	private WebApplicationContext wac;
+	
+	@Autowired
+	private ObjectMapper mapper;
+	
+	@Autowired
+	private ProxyFactory proxyFactory;
+	
+	@Autowired
+	private ProxyHelper proxyHelper;
+	
+	@Value("${run.timeout.millis}")
+	private int runTimeoutMillis;
 	
 	private MockMvc mockMvc;
+	
+	private String host;
+	
+	@Parameters
+    public static Collection<Object[]> data() {
+    	return
+			Arrays.asList(new Object[][] {     
+				{
+					"zeus.cyfronet.pl"
+				},
+				{
+					"prometheus.cyfronet.pl"
+				}
+			});
+    }
+    
+    public RunControllerMvcTest(String host) {
+		this.host = host;
+	}
 	
 	@Before
     public void setup() {
@@ -61,7 +103,7 @@ public class RunControllerMvcTest {
 	public void testSimpleRun() throws Exception {
 		RunRequest runRequest = new RunRequest();
 		runRequest.setCommand("pwd");
-		runRequest.setHost("zeus.cyfronet.pl");
+		runRequest.setHost(host);
 		
 		mockMvc.perform(post("/api/process")
 				.header("PROXY", proxyHelper.encodeProxy(proxyFactory.getProxy()))
@@ -74,7 +116,7 @@ public class RunControllerMvcTest {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.status", is("OK")))
 				.andExpect(jsonPath("$.exit_code", is(0)))
-				.andExpect(jsonPath("$.standard_output", startsWith("/people")));
+				.andExpect(jsonPath("$.standard_output", anyOf(startsWith("/people"), startsWith("/net/people"))));
 	}
 
 	@Test
@@ -82,7 +124,7 @@ public class RunControllerMvcTest {
 		RunRequest runRequest = new RunRequest();
 		//at least the second mkdir command will return a 1 exit code
 		runRequest.setCommand("echo 'error' > /dev/stderr; mkdir /tmp/test; mkdir /tmp/test");
-		runRequest.setHost("zeus.cyfronet.pl");
+		runRequest.setHost(host);
 		
 		mockMvc.perform(post("/api/process")
 				.header("PROXY", proxyHelper.encodeProxy(proxyFactory.getProxy()))
@@ -120,7 +162,7 @@ public class RunControllerMvcTest {
 	public void testMultilineOutput() throws Exception {
 		RunRequest runRequest = new RunRequest();
 		runRequest.setCommand("echo hello1; echo hello2; echo hello3");
-		runRequest.setHost("zeus.cyfronet.pl");
+		runRequest.setHost(host);
 		
 		mockMvc.perform(post("/api/process")
 				.header("PROXY", proxyHelper.encodeProxy(proxyFactory.getProxy()))
@@ -140,7 +182,7 @@ public class RunControllerMvcTest {
 	public void testTimeout() throws Exception {
 		RunRequest runRequest = new RunRequest();
 		runRequest.setCommand("echo 'going to sleep'; sleep " + ((runTimeoutMillis / 1000) + 5));
-		runRequest.setHost("zeus.cyfronet.pl");
+		runRequest.setHost(host);
 		
 		mockMvc.perform(post("/api/process")
 				.header("PROXY", proxyHelper.encodeProxy(proxyFactory.getProxy()))
