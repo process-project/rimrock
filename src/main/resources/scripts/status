@@ -3,6 +3,7 @@
 QSTAT=''
 SQUEUE=''
 ZJH=/opt/cyfronet/bin/zeus-jobs-history
+HOST=`hostname -a`
 
 function usage {
 	echo "Usage: $0"
@@ -139,7 +140,8 @@ function status_slurm {
 			report_error "squeue error! $job_state"
 			exit 13
 		fi
-		text_output="${text_output}\t\t{\n\t\t\t\"job_id\": \"${job_id}\",\n\t\t\t\"job_state\": \"${state[${job_state}]}\"\n\t\t},\n"
+		full_job_id=$job_id.$HOST
+		text_output="${text_output}\t\t{\n\t\t\t\"job_id\": \"${full_job_id}\",\n\t\t\t\"job_state\": \"${state[${job_state}]}\"\n\t\t},\n"
 	done
 
 	#remove last ,

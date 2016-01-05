@@ -7,6 +7,7 @@ QSUB=""
 QSTAT="qstat"
 SBATCH=""
 SCONTROL="scontrol"
+HOST=`hostname -a`
 
 function usage {
 	echo "Usage: $0 job_script"
@@ -72,6 +73,7 @@ function submit_slurm {
 	fi
 
 	job_id=$(echo "$output" | cut -d " " -f 4)
+	full_job_id=$job_id.$HOST
 
 	#ask for job details
 	output=$(script -eqfc "${SCONTROL} show job $job_id" 2>&1)
@@ -91,7 +93,7 @@ function submit_slurm {
 	out=$prefix$(echo "$output" | grep StdOut | cut -c 11- | tr -d '[[:space:]]')
 	err=$prefix$(echo "$output" | grep StdErr | cut -c 11- | tr -d '[[:space:]]')
 
-	report_success $job_id $out $err
+	report_success $full_job_id $out $err
 }
 
 if [ -z "$1" ]

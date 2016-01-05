@@ -45,7 +45,8 @@ function stop_torque {
 }
 
 function stop_slurm {
-	output=$(${SCANCEL} $1 2>&1)
+	job_id=`[[ $1 =~ (^[0-9]*) ]] && echo $BASH_REMATCH`
+	output=$(${SCANCEL} $job_id 2>&1)
 
 	if [ $? -ne 0 ]
 	then
