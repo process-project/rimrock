@@ -53,6 +53,7 @@ class RestThread(threading.Thread):
 				cmd = response.json()['input']
 				if cmd:
 					self.inputStream.write(cmd + '\n')
+					self.inputStream.flush()
 				if cmd or output or error:
 					self.time = time.time()
 				if time.time() - self.time > self.timeoutSeconds:
