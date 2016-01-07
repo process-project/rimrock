@@ -87,7 +87,7 @@ public class JobsControllerMvcTest {
 				{
 					"zeus.cyfronet.pl",
 					"#!/bin/bash\n" +
-					"#PBS -A diceservices" +
+					"#PBS -A diceservices\n" +
 					"echo hello\n" +
 					"exit 0"
 				},
