@@ -56,11 +56,18 @@ public class InteractiveRunController {
 	private static final Logger log = LoggerFactory.getLogger(InteractiveRunController.class);
 	
 	private InteractiveProcessRepository processRepository;
+	
 	private GsisshRunner runner;
+	
 	private FileManagerFactory fileManagerFactory;
+	
 	private ProxyHelper proxyHelper;
 	
-	@Value("${irun.timeout.seconds}") private String iprocessTimeoutSeconds;
+	@Value("${irun.timeout.seconds}")
+	private String iprocessTimeoutSeconds;
+	
+	@Value("${irun.db.buffer.max.bytes}")
+	private int iprocessDbMaxBytes;
 
 	@Autowired
 	public InteractiveRunController(InteractiveProcessRepository processRepository, GsisshRunner runner, FileManagerFactory fileManagerFactory, ProxyHelper proxyHelper) {
@@ -78,8 +85,8 @@ public class InteractiveRunController {
 		String input = process.getPendingInput();
 		process.setPendingInput("");
 		process.setFinished(updateRequest.isFinished());
-		process.setOutput((process.getOutput() == null ? "" : process.getOutput()) + updateRequest.getStandardOutput());
-		process.setError((process.getError() == null ? "" : process.getError()) + updateRequest.getStandardError());
+		process.setOutput(truncateDbBuffer(process.getOutput(), updateRequest.getStandardOutput()));
+		process.setError(truncateDbBuffer(process.getError(), updateRequest.getStandardError()));
 		processRepository.save(process);
 		
 		return new ResponseEntity<InternalUpdateResponse>(new InternalUpdateResponse(input), OK);
@@ -209,7 +216,7 @@ public class InteractiveRunController {
 		String error = process.getError();
 		process.setOutput("");
 		process.setError("");
-		process.setPendingInput(merge(process.getPendingInput(), request.getStandardInput()));
+		process.setPendingInput(mergeAndTruncate(process.getPendingInput(), request.getStandardInput()));
 		processRepository.save(process);
 		
 		InteractiveProcessResponse response = new InteractiveProcessResponse(Status.OK, null);
@@ -222,14 +229,20 @@ public class InteractiveRunController {
 		return new ResponseEntity<InteractiveProcessResponse>(response, OK);
 	}
 
-	private String merge(String first, String second) {
+	private String mergeAndTruncate(String first, String second) {
 		String normalized = (first == null ? "" : first).trim();
 		
 		if(!normalized.isEmpty()) {
 			normalized += "\n";
 		}
 		
-		return normalized + second.trim();
+		String temp = normalized + second.trim();
+		
+		if (temp.length() > iprocessDbMaxBytes) {
+			temp = temp.substring(temp.length() - iprocessDbMaxBytes, temp.length());
+		}
+		
+		return temp;
 	}
 	
 	private InteractiveProcess getProcess(String processId) {
@@ -250,5 +263,19 @@ public class InteractiveRunController {
 		}
 		
 		return process;
+	}
+
+	private String truncateDbBuffer(String current, String additional) {
+		if (current == null) {
+			current = "";
+		}
+		
+		String temp = current + additional;
+		
+		if (temp.length() > iprocessDbMaxBytes) {
+			temp = temp.substring(temp.length() - iprocessDbMaxBytes, temp.length());
+		}
+		
+		return temp;
 	}
 }

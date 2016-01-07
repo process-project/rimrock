@@ -4,6 +4,7 @@ import static com.jayway.restassured.RestAssured.given;
 import static com.jayway.restassured.http.ContentType.JSON;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.Arrays;
@@ -129,15 +130,6 @@ public class InteractiveRunControllerTest {
 			contentType(JSON).
 			statusCode(200);
 		
-		given().
-			header("PROXY", proxyHelper.encodeProxy(proxyFactory.getProxy())).
-		when().
-			get("/api/iprocesses").
-		then().
-			log().all().
-			contentType(JSON).
-			statusCode(200);
-		
 		boolean finished = false;
 		int attempts = 100;
 		String output = "";
@@ -213,5 +205,72 @@ public class InteractiveRunControllerTest {
 			contentType(JSON).
 			statusCode(200).
 			body("standard_error", equalTo("Timeout occurred"));
+	}
+	
+	@Test
+	public void testMaxOutputBufferSize() throws JsonProcessingException, Exception {
+		InteractiveProcessRequest ipr = new InteractiveProcessRequest();
+		ipr.setHost("ui.cyfronet.pl");
+		ipr.setCommand("bash");
+		
+		String processId = 
+		given().
+			header("PROXY", proxyHelper.encodeProxy(proxyFactory.getProxy())).
+			contentType(JSON).
+			body(mapper.writeValueAsBytes(ipr)).
+		when().
+			post("/api/iprocesses").
+		then().
+			log().all().
+			contentType(JSON).
+			statusCode(201).
+		extract().
+			path("process_id");
+		log.info("Obtained process id is {}", processId);
+		
+		InteractiveProcessInputRequest ipir = new InteractiveProcessInputRequest();
+		ipir.setStandardInput("printf \"%0.sa\" {1..50}\nexit"); //50 times 'a'
+		given().
+			header("PROXY", proxyHelper.encodeProxy(proxyFactory.getProxy())).			
+			contentType(JSON).
+			body(mapper.writeValueAsBytes(ipir)).
+		when().
+			put("/api/iprocesses/" + processId).
+		then().
+			log().all().
+			contentType(JSON).
+			statusCode(200);
+		
+		boolean finished = false;
+		int attempts = 100;
+		String output = "";
+		
+		while(!finished && attempts-- > 0) {
+			Response response =
+			given().
+				header("PROXY", proxyHelper.encodeProxy(proxyFactory.getProxy())).
+			when().
+				get("/api/iprocesses/" + processId).
+			then().
+				log().all().
+				contentType(JSON).
+				statusCode(200).
+			extract().
+				response();
+			finished = response.<Boolean>path("finished");
+			
+			output += response.path("standard_output");
+			
+			//lets wait a bit
+			Thread.sleep(200);
+		}
+		
+		if(attempts < 0) {
+			fail("Proper response could not be acquired in the defined number of attempts");
+		}
+		
+		assertEquals(40, output.trim().length()); //the output should be truncated to 40 'a' characters
+		assertTrue(output.trim().startsWith("aaa"));
+		assertTrue(output.trim().endsWith("aaa"));
 	}
 }
