@@ -1,3 +1,6 @@
+v 1.5.1
+  - final jar file made compliant with init.d script tools
+
 v 1.5.0
   - job submission to the prometheus cluster support added
   - interactive process output and input buffer size increased to 1 MB
