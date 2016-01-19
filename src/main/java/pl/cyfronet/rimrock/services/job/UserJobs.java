@@ -72,12 +72,12 @@ public class UserJobs {
 		PathHelper pathHelper = new PathHelper(host, userLogin);
 		String transferPath = buildPath(pathHelper.getTransferPath(), workingDirectory);
 		String fileRootPath = buildPath(pathHelper.getFileRootPath(), workingDirectory);
-		log.debug("Starting {} user job in {}:{} ", new Object[]{userLogin, host, transferPath});
+		log.debug("Starting {} user job in {}:{} ", new Object[] {userLogin, host, transferPath});
 
 		fileManager.cp(transferPath + "script.sh", new ByteArrayResource(script.getBytes()));
 		fileManager.cp(transferPath + ".rimrock/start", new ClassPathResource("scripts/start"));
 
-		RunResults result = run(host, String.format("chmod +x .rimrock/start; ./.rimrock/start script.sh", fileRootPath), timeout);
+		RunResults result = run(host, String.format("cd %s; chmod +x .rimrock/start; ./.rimrock/start script.sh", fileRootPath), timeout);
 		processRunExceptions(result);
 
 		SubmitResult submitResult = readResult(result.getOutput(), SubmitResult.class);
