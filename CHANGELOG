@@ -1,3 +1,6 @@
+v 1.5.2
+  - standard output job file location changed to the current working directory
+
 v 1.5.1
   - final jar file made compliant with init.d script tools
 
