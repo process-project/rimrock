@@ -1,3 +1,6 @@
+v 1.5.4
+  - job submission tests stabilized
+
 v 1.5.3
   - job submission directory is changed to the supplied working directory
 
