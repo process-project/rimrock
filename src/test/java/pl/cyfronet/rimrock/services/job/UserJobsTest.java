@@ -75,7 +75,7 @@ public class UserJobsTest {
 
 		when(
 				runner.run(eq("host"), eq(proxy),
-						eq("chmod +x .rimrock/start; ./.rimrock/start script.sh"),
+						eq("cd /home/dir/; chmod +x .rimrock/start; ./.rimrock/start script.sh"),
 						anyInt())).thenReturn(result);
 
 		Job job = userJobs.submit("host", "/home/dir", "script payload", null);
@@ -108,7 +108,7 @@ public class UserJobsTest {
 	public void testRunFailureWhenSubmittingJob() throws Exception {
 		when(
 				runner.run(eq("host"), eq(proxy),
-						eq("chmod +x .rimrock/start; ./.rimrock/start script.sh"),
+						eq("cd /home/dir/; chmod +x .rimrock/start; ./.rimrock/start script.sh"),
 						anyInt())).thenThrow(new GSSException(1));
 
 		try {
@@ -128,7 +128,7 @@ public class UserJobsTest {
 
 		when(
 				runner.run(eq("host"), eq(proxy),							   
-						eq("chmod +x .rimrock/start; ./.rimrock/start script.sh"),
+						eq("cd /home/dir/; chmod +x .rimrock/start; ./.rimrock/start script.sh"),
 						anyInt())).thenReturn(result);
 
 		try {
