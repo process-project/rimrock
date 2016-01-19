@@ -74,10 +74,10 @@ public class UserJobs {
 		String fileRootPath = buildPath(pathHelper.getFileRootPath(), workingDirectory);
 		log.debug("Starting {} user job in {}:{} ", new Object[]{userLogin, host, transferPath});
 
-		fileManager.cp(transferPath + ".rimrock/script.sh", new ByteArrayResource(script.getBytes()));
+		fileManager.cp(transferPath + "script.sh", new ByteArrayResource(script.getBytes()));
 		fileManager.cp(transferPath + ".rimrock/start", new ClassPathResource("scripts/start"));
 
-		RunResults result = run(host, String.format("cd %s.rimrock/; chmod +x start; ./start script.sh", fileRootPath), timeout);
+		RunResults result = run(host, String.format("chmod +x .rimrock/start; ./.rimrock/start script.sh", fileRootPath), timeout);
 		processRunExceptions(result);
 
 		SubmitResult submitResult = readResult(result.getOutput(), SubmitResult.class);
@@ -131,11 +131,21 @@ public class UserJobs {
 			jobs = jobRepository.findByUsernameOnHosts(userLogin, hosts);
 		}
 
-		Map<String, Status> mappedStatusJobIds = statuses.stream()
-				.collect(Collectors.toMap(Status::getJobId, Function.<Status>identity()));
+		//toMap uses a BinaryOperator as the third parameter to deal with status duplicates
+		Map<String, Status> mappedStatusJobIds = statuses.stream().collect(
+				Collectors.toMap(
+						Status::getJobId,
+						Function.<Status>identity(),
+						(a, b) -> a
+				));
 
-		Map<String, History> mappedHistoryJobIds = histories.stream()
-				.collect(Collectors.toMap(History::getJobId, Function.<History>identity()));
+		//toMap uses a BinaryOperator as the third parameter to deal with history duplicates
+		Map<String, History> mappedHistoryJobIds = histories.stream().collect(
+				Collectors.toMap(
+						History::getJobId,
+						Function.<History>identity(),
+						(a, b) -> a
+				));
 
 		for (Job job : jobs) {
 			Status status = mappedStatusJobIds.get(job.getJobId());
