@@ -78,9 +78,9 @@ public class InteractiveRunControllerTest {
 				{
 					"zeus.cyfronet.pl"
 				},
-				{
-					"prometheus.cyfronet.pl"
-				}
+//				{
+//					"prometheus.cyfronet.pl"
+//				}
 			});
     }
     
