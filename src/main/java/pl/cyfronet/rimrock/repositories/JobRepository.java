@@ -9,8 +9,8 @@ import org.springframework.data.repository.query.Param;
 import pl.cyfronet.rimrock.domain.Job;
 
 public interface JobRepository extends CrudRepository<Job, Long> {
-	@Query("select distinct job.host from Job job")
-	List<String> getHosts();
+	@Query("SELECT DISTINCT job.host FROM Job job WHERE userLogin = :userLogin")
+	List<String> getHosts(@Param("userLogin") String userLogin);
 	
 	List<Job> findByUserLogin(String userLogin);
 	

@@ -35,7 +35,7 @@ import com.sshtools.j2ssh.util.InvalidStateException;
 public class UserJobs {
 	private static final Logger log = LoggerFactory.getLogger(UserJobs.class);
 
-	private int timeout = 60000;
+	private int timeout = 20000;
 	private String proxy;
 	private String userLogin;
 	private GsisshRunner runner;
@@ -68,7 +68,8 @@ public class UserJobs {
 	 * @throws CertificateException
 	 * @throws KeyStoreException
 	 */
-	public Job submit(String host, String workingDirectory, String script, String tag) throws FileManagerException, CredentialException, RunException, KeyStoreException, CertificateException {
+	public Job submit(String host, String workingDirectory, String script, String tag) throws FileManagerException, CredentialException, RunException,
+			KeyStoreException, CertificateException {
 		PathHelper pathHelper = new PathHelper(host, userLogin);
 		String transferPath = buildPath(pathHelper.getTransferPath(), workingDirectory);
 		String fileRootPath = buildPath(pathHelper.getFileRootPath(), workingDirectory);
@@ -93,7 +94,7 @@ public class UserJobs {
 	/**
 	 * Update job statuses started on selected hosts.
 	 *
-	 * @param hosts Jobs started on these hosts will be updated.
+	 * @param hosts Limit hosts to the supplied ones. If null is given all hosts for a given user will be used based on job history.
 	 * @param tag
 	 * @return Updated jobs.
 	 * @throws CredentialException  Thrown where it is not possible to log in into given host using user credentials.
@@ -104,7 +105,11 @@ public class UserJobs {
 	 */
 	public List<Job> update(List<String> hosts, String tag) throws CredentialException,
 			FileManagerException, RunException, KeyStoreException, CertificateException {
-		if (hosts == null || hosts.size() == 0) {
+		if (hosts == null) {
+			hosts = jobRepository.getHosts(userLogin);
+		}
+		
+		if (hosts.size() == 0) {
 			return Arrays.asList();
 		}
 
@@ -183,18 +188,21 @@ public class UserJobs {
 	 * @throws KeyStoreException
 	 * @throws RunException
 	 */
-	public void delete(String jobId) throws JobNotFoundException, CredentialException, FileManagerException, RunException, KeyStoreException, CertificateException {
+	public void delete(String jobId) throws JobNotFoundException, CredentialException, FileManagerException, RunException, KeyStoreException,
+			CertificateException {
 		Job job = abortJob(jobId);
 		jobRepository.delete(job);
 	}
 
-	public void abort(String jobId) throws CredentialException, RunException, FileManagerException, JobNotFoundException, KeyStoreException, CertificateException {
+	public void abort(String jobId) throws CredentialException, RunException, FileManagerException, JobNotFoundException, KeyStoreException,
+			CertificateException {
 		Job job = abortJob(jobId);
 		job.setStatus("ABORTED");
 		jobRepository.save(job);
 	}
 
-	private Job abortJob(String jobId) throws JobNotFoundException, FileManagerException, CredentialException, RunException, KeyStoreException, CertificateException {
+	private Job abortJob(String jobId) throws JobNotFoundException, FileManagerException, CredentialException, RunException, KeyStoreException,
+			CertificateException {
 		Job job = jobRepository.findOneByJobId(jobId);
 
 		if (job == null) {
