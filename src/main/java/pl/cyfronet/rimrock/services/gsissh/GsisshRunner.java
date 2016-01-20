@@ -21,8 +21,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import pl.cyfronet.rimrock.gsi.ProxyHelper;
-
 import com.sshtools.j2ssh.SshClient;
 import com.sshtools.j2ssh.authentication.AuthenticationProtocolState;
 import com.sshtools.j2ssh.authentication.GSSAuthenticationClient;
@@ -31,6 +29,8 @@ import com.sshtools.j2ssh.connection.ChannelState;
 import com.sshtools.j2ssh.io.IOStreamConnector;
 import com.sshtools.j2ssh.session.SessionChannelClient;
 import com.sshtools.j2ssh.util.InvalidStateException;
+
+import pl.cyfronet.rimrock.gsi.ProxyHelper;
 
 @Service
 public class GsisshRunner {
