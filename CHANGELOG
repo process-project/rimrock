@@ -1,3 +1,6 @@
+v {next-release-version}
+  - API user actions are now logged
+
 v 1.5.5
   - prometheus tests disabled until the cluster is accessible again
   - host query while checking overall job status takes user login into account
