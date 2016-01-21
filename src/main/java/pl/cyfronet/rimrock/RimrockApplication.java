@@ -14,6 +14,7 @@ import org.apache.catalina.connector.Connector;
 import org.jboss.logging.MDC;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -43,9 +44,17 @@ import pl.cyfronet.rimrock.gridworkerapi.service.GridWorkerService;
 public class RimrockApplication extends WebMvcConfigurerAdapter {
 	private static final Logger log = LoggerFactory.getLogger(RimrockApplication.class);
 	
-	@Value("${max.header.size.bytes}") private int maxHeaderSizeBytes;
-	@Value("${jsaga.jar.version}") private String jSagaGridWorkerVersion;
-	@Value("${qcg.jar.version}") private String qcgGridWorkerVersion;
+	@Autowired
+	private RequestLoggingInterceptor loggingInterceptor;
+	
+	@Value("${max.header.size.bytes}")
+	private int maxHeaderSizeBytes;
+	
+	@Value("${jsaga.jar.version}")
+	private String jSagaGridWorkerVersion;
+	
+	@Value("${qcg.jar.version}")
+	private String qcgGridWorkerVersion;
 
 	public static void main(String[] args) {
 		new SpringApplicationBuilder(RimrockApplication.class).run(args);
@@ -55,6 +64,8 @@ public class RimrockApplication extends WebMvcConfigurerAdapter {
 	@Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(localeChangeInterceptor());
+        registry.addInterceptor(loggingInterceptor)
+        		.addPathPatterns("/api/*");
     }
 
 	@Bean
