@@ -19,6 +19,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 
+import pl.cyfronet.rimrock.controllers.rest.proxygeneration.ProxyGenerationController;
 import pl.cyfronet.rimrock.gsi.ProxyHelper;
 
 public class LdapAuthenticationProvider implements AuthenticationProvider {
@@ -63,15 +64,20 @@ public class LdapAuthenticationProvider implements AuthenticationProvider {
 	}
 	
 	@Override
-	public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-		log.debug("Authenticating user with login {} and credentials {}", authentication.getName(), authentication.getCredentials());
+	public Authentication authenticate(Authentication authentication)
+			throws AuthenticationException {
+		String credentials = (String) authentication.getCredentials();
+		log.debug("Authenticating user with login {} and credentials {}", authentication.getName(),
+				credentials);
 		
-		try {
-			proxyHelper.verify((String) authentication.getCredentials());
-		} catch (CredentialException e) {
-			log.warn("Bad credentials sent", e);
-			
-			throw new BadCredentialsException("Bad credentials provided: " + e.getMessage(), e);
+		if (!credentials.equals(ProxyGenerationController.USER_CREDENTIALS)) {
+			try {
+				proxyHelper.verify(credentials);
+			} catch (CredentialException e) {
+				log.warn("Bad credentials sent", e);
+				
+				throw new BadCredentialsException("Bad credentials provided: " + e.getMessage(), e);
+			}
 		}
 		
 		if(ldapEbabled) {
@@ -79,10 +85,12 @@ public class LdapAuthenticationProvider implements AuthenticationProvider {
 			
 			try {
 				String dn = prepareDn(authentication.getName());
-				log.debug("LDAP authorization procedure started for user {} with dn {}", authentication.getName(), dn);
+				log.debug("LDAP authorization procedure started for user {} with dn {}",
+						authentication.getName(), dn);
 				user = (PlgridUser) ldapTemplate.lookup(dn, new PlgridUserAttributesMapper());
 			} catch (Exception e) {
-				log.warn("Something went wrong with the LDAP lookup procedure while authorizing user " + authentication.getName(), e);
+				log.warn("Something went wrong with the LDAP lookup procedure while authorizing "
+						+ "user " + authentication.getName(), e);
 			}
 			
 			if(user == null) {
@@ -95,13 +103,16 @@ public class LdapAuthenticationProvider implements AuthenticationProvider {
 			if(user.getServices().contains(ldapRimrockName)) {
 				log.debug("LDAP authorization was successful for {}", authentication.getName());
 				
-				return new PreAuthenticatedAuthenticationToken(authentication.getName(), authentication.getCredentials());
+				return new PreAuthenticatedAuthenticationToken(
+						authentication.getName(), credentials);
 			} else {
-				throw new UserNotSignedForServiceAuthenticationException("User " + authentication.getName() + " found in LDAP but is not signed up for " + ldapRimrockName);
+				throw new UserNotSignedForServiceAuthenticationException(
+						"User " + authentication.getName() + " found in LDAP but is not signed up "
+								+ "for " + ldapRimrockName);
 			}
 		}
 		
-		return new PreAuthenticatedAuthenticationToken(authentication.getName(), authentication.getCredentials());
+		return new PreAuthenticatedAuthenticationToken(authentication.getName(), credentials);
 	}
 
 	@Override

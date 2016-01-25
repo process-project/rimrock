@@ -27,6 +27,7 @@ import org.springframework.web.servlet.i18n.CookieLocaleResolver;
 import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
 
 import pl.cyfronet.rimrock.gridworkerapi.service.GridWorkerService;
+import pl.cyfronet.rimrock.gridworkerapi.service.JSagaExtras;
 
 @SpringBootApplication
 @EnableConfigurationProperties
@@ -108,10 +109,10 @@ public class RimrockApplication extends WebMvcConfigurerAdapter {
 	
 	@Bean
 	@Qualifier("jsaga")
-	GridWorkerService jSagaGridWorkerService(@Qualifier("jsaga") GridWorkerServer gridWorkerServer) throws InterruptedException {
+	JSagaExtras jSagaGridWorkerService(@Qualifier("jsaga") GridWorkerServer gridWorkerServer) throws InterruptedException {
 		RmiProxyFactoryBean gridWorkerServiceFactory = new RmiProxyFactoryBean();
 		gridWorkerServiceFactory.setServiceUrl("rmi://localhost:" + gridWorkerServer.getRegistryPort() + "/jSagaGridWorkerService");
-		gridWorkerServiceFactory.setServiceInterface(GridWorkerService.class);
+		gridWorkerServiceFactory.setServiceInterface(JSagaExtras.class);
 		
 		while(true) {
 			try {
@@ -125,7 +126,7 @@ public class RimrockApplication extends WebMvcConfigurerAdapter {
 			Thread.sleep(500);
 		}
 		
-		return (GridWorkerService) gridWorkerServiceFactory.getObject();
+		return (JSagaExtras) gridWorkerServiceFactory.getObject();
 	}
 	
 	@Bean

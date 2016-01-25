@@ -47,7 +47,7 @@ import org.springframework.web.bind.annotation.RestController;
 import pl.cyfronet.rimrock.controllers.rest.jobs.JobActionRequest;
 import pl.cyfronet.rimrock.domain.GridJob.Middleware;
 import pl.cyfronet.rimrock.gridworkerapi.beans.GridJob;
-import pl.cyfronet.rimrock.gridworkerapi.service.GridWorkerService;
+import pl.cyfronet.rimrock.gridworkerapi.service.JSagaExtras;
 import pl.cyfronet.rimrock.gsi.ProxyHelper;
 import pl.cyfronet.rimrock.services.gridjob.GridJobHelper;
 import pl.cyfronet.rimrock.services.gridjob.GridJobInfo;
@@ -57,12 +57,12 @@ import pl.cyfronet.rimrock.services.gridjob.GridJobSubmission;
 public class GridJobsController {
 	private static final Logger log = LoggerFactory.getLogger(GridJobsController.class);
 	
-	private GridWorkerService gridWorkerService;
+	private JSagaExtras gridWorkerService;
 	private ProxyHelper proxyHelper;
 	private GridJobHelper gridJobHelper;
 	
 	@Autowired
-	public GridJobsController(@Qualifier("jsaga") GridWorkerService gridWorkerService, ProxyHelper proxyHelper, GridJobHelper gridJobHelper) {
+	public GridJobsController(@Qualifier("jsaga") JSagaExtras gridWorkerService, ProxyHelper proxyHelper, GridJobHelper gridJobHelper) {
 		this.gridWorkerService = gridWorkerService;
 		this.proxyHelper = proxyHelper;
 		this.gridJobHelper = gridJobHelper;

@@ -59,19 +59,21 @@ public class ScpClientTest {
 		
 		ChannelSftp c = (ChannelSftp) channel;
 		
-		SftpATTRS cert = c.stat("/mnt/keyfs/users/plgtesthar/.globus/usercert.pem");
+		String certPath = "/mnt/keyfs/users/" + userLogin + "/.globus/usercert.pem";
+		String keyPath = "/mnt/keyfs/users/" + userLogin + "/.globus/userkey.pem";
+		SftpATTRS cert = c.stat(certPath);
 		log.info(cert.toString());
 		
 		if(cert.isReg()) {
-			InputStream is = c.get("/mnt/keyfs/users/plgtesthar/.globus/usercert.pem");
+			InputStream is = c.get(certPath);
 			log.info("Cert: {}", new BufferedReader(new InputStreamReader(is)).lines().collect(Collectors.joining("\n")));
 		}
 		
-		SftpATTRS key = c.stat("/mnt/keyfs/users/plgtesthar/.globus/userkey.pem");
+		SftpATTRS key = c.stat(keyPath);
 		log.info(key.toString());
 		
 		if(key.isReg()) {
-			InputStream keyIs = c.get("/mnt/keyfs/users/plgtesthar/.globus/userkey.pem");
+			InputStream keyIs = c.get(keyPath);
 			log.info("Key: {}", new BufferedReader(new InputStreamReader(keyIs)).lines().collect(Collectors.joining("\n")));
 		}
 		

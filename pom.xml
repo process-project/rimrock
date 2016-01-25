@@ -28,8 +28,8 @@
 		<tomcat.version>8.0.17</tomcat.version>
 		<gatling.version>2.1.7</gatling.version>
 		<jglobus.version>2.1.0</jglobus.version>
-		<rimrock.api.version>0.1.1</rimrock.api.version>
-		<jsaga.grid.worker.version>0.1.2</jsaga.grid.worker.version>
+		<rimrock.api.version>0.1.4-SNAPSHOT</rimrock.api.version>
+		<jsaga.grid.worker.version>0.1.4-SNAPSHOT</jsaga.grid.worker.version>
 		<qcg.grid.worker.version>0.1.1</qcg.grid.worker.version>
 	</properties>
 	
@@ -190,6 +190,10 @@
 			<groupId>xalan</groupId>
 			<artifactId>serializer</artifactId>
 			<version>2.7.1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-integration</artifactId>
 		</dependency>
 	</dependencies>
 

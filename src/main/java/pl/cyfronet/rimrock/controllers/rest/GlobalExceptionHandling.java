@@ -45,22 +45,26 @@ public class GlobalExceptionHandling {
 			msg = m.group(1);
 		}
 		
-		msg = String.format("%s. Make sure that your proxy is a valid SimpleCA certificate.", e.getMessage());
+		msg = String.format("%s. Make sure that your proxy is a valid SimpleCA certificate.",
+				e.getMessage());
 
 		return new ResponseEntity<ErrorResponse>(new ErrorResponse(msg), UNAUTHORIZED);
 	}
 	
-	@ExceptionHandler({FileManagerException.class, InvalidStateException.class, GSSException.class, IOException.class, InterruptedException.class})
+	@ExceptionHandler({FileManagerException.class, InvalidStateException.class, GSSException.class,
+		IOException.class, InterruptedException.class})
 	public ResponseEntity<ErrorResponse> handleRunCmdError(Exception e) {
 		log.error("Global error intercepted", e);
 		
-		return new ResponseEntity<ErrorResponse>(new ErrorResponse(e.getMessage()), INTERNAL_SERVER_ERROR);
+		return new ResponseEntity<ErrorResponse>(new ErrorResponse(e.getMessage()),
+				INTERNAL_SERVER_ERROR);
 	}
 	
 	@ExceptionHandler(RunException.class)
 	public ResponseEntity<ErrorResponse> handleRunError(RunException e) {
 		log.error("Global error intercepted", e);
-		log.error("Run exception details: \n\texit code: {}, \n\terror output: {}\n\tstandard output: {}", e.getExitCode(), e.getError(), e.getOutput());
+		log.error("Run exception details: \n\texit code: {}, \n\terror output: {}\n\t"
+				+ "standard output: {}", e.getExitCode(), e.getError(), e.getOutput());
 		
 		HttpStatus status = e.isTimeoutOccured() ? REQUEST_TIMEOUT : INTERNAL_SERVER_ERROR;
 		return new ResponseEntity<ErrorResponse>(new ErrorResponse(e), status);
@@ -70,7 +74,8 @@ public class GlobalExceptionHandling {
 	public ResponseEntity<ErrorResponse> handleValidationError(ValidationException e) {
 		log.error("Global error intercepted", e);
 		
-		return new ResponseEntity<ErrorResponse>(new ErrorResponse(-1, e.getMessage()), UNPROCESSABLE_ENTITY);
+		return new ResponseEntity<ErrorResponse>(new ErrorResponse(-1, e.getMessage()),
+				UNPROCESSABLE_ENTITY);
 	}
 	
 	@ExceptionHandler(ResourceAccessException.class)
@@ -91,6 +96,7 @@ public class GlobalExceptionHandling {
 	public ResponseEntity<ErrorResponse> handleError(Exception e) {
 		log.error("Global error intercepted", e);
 		
-		return new ResponseEntity<ErrorResponse>(new ErrorResponse(e.getMessage()), INTERNAL_SERVER_ERROR);
+		return new ResponseEntity<ErrorResponse>(new ErrorResponse(e.getMessage()),
+				INTERNAL_SERVER_ERROR);
 	}
 }
