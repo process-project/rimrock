@@ -85,7 +85,8 @@ public class ProxyGenerationController {
 				proxy = jSagaService.generateProxy(
 						keyFsCredentials.cert, keyFsCredentials.key, privateKeyPassword);
 				log.info("Proxy generation for user {} completed in {} ms",
-						userLogin, Duration.between(t1, Instant.now()).toMillis());
+						userLogin.orElse("missing user login"),
+						Duration.between(t1, Instant.now()).toMillis());
 			} catch (IllegalArgumentException e) {
 				String msg = "User password or private key password were not properly encoded with"
 						+ " the base64 method";
