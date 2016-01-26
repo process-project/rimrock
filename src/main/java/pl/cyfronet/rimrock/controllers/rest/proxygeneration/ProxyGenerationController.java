@@ -1,12 +1,15 @@
 package pl.cyfronet.rimrock.controllers.rest.proxygeneration;
 
 import static org.springframework.http.HttpStatus.OK;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.http.MediaType.TEXT_PLAIN_VALUE;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.rmi.RemoteException;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Base64;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -61,7 +64,7 @@ public class ProxyGenerationController {
 		this.jSagaService = gridWorkerService;
 	}
 	
-	@RequestMapping(value = PROXY_GENERATION_PATH, method = GET, produces = TEXT_PLAIN_VALUE)
+	@RequestMapping(value = PROXY_GENERATION_PATH, method = GET)
 	@ResponseBody
 	public ResponseEntity<String> generateProxy(
 			@RequestHeader("USER_LOGIN") Optional<String> userLogin,
@@ -74,6 +77,7 @@ public class ProxyGenerationController {
 		if (userLogin.isPresent() && basedUserPassword.isPresent()
 				&& basedPrivateKeyPassword.isPresent()) {
 			try {
+				Instant t1 = Instant.now();
 				byte[] userPassword = Base64.getDecoder().decode(basedUserPassword.get()); 
 				byte[] privateKeyPassword = Base64.getDecoder().decode(
 						basedPrivateKeyPassword.get());
@@ -81,6 +85,8 @@ public class ProxyGenerationController {
 						userLogin.get(), userPassword);
 				proxy = jSagaService.generateProxy(
 						keyFsCredentials.cert, keyFsCredentials.key, privateKeyPassword);
+				log.info("Proxy generation for user {} completed in {} ms",
+						userLogin, Duration.between(t1, Instant.now()).toMillis());
 			} catch (IllegalArgumentException e) {
 				String msg = "User password or private key password were not properly encoded with"
 						+ " the base64 method";

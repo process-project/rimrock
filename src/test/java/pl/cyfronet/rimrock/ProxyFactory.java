@@ -24,10 +24,17 @@ import org.springframework.stereotype.Service;
 public class ProxyFactory {
 	private static final Logger log = LoggerFactory.getLogger(ProxyFactory.class);
 	
-	@Value("classpath:usercert.pem") private Resource userCertFile;
-	@Value("classpath:userkey.pem") private Resource userKeyFile;
-	@Value("${test.user.key.pass:}") private String userKeyPass;
-	@Value("${test.proxy.path:}") private String proxyPath; 
+	@Value("classpath:usercert.pem")
+	private Resource userCertFile;
+	
+	@Value("classpath:userkey.pem")
+	private Resource userKeyFile;
+	
+	@Value("${test.user.key.pass:}")
+	private String userKeyPass;
+	
+	@Value("${test.proxy.path:}")
+	private String proxyPath; 
 	
 	private BouncyCastleCertProcessingFactory factory;
 	private String proxy;

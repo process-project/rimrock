@@ -73,6 +73,19 @@ sudo -u rimrock -H psql -d rimrock_production
 Rimrock communicates with infrastructure using secured connections. In order to verify a remote server it is necessary to have CA Certificate of CA responsible for server's certificate. This can be done by installing "EGI IGTF" CA package, which can be found here: https://wiki.egi.eu/wiki/EGI_IGTF_Release.
 Installation method depends on the operating system, in case of Ubuntu it is necessary to follow these steps: https://wiki.egi.eu/wiki/EGI_IGTF_Release#Using_the_distribution_on_a_Debian_or_Debian-derived_platform
 
+On Ubuntu follow the steps below:
+
+```
+sudo su
+wget -q -O - https://dist.eugridpma.info/distribution/igtf/current/GPG-KEY-EUGridPMA-RPM-3 | apt-key add -
+exit
+sudo aptitude install ca-policy-egi-core
+wget http://software.plgrid.pl/packages/general/ca_PLGRID-SimpleCA-1.0-4.noarch.rpm
+sudo alien --to-deb ca_PLGRID-SimpleCA-1.0-4.noarch.rpm
+sudo dpkg -i ca-plgrid-simpleca_1.0-5_all.deb
+sudo aptitude install fetch-crl
+```
+
 ## 6. Rimrock application
 
 Get Rimrock code and its configuration:

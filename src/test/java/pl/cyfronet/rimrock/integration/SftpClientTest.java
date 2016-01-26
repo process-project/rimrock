@@ -28,8 +28,8 @@ import com.jcraft.jsch.SftpException;
 import pl.cyfronet.rimrock.RimrockApplication;
 
 @SpringApplicationConfiguration(classes = RimrockApplication.class)
-public class ScpClientTest {
-	private static final Logger log = LoggerFactory.getLogger(ScpClientTest.class);
+public class SftpClientTest {
+	private static final Logger log = LoggerFactory.getLogger(SftpClientTest.class);
 
 	@ClassRule
 	public static final SpringClassRule SPRING_CLASS_RULE = new SpringClassRule();
