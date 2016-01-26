@@ -1,8 +1,6 @@
 package pl.cyfronet.rimrock.controllers.rest.proxygeneration;
 
 import static org.springframework.http.HttpStatus.OK;
-import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
-import static org.springframework.http.MediaType.TEXT_PLAIN_VALUE;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 
 import java.io.BufferedReader;
@@ -70,7 +68,8 @@ public class ProxyGenerationController {
 			@RequestHeader("USER_LOGIN") Optional<String> userLogin,
 			@RequestHeader("USER_PASSWORD") Optional<String> basedUserPassword,
 			@RequestHeader("PRIVATE_KEY_PASSWORD") Optional<String> basedPrivateKeyPassword) {
-		log.info("Proxy generation request for user {} started", userLogin);
+		log.info("Proxy generation request for user {} started",
+				userLogin.orElse("missing user login"));
 		
 		String proxy = null;
 		

@@ -128,6 +128,7 @@ public class GsisshRunner {
 							timeoutThread.interrupt();
 						}
 						
+						//TODO(DH): make sure that the output stream is closed when calling toByteArray()
 						String retrievedStandardOutput = new String(standardOutput.toByteArray());
 						NormalizedOutput normalizedOutput = normalizeStandardOutput(retrievedStandardOutput, separator);
 						results.setOutput(normalizedOutput.output);

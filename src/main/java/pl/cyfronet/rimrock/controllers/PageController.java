@@ -26,24 +26,28 @@ public class PageController {
 	@RequestMapping("/processes")
 	public String processes(Model model, HttpServletRequest request) {
 		fillLocale(model, request);
+		
 		return "processes";
 	}
 	
 	@RequestMapping("/iprocesses")
 	public String iprocesses(Model model, HttpServletRequest request) {
 		fillLocale(model, request);
+		
 		return "iprocesses";
 	}
 	
 	@RequestMapping("/jobs")
 	public String jobs(Model model, HttpServletRequest request) {
 		fillLocale(model, request);
+		
 		return "jobs";
 	}
 	
 	@RequestMapping("/gridjobs")
 	public String gridJobs(Model model, HttpServletRequest request) {
 		fillLocale(model, request);
+		
 		return "gridjobs";
 	}
 	
@@ -57,7 +61,15 @@ public class PageController {
 	@RequestMapping("/team")
 	public String team(Model model, HttpServletRequest request) {
 		fillLocale(model, request);
+		
 		return "team";
+	}
+	
+	@RequestMapping("/userproxy")
+	public String userProxy(Model model, HttpServletRequest request) {
+		fillLocale(model, request);
+		
+		return "userproxy";
 	}
 	
 	private void fillLocale(Model model, HttpServletRequest request) {
