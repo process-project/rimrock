@@ -8,6 +8,7 @@ import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
 
 import org.globus.gsi.CredentialException;
+import org.jboss.logging.MDC;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,6 +71,8 @@ public class LdapAuthenticationProvider implements AuthenticationProvider {
 		log.debug("Authenticating user with login {} and credentials {}", authentication.getName(),
 				credentials);
 		
+		PreAuthenticatedAuthenticationToken result = null;
+		
 		if (!credentials.equals(ProxyGenerationController.USER_CREDENTIALS)) {
 			try {
 				proxyHelper.verify(credentials);
@@ -103,16 +106,19 @@ public class LdapAuthenticationProvider implements AuthenticationProvider {
 			if(user.getServices().contains(ldapRimrockName)) {
 				log.debug("LDAP authorization was successful for {}", authentication.getName());
 				
-				return new PreAuthenticatedAuthenticationToken(
-						authentication.getName(), credentials);
+				result = new PreAuthenticatedAuthenticationToken(authentication.getName(), authentication.getCredentials());
 			} else {
 				throw new UserNotSignedForServiceAuthenticationException(
 						"User " + authentication.getName() + " found in LDAP but is not signed up "
 								+ "for " + ldapRimrockName);
 			}
+		} else {
+			result = new PreAuthenticatedAuthenticationToken(authentication.getName(), authentication.getCredentials());
 		}
 		
-		return new PreAuthenticatedAuthenticationToken(authentication.getName(), credentials);
+		MDC.put("userLogin", authentication.getName());
+		
+		return result;
 	}
 
 	@Override

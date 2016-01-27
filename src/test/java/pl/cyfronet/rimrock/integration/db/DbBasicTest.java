@@ -1,7 +1,9 @@
 package pl.cyfronet.rimrock.integration.db;
 
+import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInAnyOrder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
@@ -71,6 +73,24 @@ public class DbBasicTest {
 		assertEquals(2, jobs.size());		
 		assertEquals("1", jobs.get(0).getJobId());
 		assertEquals("2", jobs.get(1).getJobId());
+	}
+	
+	@Test
+	public void testGetHosts() {
+		Job j1 = userJob("1", "user1", "host1");
+		Job j2 = userJob("2", "user1", "host2");
+		jobRepository.save(j1);
+		jobRepository.save(j2);
+		jobRepository.save(userJob("3", "user1", "host1"));
+		jobRepository.save(userJob("4", "user2", "host2"));
+		
+		List<String> hosts = jobRepository.getHosts("user1");
+		
+		assertEquals(2, hosts.size());		
+		assertThat(hosts, containsInAnyOrder("host1", "host2"));
+		
+		hosts = jobRepository.getHosts("user2");
+		assertThat(hosts, containsInAnyOrder("host2"));
 	}
 	
 	private Job userJob(String id, String username, String hostname) {

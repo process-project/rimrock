@@ -1,16 +1,27 @@
 package pl.cyfronet.rimrock;
 
+import java.io.IOException;
 import java.util.Locale;
 
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+
 import org.apache.catalina.connector.Connector;
+import org.jboss.logging.MDC;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.context.embedded.ConfigurableEmbeddedServletContainer;
 import org.springframework.boot.context.embedded.EmbeddedServletContainerCustomizer;
+import org.springframework.boot.context.embedded.FilterRegistrationBean;
 import org.springframework.boot.context.embedded.tomcat.TomcatConnectorCustomizer;
 import org.springframework.boot.context.embedded.tomcat.TomcatEmbeddedServletContainerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -34,9 +45,17 @@ import pl.cyfronet.rimrock.gridworkerapi.service.JSagaExtras;
 public class RimrockApplication extends WebMvcConfigurerAdapter {
 	private static final Logger log = LoggerFactory.getLogger(RimrockApplication.class);
 	
-	@Value("${max.header.size.bytes}") private int maxHeaderSizeBytes;
-	@Value("${jsaga.jar.version}") private String jSagaGridWorkerVersion;
-	@Value("${qcg.jar.version}") private String qcgGridWorkerVersion;
+	@Autowired
+	private RequestLoggingInterceptor loggingInterceptor;
+	
+	@Value("${max.header.size.bytes}")
+	private int maxHeaderSizeBytes;
+	
+	@Value("${jsaga.jar.version}")
+	private String jSagaGridWorkerVersion;
+	
+	@Value("${qcg.jar.version}")
+	private String qcgGridWorkerVersion;
 
 	public static void main(String[] args) {
 		new SpringApplicationBuilder(RimrockApplication.class).run(args);
@@ -46,6 +65,8 @@ public class RimrockApplication extends WebMvcConfigurerAdapter {
 	@Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(localeChangeInterceptor());
+        registry.addInterceptor(loggingInterceptor)
+        		.addPathPatterns("/api/*");
     }
 
 	@Bean
@@ -155,5 +176,34 @@ public class RimrockApplication extends WebMvcConfigurerAdapter {
 		}
 		
 		return (GridWorkerService) gridWorkerServiceFactory.getObject();
+	}
+	
+	@Bean
+	FilterRegistrationBean mdcFilter() {
+		FilterRegistrationBean registration = new FilterRegistrationBean();
+		registration.setFilter(new Filter() {
+			@Override
+			public void init(FilterConfig filterConfig) throws ServletException {
+				//not needed
+			}
+			
+			@Override
+			public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+				//doing the whole chain processing: userLogin value will be set by
+				//the pl.cyfronet.rimrock.providers.ldap.LdapAuthenticationProvider.authenticate(Authentication) method
+				chain.doFilter(request, response);
+				
+				//cleaning the set userLogin value
+				MDC.remove("userLogin");
+			}
+			
+			@Override
+			public void destroy() {
+				//not needed
+			}
+		});
+		registration.addUrlPatterns("/api/*");
+		
+		return registration;
 	}
 }

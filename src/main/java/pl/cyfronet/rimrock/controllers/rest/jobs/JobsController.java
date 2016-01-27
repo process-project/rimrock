@@ -35,31 +35,28 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.sshtools.j2ssh.util.InvalidStateException;
+
 import pl.cyfronet.rimrock.controllers.rest.ErrorResponse;
 import pl.cyfronet.rimrock.controllers.rest.RestHelper;
 import pl.cyfronet.rimrock.domain.Job;
 import pl.cyfronet.rimrock.gsi.ProxyHelper;
-import pl.cyfronet.rimrock.repositories.JobRepository;
 import pl.cyfronet.rimrock.services.filemanager.FileManagerException;
 import pl.cyfronet.rimrock.services.gsissh.RunException;
 import pl.cyfronet.rimrock.services.job.UserJobs;
 import pl.cyfronet.rimrock.services.job.UserJobsFactory;
 
-import com.sshtools.j2ssh.util.InvalidStateException;
-
 @Controller
 public class JobsController {
 	private static final Logger log = LoggerFactory.getLogger(JobsController.class);
 	
-	private JobRepository jobRepository;
 	private UserJobsFactory userJobsFactory;
 	private ProxyHelper proxyHelper;
 	
 	@Value("${plgridData.url}")	private String plgDataUrl;
 	
 	@Autowired
-	public JobsController(JobRepository jobRepository, UserJobsFactory userJobsFactory, ProxyHelper proxyHelper) {
-		this.jobRepository = jobRepository;
+	public JobsController(UserJobsFactory userJobsFactory, ProxyHelper proxyHelper) {
 		this.userJobsFactory = userJobsFactory;
 		this.proxyHelper = proxyHelper;
 	}
@@ -106,9 +103,8 @@ public class JobsController {
 	public ResponseEntity<List<JobInfo>> globalStatus(@RequestHeader("PROXY") String proxy, @RequestParam(value = "tag", required = false) String tag) 
 			throws CredentialException, InvalidStateException, GSSException, FileManagerException, 
 			IOException, InterruptedException, KeyStoreException, CertificateException {
-		List<String> hosts = jobRepository.getHosts();
 		UserJobs manager = userJobsFactory.get(proxyHelper.decodeProxy(proxy));
-		List<Job> jobs = manager.update(hosts, tag);
+		List<Job> jobs = manager.update(null, tag);
 		List<JobInfo> infos = jobs.stream().
 				map(job -> new JobInfo(job, plgDataUrl)).
 				collect(Collectors.toList());
