@@ -163,19 +163,19 @@ public class UserJobs {
 							: "FINISHED";
 			History history = mappedHistoryJobIds.get(job.getJobId());
 
-			//logging job status change only if new state is different than the old one
+			//changing job status only if new state is different than the old one
 			if (!job.getStatus().equals(status)) {
 				if (asList("FINISHED", "ABORTED").contains(job.getStatus())) {
-					log.warn("Local job {} with a terminal state ({}) changed status to {}",
-							job.getJobId(), job.getStatus(), status);
+					log.warn("Local job {} with a terminal state ({}) attempt to change to {} "
+							+ "prevented", job.getJobId(), job.getStatus(), status);
 				} else {
 					log.info("Local job {} changed status from {} to {}",
 							job.getJobId(), job.getStatus(), status);
+					job.setStatus(status);
+					jobRepository.save(job);
 				}
 			}
 			
-			job.setStatus(status);
-			jobRepository.save(job);
 
 			if (Arrays.asList("FINISHED", "ABORTED").contains(job.getStatus())
 					&& job.getCores() == null && history != null) {
