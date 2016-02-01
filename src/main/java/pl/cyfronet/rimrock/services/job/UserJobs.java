@@ -1,5 +1,7 @@
 package pl.cyfronet.rimrock.services.job;
 
+import static java.util.Arrays.asList;
+
 import java.io.IOException;
 import java.security.KeyStoreException;
 import java.security.cert.CertificateException;
@@ -84,7 +86,10 @@ public class UserJobs {
 		SubmitResult submitResult = readResult(result.getOutput(), SubmitResult.class);
 
 		if ("OK".equals(submitResult.getResult())) {
-			return jobRepository.save(new Job(submitResult.getJobId(), "QUEUED", submitResult.getStandardOutputLocation(),
+			String jobStatus = "QUEUED";
+			log.info("Local job {} sbumitted and saved with status {}",
+					submitResult.getJobId(), jobStatus);
+			return jobRepository.save(new Job(submitResult.getJobId(), jobStatus, submitResult.getStandardOutputLocation(),
 					submitResult.getStandardErrorLocation(), userLogin, host, tag));
 		} else {
 			throw new RunException(submitResult.getErrorMessage(), result);
@@ -131,7 +136,6 @@ public class UserJobs {
 
 		if (tag != null) {
 			jobs = jobRepository.findByUsernameAndTagOnHosts(userLogin, tag, hosts);
-
 		} else {
 			jobs = jobRepository.findByUsernameOnHosts(userLogin, hosts);
 		}
@@ -153,15 +157,28 @@ public class UserJobs {
 				));
 
 		for (Job job : jobs) {
-			Status status = mappedStatusJobIds.get(job.getJobId());
+			String status = mappedStatusJobIds.get(job.getJobId()) != null
+					&& mappedStatusJobIds.get(job.getJobId()).getStatus() != null
+					? mappedStatusJobIds.get(job.getJobId()).getStatus()
+							: "FINISHED";
 			History history = mappedHistoryJobIds.get(job.getJobId());
 
-			if (!Arrays.asList("FINISHED", "ABORTED").contains(job.getStatus())) {
-				job.setStatus((status != null && status.getStatus() != null) ? status.getStatus() : "FINISHED");
-				jobRepository.save(job);
+			//logging job status change only if new state is different than the old one
+			if (!job.getStatus().equals(status)) {
+				if (asList("FINISHED", "ABORTED").contains(job.getStatus())) {
+					log.warn("Local job {} with a terminal state ({}) changed status to {}",
+							job.getJobId(), job.getStatus(), status);
+				} else {
+					log.info("Local job {} changed status from {} to {}",
+							job.getJobId(), job.getStatus(), status);
+				}
 			}
+			
+			job.setStatus(status);
+			jobRepository.save(job);
 
-			if (Arrays.asList("FINISHED", "ABORTED").contains(job.getStatus()) && job.getCores() == null && history != null) {
+			if (Arrays.asList("FINISHED", "ABORTED").contains(job.getStatus())
+					&& job.getCores() == null && history != null) {
 				job.setNodes(history.getJobNodes());
 				job.setCores(history.getJobCores());
 				job.setWallTime(history.getJobWalltime());
@@ -191,6 +208,7 @@ public class UserJobs {
 	public void delete(String jobId) throws JobNotFoundException, CredentialException, FileManagerException, RunException, KeyStoreException,
 			CertificateException {
 		Job job = abortJob(jobId);
+		log.info("Local job {} deleted", job.getJobId());
 		jobRepository.delete(job);
 	}
 
@@ -198,6 +216,7 @@ public class UserJobs {
 			CertificateException {
 		Job job = abortJob(jobId);
 		job.setStatus("ABORTED");
+		log.info("Local job {} aborted", job.getJobId());
 		jobRepository.save(job);
 	}
 
@@ -216,7 +235,10 @@ public class UserJobs {
 
 			RunResults result = run(host, String.format("cd %s.rimrock; chmod +x stop; ./stop %s", pathHelper.getFileRootPath(), jobId), timeout);
 			processRunExceptions(result);
+			log.info("Local job {} aborted on the computing infrastructure as it was not "
+					+ "completed yet", jobId);
 		}
+		
 		return job;
 	}
 

@@ -66,7 +66,7 @@ public class RimrockApplication extends WebMvcConfigurerAdapter {
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(localeChangeInterceptor());
         registry.addInterceptor(loggingInterceptor)
-        		.addPathPatterns("/api/*");
+        		.addPathPatterns("/api/**");
     }
 
 	@Bean

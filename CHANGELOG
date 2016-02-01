@@ -1,6 +1,7 @@
 v 1.6.0
   - proxy certificate generation endpoint added
   - API user actions are now logged
+  - logging of local job status changes was improved
 
 v 1.5.5
   - prometheus tests disabled until the cluster is accessible again
