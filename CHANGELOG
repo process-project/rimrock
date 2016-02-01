@@ -1,3 +1,6 @@
+v 1.6.1
+  - aborted and finished local jobs cannot change status anymore
+
 v 1.6.0
   - proxy certificate generation endpoint added
   - API user actions are now logged
