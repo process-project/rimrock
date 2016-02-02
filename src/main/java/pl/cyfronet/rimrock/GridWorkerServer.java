@@ -125,14 +125,16 @@ public class GridWorkerServer implements InitializingBean {
 		}
 		
 		List<String> command = new ArrayList<>();
-		command.addAll(asList("java", "-cp", cp, mainClass, "--rmi.registry.port=" + serverPort));
+		command.addAll(asList("java", "-Djava.rmi.server.hostname=localhost", "-cp", cp, mainClass,
+				"--rmi.registry.port=" + serverPort));
 		
 		return command;
 	}
 
 	private List<String> getNormalCommand(String jarName) {
 		List<String> command = new ArrayList<>();
-		command.addAll(asList("java", "-jar", jarName, "--rmi.registry.port=" + serverPort));
+		command.addAll(asList("java", "-Djava.rmi.server.hostname=localhost", "-jar", jarName,
+				"--rmi.registry.port=" + serverPort));
 		
 		return command;
 	}
