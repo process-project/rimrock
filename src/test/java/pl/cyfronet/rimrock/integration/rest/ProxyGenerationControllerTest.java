@@ -22,6 +22,7 @@ import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.http.ContentType;
 
 import pl.cyfronet.rimrock.RimrockApplication;
+import pl.cyfronet.rimrock.controllers.rest.proxygeneration.ProxyGenerationController;
 
 @SpringApplicationConfiguration(classes = RimrockApplication.class)
 @WebIntegrationTest
@@ -62,10 +63,10 @@ public class ProxyGenerationControllerTest {
 		Instant t1 = Instant.now();
 		String proxy =
 		given()
-			.header("USER_LOGIN", userLogin)
-			.header("USER_PASSWORD",
+			.header(ProxyGenerationController.USER_LOGIN_HEADER_NAME, userLogin)
+			.header(ProxyGenerationController.USER_PASSWORD_HEADER_NAME,
 					Base64.getEncoder().encodeToString(userPassword.getBytes()))
-			.header("PRIVATE_KEY_PASSWORD",
+			.header(ProxyGenerationController.PRIVATE_KEY_PASSWORD_HEADER_NAME,
 					Base64.getEncoder().encodeToString(userKeyPass.getBytes()))
 		.when()
 			.get("/api/userproxy")
@@ -82,9 +83,9 @@ public class ProxyGenerationControllerTest {
 	@Test
 	public void testInvalidPassword() {
 		given()
-			.header("USER_LOGIN", userLogin)
-			.header("USER_PASSWORD", "badPassword")
-			.header("PRIVATE_KEY_PASSWORD", "badKeyPassword")
+			.header(ProxyGenerationController.USER_LOGIN_HEADER_NAME, userLogin)
+			.header(ProxyGenerationController.USER_PASSWORD_HEADER_NAME, "badPassword")
+			.header(ProxyGenerationController.PRIVATE_KEY_PASSWORD_HEADER_NAME, "badKeyPassword")
 		.when()
 			.get("/api/userproxy")
 		.then()
