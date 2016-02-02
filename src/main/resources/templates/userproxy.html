@@ -41,9 +41,9 @@
 						<tr>
 							<th th:text="#{userproxy.header_params}"></th>
 							<td>
-								<em>USER_LOGIN</em> - <span th:text="#{userproxy.header.user_login}"></span><br/>
-								<em>USER_PASSWORD</em> - <span th:text="#{userproxy.header.user_password}"></span><br/>
-								<em>PRIVATE_KEY_PASSWORD</em> - <span th:text="#{userproxy.header.private_key_password}"></span>
+								<em>USER-LOGIN</em> - <span th:text="#{userproxy.header.user_login}"></span><br/>
+								<em>USER-PASSWORD</em> - <span th:text="#{userproxy.header.user_password}"></span><br/>
+								<em>PRIVATE-KEY-PASSWORD</em> - <span th:text="#{userproxy.header.private_key_password}"></span>
 							</td>
 						</tr>
 						<tr>
@@ -95,8 +95,8 @@
 read -p "Provide user login: " userLogin
 read -s -p "Provide user password: "; userPassword=`echo $REPLY | tr -d '\n' | base64`
 read -s -p "Provide private key password: "; privateKeyPassword=`echo $REPLY | tr -d '\n' | base64`
-curl -k -X GET --header "USER_LOGIN:$userLogin" --header "USER_PASSWORD:$userPassword" \
---header "PRIVATE_KEY_PASSWORD:$privateKeyPassword" <th:block th:text="'https://' + ${#httpServletRequest.serverName} + @{~/api/userproxy}"/>
+curl -k -X GET --header "USER-LOGIN:$userLogin" --header "USER-PASSWORD:$userPassword" \
+--header "PRIVATE-KEY-PASSWORD:$privateKeyPassword" <th:block th:text="'https://' + ${#httpServletRequest.serverName} + @{~/api/userproxy}"/>
 </pre>
 							</td>
 						</tr>
