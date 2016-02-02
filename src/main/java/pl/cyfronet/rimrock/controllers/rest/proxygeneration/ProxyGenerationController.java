@@ -41,6 +41,12 @@ public class ProxyGenerationController {
 	
 	public static final String USER_CREDENTIALS = "MISSING (proxy generation)";
 	
+	public static final String USER_LOGIN_HEADER_NAME = "USER-LOGIN";
+	
+	public static final String USER_PASSWORD_HEADER_NAME = "USER-PASSWORD";
+	
+	public static final String PRIVATE_KEY_PASSWORD_HEADER_NAME = "PRIVATE-KEY-PASSWORD";
+	
 	@Value("${keyfs.cyfronet.prefix.cert.template}")
 	private String keyFsPrefixCertTemplate;
 	
@@ -65,9 +71,12 @@ public class ProxyGenerationController {
 	@RequestMapping(value = PROXY_GENERATION_PATH, method = GET)
 	@ResponseBody
 	public ResponseEntity<String> generateProxy(
-			@RequestHeader("USER_LOGIN") Optional<String> userLogin,
-			@RequestHeader("USER_PASSWORD") Optional<String> basedUserPassword,
-			@RequestHeader("PRIVATE_KEY_PASSWORD") Optional<String> basedPrivateKeyPassword) {
+			@RequestHeader(USER_LOGIN_HEADER_NAME)
+			Optional<String> userLogin,
+			@RequestHeader(USER_PASSWORD_HEADER_NAME)
+			Optional<String> basedUserPassword,
+			@RequestHeader(PRIVATE_KEY_PASSWORD_HEADER_NAME)
+			Optional<String> basedPrivateKeyPassword) {
 		log.info("Proxy generation request for user {} started",
 				userLogin.orElse("missing user login"));
 		

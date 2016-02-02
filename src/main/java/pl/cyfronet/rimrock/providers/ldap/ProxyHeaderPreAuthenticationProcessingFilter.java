@@ -33,7 +33,7 @@ public class ProxyHeaderPreAuthenticationProcessingFilter extends AbstractPreAut
 			}
 		} else if (request.getRequestURI().equals(
 				ProxyGenerationController.PROXY_GENERATION_PATH)) {
-			String userLogin = request.getHeader("USER_LOGIN");
+			String userLogin = request.getHeader(ProxyGenerationController.USER_LOGIN_HEADER_NAME);
 			
 			if (userLogin != null) {
 				return userLogin;
