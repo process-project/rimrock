@@ -7,6 +7,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.startsWith;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -19,6 +20,7 @@ import org.ietf.jgss.GSSException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -162,13 +164,13 @@ public class UserJobsTest {
 				runner.run(
 						eq("zeus.cyfronet.pl"),
 						eq(proxy),
-						eq("cd /people/userLogin/.rimrock; chmod +x status; ./status"),
+						startsWith("cd /people/userLogin/.rimrock; chmod +x status; ./status"),
 						anyInt())).thenReturn(zeusResult);
 		when(
 				runner.run(
 						eq("ui.cyfronet.pl"),
 						eq(proxy),
-						eq("cd /people/userLogin/.rimrock; chmod +x status; ./status"),
+						startsWith("cd /people/userLogin/.rimrock; chmod +x status; ./status"),
 						anyInt())).thenReturn(uiResult);
 
 		userJobs.update(Arrays.asList("zeus.cyfronet.pl", "ui.cyfronet.pl"), null);
@@ -203,7 +205,7 @@ public class UserJobsTest {
 				runner.run(
 						eq("zeus.cyfronet.pl"),
 						eq(proxy),
-						eq("cd /people/userLogin/.rimrock; chmod +x status; ./status"),
+						startsWith("cd /people/userLogin/.rimrock; chmod +x status; ./status"),
 						anyInt())).thenReturn(zeusResult);
 
 		userJobs.update(Arrays.asList("zeus.cyfronet.pl"), null);
