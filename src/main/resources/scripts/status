@@ -163,11 +163,11 @@ function status_slurm {
 }
 
 
-if [ -n "$1" ]
-then
-	usage
-	exit 1
-fi
+#if [ -n "$1" ]
+#then
+#	usage
+#	exit 1
+#fi
 
 detect_rm
 
