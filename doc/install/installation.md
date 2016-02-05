@@ -78,6 +78,7 @@ On Ubuntu follow the steps below:
 ```
 sudo su
 wget -q -O - https://dist.eugridpma.info/distribution/igtf/current/GPG-KEY-EUGridPMA-RPM-3 | apt-key add -
+echo "deb http://repository.egi.eu/sw/production/cas/1/current egi-igtf core" > /etc/apt/sources.list.d/egi.list
 exit
 sudo aptitude install ca-policy-egi-core
 wget http://software.plgrid.pl/packages/general/ca_PLGRID-SimpleCA-1.0-4.noarch.rpm
