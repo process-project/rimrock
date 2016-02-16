@@ -6,7 +6,7 @@ ZJH=/opt/cyfronet/bin/zeus-jobs-history
 HOST=`hostname -a`
 
 function usage {
-	echo "Usage: $0"
+	echo "Usage: $0 [job_id...]"
 }
 
 function report_error {
@@ -163,11 +163,11 @@ function status_slurm {
 }
 
 
-#if [ -n "$1" ]
-#then
-#	usage
-#	exit 1
-#fi
+if [ "$1" = "-h" ]
+then
+	usage
+	exit 1
+fi
 
 detect_rm
 
