@@ -3,10 +3,9 @@
 QSTAT=''
 SQUEUE=''
 ZJH=/opt/cyfronet/bin/zeus-jobs-history
-HOST=`hostname -a`
 
 function usage {
-	echo "Usage: $0 [job_id...]"
+	echo "Usage: $0 job_id [job_id...]"
 }
 
 function report_error {
@@ -28,23 +27,13 @@ function detect_rm {
 }
 
 function status_torque {
-	#do a qstat, output == jobids in new lines
-	output=$($QSTAT -u $USER | tail -n +6 | cut -f 1 -d "." 2>&1)
-	#output=$($QSTAT | head | tail -n +6 | cut -f 1 -d "." 2>&1)
-
-	if [ ${PIPESTATUS[0]} -ne 0 ]
-	then
-		report_error "qstat listing error! $output"
-		exit 12
-	fi
-
 	declare -A state
 	state["Q"]="QUEUED"
 	state["R"]="RUNNING"
 	state["E"]="ERROR"
 	state["C"]="COMPLETED"
 
-	declare -a job_list=(${output[@]})
+	declare -a job_list=($@)
 
 	text_output=""
 	text_output_history=""
@@ -59,7 +48,7 @@ function status_torque {
 			#exit 13
 			continue
 		fi
-		text_output="${text_output}\t\t{\n\t\t\t\"job_id\": \"${job_id}.batch.grid.cyf-kr.edu.pl\",\n\t\t\t\"job_state\": \"${state[${job_state}]}\"\n\t\t},\n"
+		text_output="${text_output}\t\t{\n\t\t\t\"job_id\": \"${job_id}\",\n\t\t\t\"job_state\": \"${state[${job_state}]}\"\n\t\t},\n"
 	done
 
 	#check for past job data in zeus-jobs-history, jobs here should not collide with jobs gathered from qstat
@@ -103,14 +92,6 @@ function status_torque {
 }
 
 function status_slurm {
-	output=$(${SQUEUE} -h -u $USER -o %A)
-
-	if [ $? -ne 0 ]
-	then
-		report_error "squeue listing error! $output"
-		exit 12
-	fi
-
 	#translate slurm states to pbs states
 	declare -A state
 	state["PENDING"]="QUEUED"
@@ -126,7 +107,7 @@ function status_slurm {
 	state["NODE_FAIL"]="ERROR"
 	state["SPECIAL_EXIT"]="ERROR"
 
-	declare -a job_list=(${output[@]})
+	declare -a job_list=($@)
 
 	text_output=""
 	text_output_history=""
@@ -140,8 +121,7 @@ function status_slurm {
 			report_error "squeue error! $job_state"
 			exit 13
 		fi
-		full_job_id=$job_id.$HOST
-		text_output="${text_output}\t\t{\n\t\t\t\"job_id\": \"${full_job_id}\",\n\t\t\t\"job_state\": \"${state[${job_state}]}\"\n\t\t},\n"
+		text_output="${text_output}\t\t{\n\t\t\t\"job_id\": \"${job_id}\",\n\t\t\t\"job_state\": \"${state[${job_state}]}\"\n\t\t},\n"
 	done
 
 	#remove last ,
@@ -163,7 +143,7 @@ function status_slurm {
 }
 
 
-if [ "$1" = "-h" ]
+if [ "$1" = "-h" -o "$#" -eq "0" ]
 then
 	usage
 	exit 1
@@ -173,10 +153,10 @@ detect_rm
 
 if [ "$RM" == "torque" ]
 then
-	status_torque
+	status_torque $@
 elif [ "$RM" == "slurm" ]
 then
-	status_slurm
+	status_slurm $@
 else
 	report_error "Unable to determine resource manager"
 	exit 2
