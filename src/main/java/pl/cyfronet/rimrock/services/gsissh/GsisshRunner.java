@@ -27,6 +27,7 @@ import com.sshtools.j2ssh.authentication.GSSAuthenticationClient;
 import com.sshtools.j2ssh.configuration.SshConnectionProperties;
 import com.sshtools.j2ssh.connection.ChannelState;
 import com.sshtools.j2ssh.io.IOStreamConnector;
+import com.sshtools.j2ssh.io.IOStreamConnectorState;
 import com.sshtools.j2ssh.session.SessionChannelClient;
 import com.sshtools.j2ssh.util.InvalidStateException;
 
@@ -123,12 +124,12 @@ public class GsisshRunner {
 						};
 						timeoutThread.start();
 						session.getState().waitForState(ChannelState.CHANNEL_CLOSED);
+						output.getState().waitForState(IOStreamConnectorState.CLOSED);
 						
 						if(timeoutThread.isAlive()) {
 							timeoutThread.interrupt();
 						}
 						
-						//TODO(DH): make sure that the output stream is closed when calling toByteArray()
 						String retrievedStandardOutput = new String(standardOutput.toByteArray());
 						NormalizedOutput normalizedOutput = normalizeStandardOutput(retrievedStandardOutput, separator);
 						results.setOutput(normalizedOutput.output);
