@@ -3,6 +3,7 @@
 QSTAT=''
 SQUEUE=''
 ZJH=/opt/cyfronet/bin/zeus-jobs-history
+set -o pipefail
 
 function usage {
 	echo "Usage: $0 job_id [job_id...]"
@@ -40,9 +41,9 @@ function status_torque {
 
 	for job_id in "${job_list[@]}"
 	do
-		job_state=$($QSTAT -f $job_id | grep job_state | cut -f 2 -d "=" | tr -d " " 2>&1)
+		job_state=$($QSTAT -f $job_id 2>&1 | grep job_state | cut -f 2 -d "=" | tr -d " " 2>&1)
 
-		if [ $? -ne 0 ]
+		if [ "$?" -ne "0" ]
 		then
 			#report_error "qstat error! $job_state"
 			#exit 13
@@ -56,9 +57,6 @@ function status_torque {
 
 	if [ "plgmonitoring" != $USER ]
 	then
-		output=$($ZJH -d 31 -u $USER | tail -n +3 | cut -d " " -f 1 2>&1)
-
-		declare -a job_list=(${output[@]})
 		for job_id in "${job_list[@]}"
 		do
 			zjho=$($ZJH -f $job_id | tail -n 19)
@@ -69,7 +67,10 @@ function status_torque {
 			job_starttime=$(echo "$zjho" | grep "Start:" | tr -s " " | cut -d " " -f 2,3 2>&1)
 			job_endtime=$(echo "$zjho" | grep "End:" | tr -s " " | cut -d " " -f 2,3 2>&1)
 
-			text_output_history="${text_output_history}\t\t{\n\t\t\t\"job_id\": \"${job_id}.batch.grid.cyf-kr.edu.pl\",\n\t\t\t\"job_nodes\": \"${job_nodes}\",\n\t\t\t\"job_cores\": \"${job_cores}\",\n\t\t\t\"job_walltime\": \"${job_walltime}\",\n\t\t\t\"job_queuetime\": \"${job_queuetime}\",\n\t\t\t\"job_starttime\": \"${job_starttime}\",\n\t\t\t\"job_endtime\": \"${job_endtime}\"\n\t\t},\n"
+			if [ -n "${job_starttime}" ]
+			then
+				text_output_history="${text_output_history}\t\t{\n\t\t\t\"job_id\": \"${job_id}.batch.grid.cyf-kr.edu.pl\",\n\t\t\t\"job_nodes\": \"${job_nodes}\",\n\t\t\t\"job_cores\": \"${job_cores}\",\n\t\t\t\"job_walltime\": \"${job_walltime}\",\n\t\t\t\"job_queuetime\": \"${job_queuetime}\",\n\t\t\t\"job_starttime\": \"${job_starttime}\",\n\t\t\t\"job_endtime\": \"${job_endtime}\"\n\t\t},\n"
+			fi
 		done
 	fi
 
