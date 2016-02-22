@@ -8,6 +8,7 @@ QSTAT="qstat"
 SBATCH=""
 SCONTROL="scontrol"
 HOST=`hostname -a`
+set -o pipefail
 
 function usage {
 	echo "Usage: $0 job_script"
