@@ -2,6 +2,7 @@ package pl.cyfronet.rimrock.controllers.rest;
 
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
+import static org.springframework.http.HttpStatus.LOCKED;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.REQUEST_TIMEOUT;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
@@ -21,12 +22,13 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.client.ResourceAccessException;
 
+import com.sshtools.j2ssh.util.InvalidStateException;
+
 import pl.cyfronet.rimrock.controllers.exceptions.ResourceNotFoundException;
 import pl.cyfronet.rimrock.controllers.rest.jobs.ValidationException;
+import pl.cyfronet.rimrock.controllers.rest.proxygeneration.BanException;
 import pl.cyfronet.rimrock.services.filemanager.FileManagerException;
 import pl.cyfronet.rimrock.services.gsissh.RunException;
-
-import com.sshtools.j2ssh.util.InvalidStateException;
 
 @ControllerAdvice
 public class GlobalExceptionHandling {
@@ -98,5 +100,12 @@ public class GlobalExceptionHandling {
 		
 		return new ResponseEntity<ErrorResponse>(new ErrorResponse(e.getMessage()),
 				INTERNAL_SERVER_ERROR);
+	}
+	
+	@ExceptionHandler(BanException.class)
+	public ResponseEntity<ErrorResponse> handleBanException(BanException e) {
+		log.error("Global error intercepted", e);
+		
+		return new ResponseEntity<ErrorResponse>(new ErrorResponse(e.getMessage()), LOCKED);
 	}
 }

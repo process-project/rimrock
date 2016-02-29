@@ -1,5 +1,6 @@
 package pl.cyfronet.rimrock.controllers.rest.proxygeneration;
 
+import static org.springframework.http.HttpStatus.LOCKED;
 import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 
@@ -57,6 +58,8 @@ public class ProxyGenerationController {
 	private String keyFsHost;
 	
 	private JSagaExtras jSagaService;
+
+	private BanUtil banUtil;
 	
 	private class KeyFsCredentials {
 		String cert;
@@ -64,8 +67,10 @@ public class ProxyGenerationController {
 	}
 	
 	@Autowired
-	public ProxyGenerationController(@Qualifier("jsaga") JSagaExtras gridWorkerService) {
+	public ProxyGenerationController(@Qualifier("jsaga") JSagaExtras gridWorkerService,
+			BanUtil banUtil) {
 		this.jSagaService = gridWorkerService;
+		this.banUtil = banUtil;
 	}
 	
 	@RequestMapping(value = PROXY_GENERATION_PATH, method = GET)
@@ -76,7 +81,7 @@ public class ProxyGenerationController {
 			@RequestHeader(USER_PASSWORD_HEADER_NAME)
 			Optional<String> basedUserPassword,
 			@RequestHeader(PRIVATE_KEY_PASSWORD_HEADER_NAME)
-			Optional<String> basedPrivateKeyPassword) {
+			Optional<String> basedPrivateKeyPassword) throws BanException {
 		log.info("Proxy generation request for user {} started",
 				userLogin.orElse("missing user login"));
 		
@@ -84,6 +89,11 @@ public class ProxyGenerationController {
 		
 		if (userLogin.isPresent() && basedUserPassword.isPresent()
 				&& basedPrivateKeyPassword.isPresent()) {
+			if (!banUtil.canProceed(userLogin.get())) {
+				throw new BanException("Locked for another "
+						+ banUtil.getDurationSeconds(userLogin.get()) + " seconds");
+			}
+			
 			try {
 				Instant t1 = Instant.now();
 				byte[] userPassword = Base64.getDecoder().decode(basedUserPassword.get()); 
@@ -96,20 +106,24 @@ public class ProxyGenerationController {
 				log.info("Proxy generation for user {} completed in {} ms",
 						userLogin.orElse("missing user login"),
 						Duration.between(t1, Instant.now()).toMillis());
+				banUtil.success(userLogin.get());
 			} catch (IllegalArgumentException e) {
 				String msg = "User password or private key password were not properly encoded with"
 						+ " the base64 method";
 				log.error(msg, e);
+				banUtil.failure(userLogin.get());
 				
 				throw new ValidationException(msg);
 			} catch (JSchException | SftpException e) {
 				String msg = "User key or certificate were not found in a typical KeyFS location";
 				log.error(msg, e);
+				banUtil.failure(userLogin.get());
 				
 				throw new ResourceNotFoundException(msg);
 			} catch (RemoteException e) {
 				String msg = "Proxy certificate could not be generated";
 				log.error(msg, e);
+				banUtil.failure(userLogin.get());
 				
 				throw new RuntimeException(msg);
 			}
