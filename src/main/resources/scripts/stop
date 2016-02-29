@@ -5,6 +5,7 @@
 RM='unknown'
 QDEL=''
 SCANCEL=''
+set -o pipefail
 
 function usage {
 	echo "Usage: $0 job_id"

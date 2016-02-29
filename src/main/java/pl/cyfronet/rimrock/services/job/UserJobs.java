@@ -48,7 +48,8 @@ public class UserJobs {
 	public UserJobs(String proxy, FileManagerFactory fileManagerFactory,
 					GsisshRunner runner, JobRepository jobRepository,
 					ProxyHelper proxyHelper, ObjectMapper mapper)
-			throws CredentialException, GSSException, KeyStoreException, CertificateException, IOException {
+			throws CredentialException, GSSException, KeyStoreException, CertificateException,
+			IOException {
 		this.proxy = proxy;
 		this.userLogin = proxyHelper.getUserLogin(proxy);
 		this.runner = runner;
@@ -70,8 +71,9 @@ public class UserJobs {
 	 * @throws CertificateException
 	 * @throws KeyStoreException
 	 */
-	public Job submit(String host, String workingDirectory, String script, String tag) throws FileManagerException, CredentialException, RunException,
-			KeyStoreException, CertificateException {
+	public Job submit(String host, String workingDirectory, String script, String tag)
+			throws FileManagerException, CredentialException, RunException, KeyStoreException,
+			CertificateException {
 		PathHelper pathHelper = new PathHelper(host, userLogin);
 		String transferPath = buildPath(pathHelper.getTransferPath(), workingDirectory);
 		String fileRootPath = buildPath(pathHelper.getFileRootPath(), workingDirectory);
@@ -80,7 +82,9 @@ public class UserJobs {
 		fileManager.cp(transferPath + "script.sh", new ByteArrayResource(script.getBytes()));
 		fileManager.cp(transferPath + ".rimrock/start", new ClassPathResource("scripts/start"));
 
-		RunResults result = run(host, String.format("cd %s; chmod +x .rimrock/start; ./.rimrock/start script.sh", fileRootPath), timeout);
+		RunResults result = run(host,
+				String.format("cd %s; chmod +x .rimrock/start; ./.rimrock/start script.sh",
+						fileRootPath), timeout);
 		processRunExceptions(result);
 
 		SubmitResult submitResult = readResult(result.getOutput(), SubmitResult.class);
@@ -89,7 +93,8 @@ public class UserJobs {
 			String jobStatus = "QUEUED";
 			log.info("Local job {} sbumitted and saved with status {}",
 					submitResult.getJobId(), jobStatus);
-			return jobRepository.save(new Job(submitResult.getJobId(), jobStatus, submitResult.getStandardOutputLocation(),
+			return jobRepository.save(new Job(submitResult.getJobId(), jobStatus,
+					submitResult.getStandardOutputLocation(),
 					submitResult.getStandardErrorLocation(), userLogin, host, tag));
 		} else {
 			throw new RunException(submitResult.getErrorMessage(), result);
@@ -122,7 +127,8 @@ public class UserJobs {
 		List<History> histories = new ArrayList<History>();
 
 		for (String host : hosts) {
-			StatusResult statusResult = getStatusResult(host);
+			List<String> jobIds = jobRepository.getJobIds(userLogin);
+			StatusResult statusResult = getStatusResult(host, jobIds);
 
 			if (statusResult.getErrorMessage() != null) {
 				throw new RunException(statusResult.getErrorMessage());
@@ -205,14 +211,16 @@ public class UserJobs {
 	 * @throws KeyStoreException
 	 * @throws RunException
 	 */
-	public void delete(String jobId) throws JobNotFoundException, CredentialException, FileManagerException, RunException, KeyStoreException,
+	public void delete(String jobId) throws JobNotFoundException, CredentialException,
+			FileManagerException, RunException, KeyStoreException,
 			CertificateException {
 		Job job = abortJob(jobId);
 		log.info("Local job {} deleted", job.getJobId());
 		jobRepository.delete(job);
 	}
 
-	public void abort(String jobId) throws CredentialException, RunException, FileManagerException, JobNotFoundException, KeyStoreException,
+	public void abort(String jobId) throws CredentialException, RunException, FileManagerException,
+	JobNotFoundException, KeyStoreException,
 			CertificateException {
 		Job job = abortJob(jobId);
 		job.setStatus("ABORTED");
@@ -220,30 +228,33 @@ public class UserJobs {
 		jobRepository.save(job);
 	}
 
-	private Job abortJob(String jobId) throws JobNotFoundException, FileManagerException, CredentialException, RunException, KeyStoreException,
+	public Job get(String jobId) {
+		return jobRepository.findOneByJobIdAndUserLogin(jobId, userLogin);
+	}
+
+	private Job abortJob(String jobId) throws JobNotFoundException, FileManagerException,
+	CredentialException, RunException, KeyStoreException,
 			CertificateException {
 		Job job = jobRepository.findOneByJobId(jobId);
-
+	
 		if (job == null) {
 			throw new JobNotFoundException(jobId);
 		}
-
+	
 		if (!"FINISHED".equals(job.getStatus())) {
 			String host = job.getHost();
 			PathHelper pathHelper = new PathHelper(host, userLogin);
-			fileManager.cp(pathHelper.getTransferPath() + ".rimrock/stop", new ClassPathResource("scripts/stop"));
-
-			RunResults result = run(host, String.format("cd %s.rimrock; chmod +x stop; ./stop %s", pathHelper.getFileRootPath(), jobId), timeout);
+			fileManager.cp(pathHelper.getTransferPath() + ".rimrock/stop",
+					new ClassPathResource("scripts/stop"));
+	
+			RunResults result = run(host, String.format("cd %s.rimrock; chmod +x stop; ./stop %s",
+					pathHelper.getFileRootPath(), jobId), timeout);
 			processRunExceptions(result);
 			log.info("Local job {} aborted on the computing infrastructure as it was not "
 					+ "completed yet", jobId);
 		}
 		
 		return job;
-	}
-
-	public Job get(String jobId) {
-		return jobRepository.findOneByJobIdAndUserLogin(jobId, userLogin);
 	}
 
 	private <T> T readResult(String output, Class<T> klass) {
@@ -254,11 +265,15 @@ public class UserJobs {
 		}
 	}
 
-	private StatusResult getStatusResult(String host)
-			throws CredentialException, RunException, FileManagerException, KeyStoreException, CertificateException {
+	private StatusResult getStatusResult(String host, List<String> jobIds)
+			throws CredentialException, RunException, FileManagerException, KeyStoreException,
+			CertificateException {
 		PathHelper pathHelper = new PathHelper(host, userLogin);
-		fileManager.cp(pathHelper.getTransferPath() + ".rimrock/status", new ClassPathResource("scripts/status"));
-		RunResults result = run(host, String.format("cd %s.rimrock; chmod +x status; ./status", pathHelper.getFileRootPath()), timeout);
+		fileManager.cp(pathHelper.getTransferPath() + ".rimrock/status",
+				new ClassPathResource("scripts/status"));
+		RunResults result = run(host, String.format("cd %s.rimrock; chmod +x status; ./status %s",
+				pathHelper.getFileRootPath(), jobIds.stream().collect(Collectors.joining(" "))),
+				timeout);
 
 		if (result.isTimeoutOccured() || result.getExitCode() != 0) {
 			StatusResult statusResult = new StatusResult();
@@ -271,7 +286,8 @@ public class UserJobs {
 		}
 	}
 
-	private RunResults run(String host, String command, int timeout) throws CredentialException, RunException, KeyStoreException, CertificateException {
+	private RunResults run(String host, String command, int timeout) throws CredentialException,
+			RunException, KeyStoreException, CertificateException {
 		try {
 			RunResults runResults = runner.run(host, proxy, command, timeout);
 			log.debug("Run results for command [{}] are the following: {}", command, runResults);

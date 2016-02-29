@@ -84,9 +84,9 @@ public class RunControllerMvcTest {
 				{
 					"zeus.cyfronet.pl"
 				},
-//				{
-//					"prometheus.cyfronet.pl"
-//				}
+				{
+					"prometheus.cyfronet.pl"
+				}
 			});
     }
     
