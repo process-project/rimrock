@@ -1,5 +1,8 @@
 v 1.6.3
   - additional check for SSH output channel closed state introduced
+  - proxy certificate generation ban after 3 failed attempts added
+  - jobs are grouped according to their destination host when status is checked
+  - slurm status script improved
 
 v 1.6.2
   - i18n file naming fixed because of new spring boot dependency
