@@ -91,13 +91,13 @@ public class JobsControllerMvcTest {
 					"echo hello\n" +
 					"exit 0"
 				},
-//				{
-//					"prometheus.cyfronet.pl",
-//					"#!/bin/bash\n" +
-//					"#SBATCH -A diceservices\n" +
-//					"echo hello\n" +
-//					"exit 0"
-//				}
+				{
+					"prometheus.cyfronet.pl",
+					"#!/bin/bash\n" +
+					"#SBATCH -A diceservices\n" +
+					"echo hello\n" +
+					"exit 0"
+				}
 			});
     }
     

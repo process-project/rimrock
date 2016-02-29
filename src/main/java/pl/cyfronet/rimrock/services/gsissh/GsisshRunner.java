@@ -96,7 +96,9 @@ public class GsisshRunner {
 						error.setCloseOutput(false);
 						
 						String separator = UUID.randomUUID().toString();
-						input.connect(new ByteArrayInputStream(completeCommand(command, separator)), session.getOutputStream());
+						byte[] completedCommand = completeCommand(command, separator);
+						log.trace("Running command via gsi-ssh: {}", new String(completedCommand));
+						input.connect(new ByteArrayInputStream(completedCommand), session.getOutputStream());
 						
 						ByteArrayOutputStream standardOutput = new ByteArrayOutputStream();
 						output.connect(session.getInputStream(), standardOutput);
