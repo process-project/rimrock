@@ -119,8 +119,9 @@ function status_slurm {
 
 		if [ $? -ne 0 ]
 		then
-			report_error "squeue error! $job_state"
-			exit 13
+			#report_error "squeue error! $job_state"
+			#exit 13
+			continue
 		fi
 		text_output="${text_output}\t\t{\n\t\t\t\"job_id\": \"${job_id}\",\n\t\t\t\"job_state\": \"${state[${job_state}]}\"\n\t\t},\n"
 	done
