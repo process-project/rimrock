@@ -115,7 +115,7 @@ public class InteractiveRunController {
 		
 		RunResults runResults = runner.run(request.getHost(), decodedProxy,
 				String.format("module load plgrid/tools/python/3.4.2; (url='%s' secret='%s' processId='%s' command='%s' timeout='%s' certPath='%s' nohup python3 " + scriptFilePath + " >> .rimrock/iwrapper.log 2>&1 &)",
-						internalUrl, secret, processId, request.getCommand(), iprocessTimeoutSeconds, certFilePath), 5000);
+						internalUrl, secret, processId, request.getCommand(), iprocessTimeoutSeconds, certFilePath), 10000);
 		
 		if(runResults.isTimeoutOccured() || runResults.getExitCode() != 0) {
 			throw new RunException("Interactive process could not be properly executed", runResults);			
