@@ -117,7 +117,7 @@ function status_slurm {
 	do
 		job_state=$($SQUEUE -h -u $USER -o "%T" -j $job_id 2>&1 | tr -d '[[:space:]]')
 
-		if [ $? -ne 0 ]
+		if [ $? -ne 0 -o "x${job_state}" = "x" ]
 		then
 			#report_error "squeue error! $job_state"
 			#exit 13
