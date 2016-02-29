@@ -17,13 +17,15 @@ public interface JobRepository extends CrudRepository<Job, Long> {
 	Job findOneByJobId(String jobId);
 	
 	@Query("SELECT job FROM Job job WHERE userLogin = :userLogin AND host in :hosts")
-	List<Job> findByUsernameOnHosts(@Param("userLogin") String userLogin, @Param("hosts") List<String> hosts);
+	List<Job> findByUsernameOnHosts(@Param("userLogin") String userLogin,
+			@Param("hosts") List<String> hosts);
 	
 	Job findOneByJobIdAndUserLogin(String jobId, String userLogin);
 
 	@Query("SELECT job FROM Job job WHERE userLogin = :userLogin AND tag = :tag AND host in :hosts")
-	List<Job> findByUsernameAndTagOnHosts(@Param("userLogin") String userLogin, @Param("tag") String tag, @Param("hosts") List<String> hosts);
+	List<Job> findByUsernameAndTagOnHosts(@Param("userLogin") String userLogin,
+			@Param("tag") String tag, @Param("hosts") List<String> hosts);
 
-	@Query("SELECT job.jobId FROM Job job WHERE userLogin = :userLogin")
-	List<String> getJobIds(@Param("userLogin") String userLogin);
+	@Query("SELECT job.jobId FROM Job job WHERE userLogin = :userLogin AND host = :host")
+	List<String> getJobIdsForUserLoginAndHost(@Param("userLogin") String userLogin, @Param("host") String host);
 }
