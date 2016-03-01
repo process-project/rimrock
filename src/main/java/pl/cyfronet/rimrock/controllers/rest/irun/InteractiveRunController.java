@@ -70,15 +70,18 @@ public class InteractiveRunController {
 	private int iprocessDbMaxBytes;
 
 	@Autowired
-	public InteractiveRunController(InteractiveProcessRepository processRepository, GsisshRunner runner, FileManagerFactory fileManagerFactory, ProxyHelper proxyHelper) {
+	public InteractiveRunController(InteractiveProcessRepository processRepository,
+			GsisshRunner runner, FileManagerFactory fileManagerFactory, ProxyHelper proxyHelper) {
 		this.processRepository = processRepository;
 		this.runner = runner;
 		this.fileManagerFactory = fileManagerFactory;
 		this.proxyHelper = proxyHelper;
 	}
 	
-	@RequestMapping(value = "/api/internal/update", method = POST, consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
-	public ResponseEntity<InternalUpdateResponse> update(@Valid @RequestBody InternalUpdateRequest updateRequest) {
+	@RequestMapping(value = "/api/internal/update", method = POST,
+			consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
+	public ResponseEntity<InternalUpdateResponse> update(
+			@Valid @RequestBody InternalUpdateRequest updateRequest) {
 		log.debug("Processing internal update request with body {}", updateRequest);
 		
 		InteractiveProcess process = getProcessBySecret(updateRequest.getSecret());
@@ -92,11 +95,15 @@ public class InteractiveRunController {
 		return new ResponseEntity<InternalUpdateResponse>(new InternalUpdateResponse(input), OK);
 	}
 	
-	@RequestMapping(value = "/api/iprocesses", method = POST, consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
-	public ResponseEntity<InteractiveProcessResponse> startInteractiveProcess(@RequestHeader("PROXY") String proxy,
-			@Valid @RequestBody InteractiveProcessRequest request, BindingResult errors) throws CredentialException, FileManagerException, InvalidStateException,
-			KeyStoreException, CertificateException, GSSException, IOException, InterruptedException {
-		if(errors.hasErrors()) {
+	@RequestMapping(value = "/api/iprocesses", method = POST, consumes = APPLICATION_JSON_VALUE,
+			produces = APPLICATION_JSON_VALUE)
+	public ResponseEntity<InteractiveProcessResponse> startInteractiveProcess(
+			@RequestHeader("PROXY") String proxy,
+			@Valid @RequestBody InteractiveProcessRequest request, BindingResult errors)
+					throws CredentialException, FileManagerException, InvalidStateException,
+			KeyStoreException, CertificateException, GSSException, IOException,
+			InterruptedException {
+		if (errors.hasErrors()) {
 			throw new ValidationException(errors);
 		}
 		
@@ -105,20 +112,29 @@ public class InteractiveRunController {
 		FileManager fileManager = fileManagerFactory.get(decodedProxy);
 		String certFilePath = ".rimrock/TERENASSLCA-" + processId;
 		String scriptFilePath = ".rimrock/iwrapper-" + processId + ".py";
-		PathHelper pathHelper = new PathHelper(request.getHost(), proxyHelper.getUserLogin(decodedProxy));
-		fileManager.cp(pathHelper.getTransferPath() + certFilePath, new ClassPathResource("certs/TERENASSLCA"));
-		fileManager.cp(pathHelper.getTransferPath() + scriptFilePath, new ClassPathResource("scripts/iwrapper.py"));
+		PathHelper pathHelper = new PathHelper(request.getHost(),
+				proxyHelper.getUserLogin(decodedProxy));
+		fileManager.cp(pathHelper.getTransferPath() + certFilePath,
+				new ClassPathResource("certs/TERENASSLCA"));
+		fileManager.cp(pathHelper.getTransferPath() + scriptFilePath,
+				new ClassPathResource("scripts/iwrapper.py"));
 		
 		String secret = UUID.randomUUID().toString();
-		String internalUrl = MvcUriComponentsBuilder.fromMethodCall(on(InteractiveRunController.class).update(null)).build().toUriString();
-		log.debug("Attempting to start new interactive process with id {} and reporting URL {} with secret {}", processId, internalUrl, secret);
+		String internalUrl = MvcUriComponentsBuilder.fromMethodCall(
+				on(InteractiveRunController.class).update(null)).build().toUriString();
+		log.debug("Attempting to start new interactive process with id {} and reporting URL {}"
+				+ " with secret {}", processId, internalUrl, secret);
 		
 		RunResults runResults = runner.run(request.getHost(), decodedProxy,
-				String.format("module load plgrid/tools/python/3.4.2; (url='%s' secret='%s' processId='%s' command='%s' timeout='%s' certPath='%s' nohup python3 " + scriptFilePath + " >> .rimrock/iwrapper.log 2>&1 &)",
-						internalUrl, secret, processId, request.getCommand(), iprocessTimeoutSeconds, certFilePath), 10000);
+				String.format("module load plgrid/tools/python/3.4.2; (url='%s' secret='%s' "
+						+ "processId='%s' command='%s' timeout='%s' certPath='%s' nohup python3 "
+						+ scriptFilePath + " >> .rimrock/iwrapper.log 2>&1 &)",
+						internalUrl, secret, processId, request.getCommand(),
+						iprocessTimeoutSeconds, certFilePath), 10000);
 		
 		if(runResults.isTimeoutOccured() || runResults.getExitCode() != 0) {
-			throw new RunException("Interactive process could not be properly executed", runResults);			
+			throw new RunException("Interactive process could not be properly executed",
+					runResults);			
 		} 
 		
 		InteractiveProcess interactiveProcess = new InteractiveProcess();
@@ -135,17 +151,20 @@ public class InteractiveRunController {
 		return new ResponseEntity<InteractiveProcessResponse>(response, CREATED);
 	}
 
-	@RequestMapping(value = "/api/iprocesses/{iprocessId:.+}", method = GET, produces = APPLICATION_JSON_VALUE)
+	@RequestMapping(value = "/api/iprocesses/{iprocessId:.+}", method = GET,
+			produces = APPLICATION_JSON_VALUE)
 	@SuppressWarnings({"rawtypes"})
 	public ResponseEntity getInteractiveProcess(
 			@RequestHeader("PROXY") String proxy, @PathVariable("iprocessId") String processId) 
-			throws CredentialException, GSSException, KeyStoreException, CertificateException, IOException {
+			throws CredentialException, GSSException, KeyStoreException, CertificateException,
+			IOException {
 		String decodedProxy = proxyHelper.decodeProxy(proxy);
 		String userLogin = proxyHelper.getUserLogin(decodedProxy);
 		InteractiveProcess process = getProcess(processId);
 		
 		if(process.getUserLogin() == null || !process.getUserLogin().equals(userLogin)) {
-			throw new ResourceAccessException("You do not seem to be the owner of the requested interactive process");
+			throw new ResourceAccessException("You do not seem to be the owner of the requested "
+					+ "interactive process");
 		}
 		
 		String output = process.getOutput();
@@ -166,8 +185,10 @@ public class InteractiveRunController {
 	
 	@RequestMapping(value = "/api/iprocesses", method = GET, produces = APPLICATION_JSON_VALUE)
 	@SuppressWarnings({"rawtypes", "unchecked"})
-	public ResponseEntity getInteractiveProcesses(@RequestHeader("PROXY") String proxy, @RequestParam(value = "tag", required = false) String tag) 
-			throws CredentialException, GSSException, KeyStoreException, CertificateException, IOException {
+	public ResponseEntity getInteractiveProcesses(@RequestHeader("PROXY") String proxy,
+			@RequestParam(value = "tag", required = false) String tag) 
+			throws CredentialException, GSSException, KeyStoreException, CertificateException,
+			IOException {
 		String decodedProxy = proxyHelper.decodeProxy(proxy);
 		String userLogin = proxyHelper.getUserLogin(decodedProxy);
 		List<InteractiveProcess> processes = null;
@@ -186,7 +207,8 @@ public class InteractiveRunController {
 				process.setError("");
 				processRepository.save(process);
 				
-				InteractiveProcessResponse processResponse = new InteractiveProcessResponse(Status.OK, null);
+				InteractiveProcessResponse processResponse = new InteractiveProcessResponse(
+						Status.OK, null);
 				processResponse.setStandardOutput(output);
 				processResponse.setStandardError(error);
 				processResponse.setFinished(process.isFinished());
@@ -200,23 +222,27 @@ public class InteractiveRunController {
 		return new ResponseEntity(response, OK);
 	}
 
-	@RequestMapping(value = "/api/iprocesses/{iprocessId:.+}", method = PUT, consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
+	@RequestMapping(value = "/api/iprocesses/{iprocessId:.+}", method = PUT,
+			consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
 	public ResponseEntity<InteractiveProcessResponse> processInteractiveProcessInput(
 			@RequestHeader("PROXY") String proxy, @PathVariable("iprocessId") String processId,
-			@Valid @RequestBody InteractiveProcessInputRequest request, BindingResult errors) throws CredentialException {
+			@Valid @RequestBody InteractiveProcessInputRequest request, BindingResult errors)
+					throws CredentialException {
 		String decodedProxy = proxyHelper.decodeProxy(proxy);
 		String userLogin = proxyHelper.getUserLogin(decodedProxy);
 		InteractiveProcess process = getProcess(processId);
 		
 		if(process.getUserLogin() == null || !process.getUserLogin().equals(userLogin)) {
-			throw new ResourceAccessException("You do not seem to be the owner of the requested interactive process");
+			throw new ResourceAccessException("You do not seem to be the owner of the requested "
+					+ "interactive process");
 		}
 		
 		String output = process.getOutput();
 		String error = process.getError();
 		process.setOutput("");
 		process.setError("");
-		process.setPendingInput(mergeAndTruncate(process.getPendingInput(), request.getStandardInput()));
+		process.setPendingInput(mergeAndTruncate(process.getPendingInput(),
+				request.getStandardInput()));
 		processRepository.save(process);
 		
 		InteractiveProcessResponse response = new InteractiveProcessResponse(Status.OK, null);
@@ -249,7 +275,8 @@ public class InteractiveRunController {
 		InteractiveProcess process = processRepository.findByProcessId(processId);
 		
 		if(process == null) {
-			throw new ResourceNotFoundException("Interactive process with id " + processId + " could not be found");
+			throw new ResourceNotFoundException("Interactive process with id " + processId
+					+ " could not be found");
 		}
 		
 		return process;
