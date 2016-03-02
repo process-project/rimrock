@@ -1,3 +1,6 @@
+v 1.6.5
+  - CA certificate list upgraded for proper service verification
+
 v 1.6.4
   - interactive process wrapper starting script timeout increased
 
