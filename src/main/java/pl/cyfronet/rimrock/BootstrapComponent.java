@@ -27,8 +27,14 @@ import org.springframework.stereotype.Component;
 public class BootstrapComponent implements ApplicationListener<ContextRefreshedEvent>{
 	private static final Logger log = LoggerFactory.getLogger(BootstrapComponent.class);
 	
-	@Value("classpath:certs/TERENASSLCA")	private Resource terenaCert;
-	@Value("classpath:certs/SIMPLECA") private Resource simpleCaCert;
+	@Value("classpath:certs/TERENASSLCA")
+	private Resource terenaCert;
+	
+	@Value("classpath:certs/SIMPLECA")
+	private Resource simpleCaCert;
+	
+	@Value("classpath:certs/OLDTERENASSLCA")
+	private Resource oldTerenaCert;
 	
 	@Override
 	public void onApplicationEvent(ContextRefreshedEvent event) {
@@ -42,18 +48,25 @@ public class BootstrapComponent implements ApplicationListener<ContextRefreshedE
 		}
 	}
 	
-	private void enableTrustedSSL() throws NoSuchAlgorithmException, KeyStoreException, CertificateException, IOException {
+	private void enableTrustedSSL() throws NoSuchAlgorithmException, KeyStoreException,
+			CertificateException, IOException {
 		log.info("Configuring SSL context to trust TERENA and SIMPLECA");
 		CertificateFactory certFactory = CertificateFactory.getInstance("X.509");
-		Certificate terenaCertificate = certFactory.generateCertificate(terenaCert.getInputStream());
-		Certificate simpleCaCertificate = certFactory.generateCertificate(simpleCaCert.getInputStream());
+		Certificate terenaCertificate = certFactory.generateCertificate(
+				terenaCert.getInputStream());
+		Certificate simpleCaCertificate = certFactory.generateCertificate(
+				simpleCaCert.getInputStream());
+		Certificate oldTerenaCertificate = certFactory.generateCertificate(
+				oldTerenaCert.getInputStream());
 		
 		KeyStore store = KeyStore.getInstance(KeyStore.getDefaultType());
 		store.load(null, null);
 		store.setCertificateEntry("terena", terenaCertificate);
 		store.setCertificateEntry("simpleca", simpleCaCertificate);
+		store.setCertificateEntry("oldsimpleca", oldTerenaCertificate);
 		
-		TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+		TrustManagerFactory tmf = TrustManagerFactory.getInstance(
+				TrustManagerFactory.getDefaultAlgorithm());
 		tmf.init(store);
 		
 		try {
