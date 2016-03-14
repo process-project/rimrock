@@ -3,6 +3,7 @@
 QSTAT=''
 SQUEUE=''
 ZJH=/opt/cyfronet/bin/zeus-jobs-history
+ECHO=/bin/echo
 set -o pipefail
 
 function usage {
@@ -39,18 +40,15 @@ function status_torque {
 	text_output=""
 	text_output_history=""
 
-	for job_id in "${job_list[@]}"
-	do
-		job_state=$($QSTAT -f $job_id 2>&1 | grep job_state | cut -f 2 -d "=" | tr -d " " 2>&1)
+	jobs_states=$($QSTAT ${job_list[@]} 2>/dev/null | tail -n +3 | gawk '{ print $1"-"$5 }')
 
-		if [ "$?" -ne "0" ]
-		then
-			#report_error "qstat error! $job_state"
-			#exit 13
-			continue
-		fi
-		text_output="${text_output}\t\t{\n\t\t\t\"job_id\": \"${job_id}\",\n\t\t\t\"job_state\": \"${state[${job_state}]}\"\n\t\t},\n"
+	for job_state in ${jobs_states}
+	do
+		job_id=$($ECHO ${job_state} | cut -d "." -f 1)
+		raw_state=$($ECHO ${job_state} | cut -d "-" -f 2)
+		text_output="${text_output}\t\t{\n\t\t\t\"job_id\": \"${job_id}\",\n\t\t\t\"job_state\": \"${state[${raw_state}]}\"\n\t\t},\n"
 	done
+
 
 	#check for past job data in zeus-jobs-history, jobs here should not collide with jobs gathered from qstat
 	#for now the monitoring user is excluded to make the monitoring tests work
