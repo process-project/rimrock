@@ -127,7 +127,7 @@ public class UserJobs {
 		List<History> histories = new ArrayList<History>();
 
 		for (String host : hosts) {
-			List<String> jobIds = jobRepository.getJobIdsForUserLoginAndHost(userLogin, host);
+			List<String> jobIds = jobRepository.getNotTerminalJobIdsForUserLoginAndHost(userLogin, host);
 			StatusResult statusResult = getStatusResult(host, jobIds);
 
 			if (statusResult.getErrorMessage() != null) {

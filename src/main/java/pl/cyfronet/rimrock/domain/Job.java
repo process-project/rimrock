@@ -7,27 +7,54 @@ import javax.persistence.Id;
 
 @Entity
 public class Job {
-	@Id	@GeneratedValue	private Long id;
-	@Column(nullable = false) private String jobId;
-	@Column(nullable = false) private String standardOutputLocation;
-	@Column(nullable = false) private String standardErrorLocation;
-	@Column(nullable = false) private String userLogin;
-	@Column(nullable = false) private String host;
-	@Column(nullable = false) private String status;
-	@Column(nullable = true) private String nodes;
-	@Column(nullable = true) private String cores;
-	@Column(nullable = true) private String wallTime;
-	@Column(nullable = true) private String queueTime;
-	@Column(nullable = true) private String startTime;
-	@Column(nullable = true) private String endTime;
+	@Id	@GeneratedValue
+	private Long id;
+	
+	@Column(nullable = false)
+	private String jobId;
+	
+	@Column(nullable = false)
+	private String standardOutputLocation;
+	
+	@Column(nullable = false)
+	private String standardErrorLocation;
+	
+	@Column(nullable = false)
+	private String userLogin;
+	
+	@Column(nullable = false)
+	private String host;
+	
+	@Column(nullable = false)
+	private String status;
+	
+	@Column(nullable = true)
+	private String nodes;
+	
+	@Column(nullable = true)
+	private String cores;
+	
+	@Column(nullable = true)
+	private String wallTime;
+	
+	@Column(nullable = true)
+	private String queueTime;
+	
+	@Column(nullable = true)
+	private String startTime;
+	
+	@Column(nullable = true)
+	private String endTime;
+	
 	private String tag;
 
 	protected Job() {
+		
 	}
 
-	public Job(String jobId, String status, String standardOutputLocation, String standardErrorLocation,
-			   String userLogin, String host, String tag, String nodes, String cores, String walltime,
-			   String queuetime, String starttime, String endtime) {
+	public Job(String jobId, String status, String standardOutputLocation,
+			String standardErrorLocation, String userLogin, String host, String tag, String nodes,
+			String cores, String walltime, String queuetime, String starttime, String endtime) {
 		this.jobId = jobId;
 		this.status = status;
 		this.standardOutputLocation = standardOutputLocation;
@@ -43,36 +70,44 @@ public class Job {
 		this.endTime = endtime;
 	}
 
-    public Job(String jobId, String status, String standardOutputLocation, String standardErrorLocation,
-               String userLogin, String host, String tag) {
-        this(jobId, status, standardOutputLocation, standardErrorLocation, userLogin, host, tag, null, null, null,
-                null, null, null);
+    public Job(String jobId, String status, String standardOutputLocation,
+    		String standardErrorLocation, String userLogin, String host, String tag) {
+        this(jobId, status, standardOutputLocation, standardErrorLocation, userLogin, host, tag,
+        		null, null, null, null, null, null);
     }
 
 	public Long getId() {
 		return id;
 	}
+	
 	protected void setId(Long id) {
 		this.id = id;
 	}
+	
 	public String getJobId() {
 		return jobId;
 	}
+	
 	public void setJobId(String jobId) {
 		this.jobId = jobId;
 	}
+	
 	public String getStandardOutputLocation() {
 		return standardOutputLocation;
 	}
+	
 	public void setStandardOutputLocation(String standardOutputLocation) {
 		this.standardOutputLocation = standardOutputLocation;
 	}
+	
 	public String getStandardErrorLocation() {
 		return standardErrorLocation;
 	}
+	
 	public void setStandardErrorLocation(String standardErrorLocation) {
 		this.standardErrorLocation = standardErrorLocation;
 	}
+	
 	public String getUserLogin() {
 		return userLogin;
 	}

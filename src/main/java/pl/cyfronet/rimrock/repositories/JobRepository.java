@@ -26,6 +26,8 @@ public interface JobRepository extends CrudRepository<Job, Long> {
 	List<Job> findByUsernameAndTagOnHosts(@Param("userLogin") String userLogin,
 			@Param("tag") String tag, @Param("hosts") List<String> hosts);
 
-	@Query("SELECT job.jobId FROM Job job WHERE userLogin = :userLogin AND host = :host")
-	List<String> getJobIdsForUserLoginAndHost(@Param("userLogin") String userLogin, @Param("host") String host);
+	@Query("SELECT job.jobId FROM Job job WHERE userLogin = :userLogin AND host = :host AND "
+			+ "(status != 'FINISHED' and status != 'ABORTED' OR cores IS NULL)")
+	List<String> getNotTerminalJobIdsForUserLoginAndHost(@Param("userLogin") String userLogin,
+			@Param("host") String host);
 }
