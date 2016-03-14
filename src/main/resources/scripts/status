@@ -67,7 +67,7 @@ function status_torque {
 
 			if [ -n "${job_starttime}" ]
 			then
-				text_output_history="${text_output_history}\t\t{\n\t\t\t\"job_id\": \"${job_id}.batch.grid.cyf-kr.edu.pl\",\n\t\t\t\"job_nodes\": \"${job_nodes}\",\n\t\t\t\"job_cores\": \"${job_cores}\",\n\t\t\t\"job_walltime\": \"${job_walltime}\",\n\t\t\t\"job_queuetime\": \"${job_queuetime}\",\n\t\t\t\"job_starttime\": \"${job_starttime}\",\n\t\t\t\"job_endtime\": \"${job_endtime}\"\n\t\t},\n"
+				text_output_history="${text_output_history}\t\t{\n\t\t\t\"job_id\": \"${job_id}\",\n\t\t\t\"job_nodes\": \"${job_nodes}\",\n\t\t\t\"job_cores\": \"${job_cores}\",\n\t\t\t\"job_walltime\": \"${job_walltime}\",\n\t\t\t\"job_queuetime\": \"${job_queuetime}\",\n\t\t\t\"job_starttime\": \"${job_starttime}\",\n\t\t\t\"job_endtime\": \"${job_endtime}\"\n\t\t},\n"
 			fi
 		done
 	fi
