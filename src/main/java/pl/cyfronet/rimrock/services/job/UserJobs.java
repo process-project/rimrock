@@ -150,6 +150,11 @@ public class UserJobs {
 		} else {
 			jobs = jobRepository.findByUsernameOnHosts(userLogin, hosts);
 		}
+		
+		if (overrideJobIds != null) {
+			jobs = jobs.stream().filter(job -> overrideJobIds.contains(job.getId()))
+						.collect(Collectors.toList());
+		}
 
 		//toMap uses a BinaryOperator as the third parameter to deal with status duplicates
 		Map<String, Status> mappedStatusJobIds = statuses.stream().collect(
@@ -186,7 +191,6 @@ public class UserJobs {
 					jobRepository.save(job);
 				}
 			}
-			
 
 			if (Arrays.asList("FINISHED", "ABORTED").contains(job.getStatus())
 					&& job.getCores() == null && history != null) {
