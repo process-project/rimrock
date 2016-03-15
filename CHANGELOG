@@ -1,3 +1,6 @@
+v 1.6.8
+  - status update for a single job limits the database query when looking for jobs to be updated to a single job
+
 v 1.6.7
   - single job status check invokes the status script with single job id
 
