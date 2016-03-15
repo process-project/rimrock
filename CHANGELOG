@@ -1,3 +1,6 @@
+v 1.6.6
+  - job status query optimized to include only non-terminal jobs
+
 v 1.6.5
   - CA certificate list upgraded for proper service verification
 

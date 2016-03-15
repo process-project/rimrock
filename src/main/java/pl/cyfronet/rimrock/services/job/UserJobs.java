@@ -279,6 +279,12 @@ public class UserJobs {
 			StatusResult statusResult = new StatusResult();
 			statusResult.setResult("ERROR");
 			statusResult.setErrorMessage(result.getError());
+			
+			if ((statusResult.getErrorMessage() == null
+					|| statusResult.getErrorMessage().isEmpty())
+					&& result.isTimeoutOccured()) {
+				statusResult.setErrorMessage("Timeout occurred");
+			}
 
 			return statusResult;
 		} else {
