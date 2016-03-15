@@ -113,7 +113,7 @@ public class UserJobs {
 	 * @throws KeyStoreException
 	 * @throws RunException
 	 */
-	public List<Job> update(List<String> hosts, String tag) throws CredentialException,
+	public List<Job> update(List<String> hosts, String tag, List<String> overrideJobIds) throws CredentialException,
 			FileManagerException, RunException, KeyStoreException, CertificateException {
 		if (hosts == null) {
 			hosts = jobRepository.getHosts(userLogin);
@@ -128,6 +128,11 @@ public class UserJobs {
 
 		for (String host : hosts) {
 			List<String> jobIds = jobRepository.getNotTerminalJobIdsForUserLoginAndHost(userLogin, host);
+			
+			if (overrideJobIds != null) {
+				jobIds.retainAll(overrideJobIds);
+			}
+			
 			StatusResult statusResult = getStatusResult(host, jobIds);
 
 			if (statusResult.getErrorMessage() != null) {

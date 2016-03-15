@@ -20,7 +20,6 @@ import org.ietf.jgss.GSSException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +27,8 @@ import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.core.io.Resource;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import pl.cyfronet.rimrock.RimrockApplication;
 import pl.cyfronet.rimrock.domain.Job;
@@ -39,8 +40,6 @@ import pl.cyfronet.rimrock.services.filemanager.FileManagerFactory;
 import pl.cyfronet.rimrock.services.gsissh.GsisshRunner;
 import pl.cyfronet.rimrock.services.gsissh.RunException;
 import pl.cyfronet.rimrock.services.gsissh.RunResults;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = RimrockApplication.class)
@@ -173,7 +172,7 @@ public class UserJobsTest {
 						startsWith("cd /people/userLogin/.rimrock; chmod +x status; ./status"),
 						anyInt())).thenReturn(uiResult);
 
-		userJobs.update(Arrays.asList("zeus.cyfronet.pl", "ui.cyfronet.pl"), null);
+		userJobs.update(Arrays.asList("zeus.cyfronet.pl", "ui.cyfronet.pl"), null, null);
 
 		assertEquals("RUNNING", jobStatus("1"));
 		assertEquals("FINISHED", jobStatus("2"));
@@ -208,7 +207,7 @@ public class UserJobsTest {
 						startsWith("cd /people/userLogin/.rimrock; chmod +x status; ./status"),
 						anyInt())).thenReturn(zeusResult);
 
-		userJobs.update(Arrays.asList("zeus.cyfronet.pl"), null);
+		userJobs.update(Arrays.asList("zeus.cyfronet.pl"), null, null);
 
 		Job job = jobRepository.findOneByJobId(jobId);
 
@@ -224,7 +223,7 @@ public class UserJobsTest {
 
 	@Test
 	public void testUpdateJobStatusesWhenNoHosts() throws Exception {
-		List<Job> jobs = userJobs.update(Arrays.asList(), null);
+		List<Job> jobs = userJobs.update(Arrays.asList(), null, null);
 		
 		assertEquals(0, jobs.size());
 	}
