@@ -1,3 +1,6 @@
+v 1.6.10
+  - local job service tests stabilized
+
 v 1.6.9
   - preventing database updates when nothing was returned from status script run
 
