@@ -1,3 +1,6 @@
+v 1.6.9
+  - preventing database updates when nothing was returned from status script run
+
 v 1.6.8
   - status update for a single job limits the database query when looking for jobs to be updated to a single job
 
