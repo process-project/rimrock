@@ -175,7 +175,7 @@ public class UserJobs {
 				));
 
 		//updating database only if something came from the infrastructure
-		if (mappedStatusJobIds.size() > 0) {
+		if (mappedStatusJobIds.size() > 0 || mappedHistoryJobIds.size() > 0) {
 			for (Job job : jobs) {
 				String status = mappedStatusJobIds.get(job.getJobId()) != null
 						&& mappedStatusJobIds.get(job.getJobId()).getStatus() != null
