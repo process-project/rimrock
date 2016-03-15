@@ -1,3 +1,6 @@
+v 1.6.7
+  - single job status check invokes the status script with single job id
+
 v 1.6.6
   - job status query optimized to include only non-terminal jobs
 
