@@ -133,14 +133,16 @@ public class UserJobs {
 				jobIds.retainAll(overrideJobIds);
 			}
 			
-			StatusResult statusResult = getStatusResult(host, jobIds);
-
-			if (statusResult.getErrorMessage() != null) {
-				throw new RunException(statusResult.getErrorMessage());
+			if (jobIds.size() > 0) {
+				StatusResult statusResult = getStatusResult(host, jobIds);
+	
+				if (statusResult.getErrorMessage() != null) {
+					throw new RunException(statusResult.getErrorMessage());
+				}
+	
+				statuses.addAll(statusResult.getStatuses());
+				histories.addAll(statusResult.getHistory());
 			}
-
-			statuses.addAll(statusResult.getStatuses());
-			histories.addAll(statusResult.getHistory());
 		}
 
 		List<Job> jobs = null;
@@ -172,37 +174,40 @@ public class UserJobs {
 						(a, b) -> a
 				));
 
-		for (Job job : jobs) {
-			String status = mappedStatusJobIds.get(job.getJobId()) != null
-					&& mappedStatusJobIds.get(job.getJobId()).getStatus() != null
-					? mappedStatusJobIds.get(job.getJobId()).getStatus()
-							: "FINISHED";
-			History history = mappedHistoryJobIds.get(job.getJobId());
-
-			//changing job status only if new state is different than the old one
-			if (!job.getStatus().equals(status)) {
-				if (asList("FINISHED", "ABORTED").contains(job.getStatus())) {
-					log.warn("Local job {} with a terminal state ({}) attempt to change to {} "
-							+ "prevented", job.getJobId(), job.getStatus(), status);
-				} else {
-					log.info("Local job {} changed status from {} to {}",
-							job.getJobId(), job.getStatus(), status);
-					job.setStatus(status);
+		//updating database only if something came from the infrastructure
+		if (mappedStatusJobIds.size() > 0) {
+			for (Job job : jobs) {
+				String status = mappedStatusJobIds.get(job.getJobId()) != null
+						&& mappedStatusJobIds.get(job.getJobId()).getStatus() != null
+						? mappedStatusJobIds.get(job.getJobId()).getStatus()
+								: "FINISHED";
+				History history = mappedHistoryJobIds.get(job.getJobId());
+	
+				//changing job status only if new state is different than the old one
+				if (!job.getStatus().equals(status)) {
+					if (asList("FINISHED", "ABORTED").contains(job.getStatus())) {
+						log.warn("Local job {} with a terminal state ({}) attempt to change to {} "
+								+ "prevented", job.getJobId(), job.getStatus(), status);
+					} else {
+						log.info("Local job {} changed status from {} to {}",
+								job.getJobId(), job.getStatus(), status);
+						job.setStatus(status);
+						jobRepository.save(job);
+					}
+				}
+	
+				if (Arrays.asList("FINISHED", "ABORTED").contains(job.getStatus())
+						&& job.getCores() == null && history != null) {
+					job.setNodes(history.getJobNodes());
+					job.setCores(history.getJobCores());
+					job.setWallTime(history.getJobWalltime());
+					job.setQueueTime(history.getJobQueuetime());
+					job.setStartTime(history.getJobStarttime());
+					job.setEndTime(history.getJobEndtime());
 					jobRepository.save(job);
 				}
+	
 			}
-
-			if (Arrays.asList("FINISHED", "ABORTED").contains(job.getStatus())
-					&& job.getCores() == null && history != null) {
-				job.setNodes(history.getJobNodes());
-				job.setCores(history.getJobCores());
-				job.setWallTime(history.getJobWalltime());
-				job.setQueueTime(history.getJobQueuetime());
-				job.setStartTime(history.getJobStarttime());
-				job.setEndTime(history.getJobEndtime());
-				jobRepository.save(job);
-			}
-
 		}
 
 		return jobs;
