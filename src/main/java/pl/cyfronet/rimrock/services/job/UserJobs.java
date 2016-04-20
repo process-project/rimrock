@@ -81,7 +81,7 @@ public class UserJobs {
 		String fileRootPath = buildPath(pathHelper.getFileRootPath(), workingDirectory);
 		log.debug("Starting {} user job in {}:{} ", new Object[] { userLogin, host, transferPath });
 
-		String scriptFileName = "script" + UUID.randomUUID().toString() + ".sh";
+		String scriptFileName = "script-" + UUID.randomUUID().toString() + ".sh";
 		fileManager.cp(transferPath + scriptFileName, new ByteArrayResource(script.getBytes()));
 		fileManager.cp(transferPath + ".rimrock/start", new ClassPathResource("scripts/start"));
 
