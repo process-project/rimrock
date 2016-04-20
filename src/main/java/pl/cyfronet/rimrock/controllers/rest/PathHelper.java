@@ -1,53 +1,59 @@
 package pl.cyfronet.rimrock.controllers.rest;
 
+import java.util.Arrays;
+import java.util.List;
 
 public class PathHelper {
-
+	private List<String> zeusAliases;
+	
+	private List<String> prometheusAliases;
+	
 	private String host;
+	
 	private String userLogin;
 
 	public PathHelper(String host, String userLogin) {
 		this.host = host;
 		this.userLogin = userLogin;
+		zeusAliases = Arrays.asList("zeus.cyfronet.pl", "ui.cyfronet.pl");
+		prometheusAliases = Arrays.asList("login01.prometheus.cyf-kr.edu.pl",
+				"prometheus.cyf-kr.edu.pl", "login01.prometheus.cyfronet.pl",
+				"prometheus.cyfronet.pl");
 	}
 
 	public String getTransferPath() {
 		String rootPath = getFileRootPath();
-		switch(host.trim()) {
-			case "login01.prometheus.cyf-kr.edu.pl":
-			case "prometheus.cyf-kr.edu.pl":
-			case "login01.prometheus.cyfronet.pl":
-			case "prometheus.cyfronet.pl":
-				return getHostPrefix() + rootPath;
-			default:
-				return rootPath;
+		
+		if (prometheusAliases.contains(host)) {
+			return getHostPrefix() + rootPath;
+		} else {
+			return rootPath;
 		}
 	}
 
 	private String getHostPrefix() {
-		switch (host.trim()) {
-			case "login01.prometheus.cyf-kr.edu.pl":
-			case "prometheus.cyf-kr.edu.pl":
-			case "login01.prometheus.cyfronet.pl":
-			case "prometheus.cyfronet.pl":
+		if (prometheusAliases.contains(host)) {
 				return "/prometheus";
-			default:
+		} else {
 				return "";
 		}
 	}
 
 	public String getFileRootPath() {
-		switch (host.trim()) {
-			case "zeus.cyfronet.pl":
-			case "ui.cyfronet.pl":
+		if (zeusAliases.contains(host)) {
 				return "/people/" + userLogin + "/";
-			case "login01.prometheus.cyf-kr.edu.pl":
-			case "prometheus.cyf-kr.edu.pl":
-			case "login01.prometheus.cyfronet.pl":
-			case "prometheus.cyfronet.pl":
+		} else if (prometheusAliases.contains(host)) {
 				return "/net/people/" + userLogin + "/";
-			default:
+		} else {
 				return "/tmp/";
+		}
+	}
+
+	public String addHostPrefix(String absolutePath) {
+		if (prometheusAliases.contains(host)) {
+			return getHostPrefix() + absolutePath;
+		} else {
+			return absolutePath;
 		}
 	}
 }
