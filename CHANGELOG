@@ -1,3 +1,7 @@
+v 1.6.11
+  - unique script name used when submitting a job to a default location
+  - job working directory override working properly for prometheus jobs
+
 v 1.6.10
   - local job service tests stabilized
 
