@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -80,11 +81,12 @@ public class UserJobs {
 		String fileRootPath = buildPath(pathHelper.getFileRootPath(), workingDirectory);
 		log.debug("Starting {} user job in {}:{} ", new Object[] { userLogin, host, transferPath });
 
-		fileManager.cp(transferPath + "script.sh", new ByteArrayResource(script.getBytes()));
+		String scriptFileName = "script-" + UUID.randomUUID().toString() + ".sh";
+		fileManager.cp(transferPath + scriptFileName, new ByteArrayResource(script.getBytes()));
 		fileManager.cp(transferPath + ".rimrock/start", new ClassPathResource("scripts/start"));
 
 		RunResults result = run(host,
-				String.format("cd %s; chmod +x .rimrock/start; ./.rimrock/start script.sh",
+				String.format("cd %s; chmod +x .rimrock/start; ./.rimrock/start " + scriptFileName,
 						fileRootPath), timeout);
 		processRunExceptions(result);
 

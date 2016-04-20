@@ -20,6 +20,7 @@ import org.ietf.jgss.GSSException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,13 +76,13 @@ public class UserJobsTest {
 		result.setOutput("{\"result\": \"OK\", \"job_id\": \"jobId\", \"standard_output\": \"stdout\", \"standard_error\": \"stderr\"}");
 
 		when(
-				runner.run(eq("host"), eq(proxy),
-						eq("cd /home/dir/; chmod +x .rimrock/start; ./.rimrock/start script.sh"),
-						anyInt())).thenReturn(result);
+			runner.run(eq("host"), eq(proxy),
+					startsWith("cd /home/dir/; chmod +x .rimrock/start; ./.rimrock/start script-"),
+					anyInt())).thenReturn(result);
 
 		Job job = userJobs.submit("host", "/home/dir", "script payload", null);
 
-		verify(fileManager).cp(eq("/home/dir/script.sh"), any(Resource.class));
+		verify(fileManager).cp(startsWith("/home/dir/script-"), any(Resource.class));
 		verify(fileManager).cp(eq("/home/dir/.rimrock/start"), any(Resource.class));
 		
 		assertEquals("jobId", job.getJobId());
@@ -108,9 +109,9 @@ public class UserJobsTest {
 	@Test
 	public void testRunFailureWhenSubmittingJob() throws Exception {
 		when(
-				runner.run(eq("host"), eq(proxy),
-						eq("cd /home/dir/; chmod +x .rimrock/start; ./.rimrock/start script.sh"),
-						anyInt())).thenThrow(new GSSException(1));
+			runner.run(eq("host"), eq(proxy),
+					startsWith("cd /home/dir/; chmod +x .rimrock/start; ./.rimrock/start script-"),
+					anyInt())).thenThrow(new GSSException(1));
 
 		try {
 			userJobs.submit("host", "/home/dir", "script payload", null);
@@ -128,9 +129,9 @@ public class UserJobsTest {
 		result.setOutput("{\"corrupted\": true}");
 
 		when(
-				runner.run(eq("host"), eq(proxy),							   
-						eq("cd /home/dir/; chmod +x .rimrock/start; ./.rimrock/start script.sh"),
-						anyInt())).thenReturn(result);
+			runner.run(eq("host"), eq(proxy),							   
+					startsWith("cd /home/dir/; chmod +x .rimrock/start; ./.rimrock/start script-"),
+					anyInt())).thenReturn(result);
 
 		try {
 			userJobs.submit("host", "/home/dir", "script payload", null);
