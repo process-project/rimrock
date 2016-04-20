@@ -41,19 +41,23 @@ public class PathHelper {
 
 	public String getFileRootPath() {
 		if (zeusAliases.contains(host)) {
-				return "/people/" + userLogin + "/";
+			return "/people/" + userLogin + "/";
 		} else if (prometheusAliases.contains(host)) {
-				return "/net/people/" + userLogin + "/";
+			return "/net/people/" + userLogin + "/";
 		} else {
-				return "/tmp/";
+			return "/tmp/";
 		}
 	}
 
 	public String addHostPrefix(String absolutePath) {
-		if (prometheusAliases.contains(host)) {
-			return getHostPrefix() + absolutePath;
+		if (absolutePath != null) {
+			if (prometheusAliases.contains(host)) {
+				return getHostPrefix() + absolutePath;
+			} else {
+				return absolutePath;
+			}
 		} else {
-			return absolutePath;
+			return null;
 		}
 	}
 }
