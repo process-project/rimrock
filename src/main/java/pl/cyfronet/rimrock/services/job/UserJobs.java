@@ -75,9 +75,10 @@ public class UserJobs {
 			throws FileManagerException, CredentialException, RunException, KeyStoreException,
 			CertificateException {
 		PathHelper pathHelper = new PathHelper(host, userLogin);
-		String transferPath = buildPath(pathHelper.getTransferPath(), workingDirectory);
+		String transferPath = buildPath(pathHelper.getTransferPath(),
+				pathHelper.addHostPrefix(workingDirectory));
 		String fileRootPath = buildPath(pathHelper.getFileRootPath(), workingDirectory);
-		log.debug("Starting {} user job in {}:{} ", new Object[] {userLogin, host, transferPath});
+		log.debug("Starting {} user job in {}:{} ", new Object[] { userLogin, host, transferPath });
 
 		fileManager.cp(transferPath + "script.sh", new ByteArrayResource(script.getBytes()));
 		fileManager.cp(transferPath + ".rimrock/start", new ClassPathResource("scripts/start"));
@@ -113,7 +114,8 @@ public class UserJobs {
 	 * @throws KeyStoreException
 	 * @throws RunException
 	 */
-	public List<Job> update(List<String> hosts, String tag, List<String> overrideJobIds) throws CredentialException,
+	public List<Job> update(List<String> hosts, String tag, List<String> overrideJobIds)
+			throws CredentialException,
 			FileManagerException, RunException, KeyStoreException, CertificateException {
 		if (hosts == null) {
 			hosts = jobRepository.getHosts(userLogin);
@@ -127,7 +129,8 @@ public class UserJobs {
 		List<History> histories = new ArrayList<History>();
 
 		for (String host : hosts) {
-			List<String> jobIds = jobRepository.getNotTerminalJobIdsForUserLoginAndHost(userLogin, host);
+			List<String> jobIds = jobRepository.getNotTerminalJobIdsForUserLoginAndHost(userLogin,
+					host);
 			
 			if (overrideJobIds != null) {
 				jobIds.retainAll(overrideJobIds);
@@ -154,7 +157,7 @@ public class UserJobs {
 		}
 		
 		if (overrideJobIds != null) {
-			jobs = jobs.stream().filter(job -> overrideJobIds.contains(job.getId()))
+			jobs = jobs.stream().filter(job -> overrideJobIds.contains(job.getJobId()))
 						.collect(Collectors.toList());
 		}
 
@@ -174,40 +177,37 @@ public class UserJobs {
 						(a, b) -> a
 				));
 
-		//updating database only if something came from the infrastructure
-		if (mappedStatusJobIds.size() > 0 || mappedHistoryJobIds.size() > 0) {
-			for (Job job : jobs) {
-				String status = mappedStatusJobIds.get(job.getJobId()) != null
-						&& mappedStatusJobIds.get(job.getJobId()).getStatus() != null
-						? mappedStatusJobIds.get(job.getJobId()).getStatus()
-								: "FINISHED";
-				History history = mappedHistoryJobIds.get(job.getJobId());
-	
-				//changing job status only if new state is different than the old one
-				if (!job.getStatus().equals(status)) {
-					if (asList("FINISHED", "ABORTED").contains(job.getStatus())) {
-						log.warn("Local job {} with a terminal state ({}) attempt to change to {} "
-								+ "prevented", job.getJobId(), job.getStatus(), status);
-					} else {
-						log.info("Local job {} changed status from {} to {}",
-								job.getJobId(), job.getStatus(), status);
-						job.setStatus(status);
-						jobRepository.save(job);
-					}
-				}
-	
-				if (Arrays.asList("FINISHED", "ABORTED").contains(job.getStatus())
-						&& job.getCores() == null && history != null) {
-					job.setNodes(history.getJobNodes());
-					job.setCores(history.getJobCores());
-					job.setWallTime(history.getJobWalltime());
-					job.setQueueTime(history.getJobQueuetime());
-					job.setStartTime(history.getJobStarttime());
-					job.setEndTime(history.getJobEndtime());
+		for (Job job : jobs) {
+			String status = mappedStatusJobIds.get(job.getJobId()) != null
+					&& mappedStatusJobIds.get(job.getJobId()).getStatus() != null
+					? mappedStatusJobIds.get(job.getJobId()).getStatus()
+							: "FINISHED";
+			History history = mappedHistoryJobIds.get(job.getJobId());
+
+			//changing job status only if new state is different than the old one
+			if (!job.getStatus().equals(status)) {
+				if (asList("FINISHED", "ABORTED").contains(job.getStatus())) {
+					log.warn("Local job {} with a terminal state ({}) attempt to change to {} "
+							+ "prevented", job.getJobId(), job.getStatus(), status);
+				} else {
+					log.info("Local job {} changed status from {} to {}",
+							job.getJobId(), job.getStatus(), status);
+					job.setStatus(status);
 					jobRepository.save(job);
 				}
-	
 			}
+
+			if (Arrays.asList("FINISHED", "ABORTED").contains(job.getStatus())
+					&& job.getCores() == null && history != null) {
+				job.setNodes(history.getJobNodes());
+				job.setCores(history.getJobCores());
+				job.setWallTime(history.getJobWalltime());
+				job.setQueueTime(history.getJobQueuetime());
+				job.setStartTime(history.getJobStarttime());
+				job.setEndTime(history.getJobEndtime());
+				jobRepository.save(job);
+			}
+
 		}
 
 		return jobs;

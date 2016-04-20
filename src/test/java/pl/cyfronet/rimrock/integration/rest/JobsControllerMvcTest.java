@@ -10,7 +10,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.util.Arrays;
 import java.util.Collection;
 
 import org.junit.Before;
@@ -82,23 +81,7 @@ public class JobsControllerMvcTest {
 	
 	@Parameters
     public static Collection<Object[]> data() {
-    	return
-			Arrays.asList(new Object[][] {     
-				{
-					"zeus.cyfronet.pl",
-					"#!/bin/bash\n" +
-					"#PBS -A diceservices\n" +
-					"echo hello\n" +
-					"exit 0"
-				},
-				{
-					"prometheus.cyfronet.pl",
-					"#!/bin/bash\n" +
-					"#SBATCH -A diceservices\n" +
-					"echo hello\n" +
-					"exit 0"
-				}
-			});
+    	return Fixtures.jobParameters();
     }
     
     public JobsControllerMvcTest(String host, String script) {
