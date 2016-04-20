@@ -157,7 +157,7 @@ public class UserJobs {
 		}
 		
 		if (overrideJobIds != null) {
-			jobs = jobs.stream().filter(job -> overrideJobIds.contains(job.getId()))
+			jobs = jobs.stream().filter(job -> overrideJobIds.contains(job.getJobId()))
 						.collect(Collectors.toList());
 		}
 
