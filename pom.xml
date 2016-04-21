@@ -5,7 +5,7 @@
 
 	<groupId>pl.cyfronet</groupId>
 	<artifactId>rimrock</artifactId>
-	<version>1.6.11-SNAPSHOT</version>
+	<version>1.6.12-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>rimrock - Robust Remote Process Controller</name>
@@ -147,6 +147,12 @@
 					<groupId>org.slf4j</groupId>
 				</exclusion>
 			</exclusions>
+		</dependency>
+
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>19.0</version>
 		</dependency>
 
 		<!-- Test dependencies -->
