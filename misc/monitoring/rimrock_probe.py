@@ -187,7 +187,6 @@ def job_sequence():
 
 def job_cancel_sequence():
     response, code = make_request("/api/jobs", {"host": ui_url, "script": "#!/bin/bash\n\n#PBS -q plgrid\necho hello\nexit 0"})
-    print response
     status = response["status"]
     job_id = response["job_id"]
     err_msg = None
