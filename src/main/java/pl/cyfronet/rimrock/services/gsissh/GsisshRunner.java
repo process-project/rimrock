@@ -83,14 +83,13 @@ public class GsisshRunner {
 	        config.put("StrictHostKeyChecking", "no");
 	        session.setConfig(config);
 			
-	        Channel channel = null;
 			RunResults results = new RunResults();
+			String separator = UUID.randomUUID().toString();
 			
 			try {
 				session.connect();
 				
-				String separator = UUID.randomUUID().toString();
-				channel = session.openChannel("exec");
+				Channel channel = session.openChannel("exec");
 				
 		        byte[] completedCommand = completeCommand(command, separator);
 		        log.trace("Running command via gsi-ssh: {}", new String(completedCommand));
@@ -99,7 +98,29 @@ public class GsisshRunner {
 		        ((ChannelExec) channel).setErrStream(System.err);
 		        InputStream outputStream = channel.getInputStream();
 		        InputStream errorStream = ((ChannelExec) channel).getErrStream();
-		        channel.connect(runTimeoutMillis);
+		        channel.connect();
+		        
+		        Thread timeoutThread = new Thread() {
+					public void run() {
+						try {
+							Thread.sleep(timeoutMillis > 0 ? timeoutMillis : runTimeoutMillis);
+						} catch (InterruptedException e) {
+							return;
+						}
+						
+						log.debug("Timeout thread awoke. Setting timeout state...");
+						
+						synchronized(jsch) {
+							results.setTimeoutOccured(true);
+							
+							if(session.isConnected()) {
+								session.disconnect(); //this also disconnects all channels
+							}
+						}
+					};
+				};
+				timeoutThread.start();
+				
 		        
 		        ByteArrayOutputStream standardOutput = new ByteArrayOutputStream();
 		        ByteStreams.copy(outputStream, standardOutput);
@@ -107,8 +128,13 @@ public class GsisshRunner {
 		        ByteArrayOutputStream standardError = new ByteArrayOutputStream();
 		        ByteStreams.copy(errorStream, standardError);
 				
+		        if(timeoutThread.isAlive()) {
+		        	timeoutThread.interrupt();
+		        }
+		        
 		        String retrievedStandardOutput = new String(standardOutput.toByteArray());
-		        NormalizedOutput normalizedOutput = normalizeStandardOutput(retrievedStandardOutput, separator);
+		        NormalizedOutput normalizedOutput = normalizeStandardOutput(retrievedStandardOutput,
+		        		separator);
 		        results.setOutput(normalizedOutput.output);
 		        
 		        if (!results.isTimeoutOccured()) {
@@ -119,11 +145,7 @@ public class GsisshRunner {
 			} finally {
 				synchronized(jsch) {
 					if(session.isConnected()) {
-						session.disconnect();
-					}
-					
-					if (channel != null && channel.isConnected()) {
-						channel.disconnect();
+						session.disconnect(); //this also disconnects all channels
 					}
 				}
 			}

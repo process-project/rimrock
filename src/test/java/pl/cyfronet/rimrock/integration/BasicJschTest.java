@@ -1,7 +1,6 @@
 package pl.cyfronet.rimrock.integration;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Properties;
