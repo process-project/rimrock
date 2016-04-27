@@ -23,8 +23,6 @@ import pl.cyfronet.rimrock.RimrockApplication;
 import pl.cyfronet.rimrock.services.gsissh.GsisshRunner;
 import pl.cyfronet.rimrock.services.gsissh.RunResults;
 
-import com.sshtools.j2ssh.util.InvalidStateException;
-
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = RimrockApplication.class)
 @DirtiesContext
@@ -37,8 +35,8 @@ public class CleanHistoryAndLongOutputTest {
 	@Value("${run.timeout.millis}") private int runTimeoutMillis;
 	
 	@Test
-	public void testWhetherHistoryIsClean() throws CredentialException, InvalidStateException,
-			KeyStoreException, CertificateException, GSSException, IOException,
+	public void testWhetherHistoryIsClean() throws CredentialException, KeyStoreException,
+			CertificateException, GSSException, IOException,
 			InterruptedException, Exception {
 		RunResults history = runner.run("ui.cyfronet.pl", proxyFactory.getProxy(),
 				"cat .bash_history | sha1sum", runTimeoutMillis);
@@ -52,12 +50,13 @@ public class CleanHistoryAndLongOutputTest {
 	}
 	
 	@Test
-	public void testLongOutput() throws CredentialException, InvalidStateException,
-			KeyStoreException, CertificateException, GSSException, IOException,
+	public void testLongOutput() throws CredentialException, KeyStoreException,
+			CertificateException, GSSException, IOException,
 			InterruptedException, Exception {
 		long outputLength = 5120;
 		RunResults result = runner.run("ui.cyfronet.pl", proxyFactory.getProxy(),
-				"cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w " + outputLength + " | head -n 1", runTimeoutMillis);
+				"cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w " + outputLength + " | head -n 1",
+				runTimeoutMillis);
 		assertEquals(outputLength, result.getOutput().length());
 	}
 }

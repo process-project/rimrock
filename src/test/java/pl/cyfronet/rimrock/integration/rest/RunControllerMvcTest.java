@@ -116,11 +116,12 @@ public class RunControllerMvcTest {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.status", is("OK")))
 				.andExpect(jsonPath("$.exit_code", is(0)))
-				.andExpect(jsonPath("$.standard_output", anyOf(startsWith("/people"), startsWith("/net/people"))));
+				.andExpect(jsonPath("$.standard_output", anyOf(startsWith("/people"),
+						startsWith("/net/people"), startsWith("/mnt/auto/people"))));
 	}
 
 	@Test
-	public void testExitCodeAndStandardErrorPresentInsideStandardOutput() throws Exception {
+	public void testExitCodeAndStandardErrorPresent() throws Exception {
 		RunRequest runRequest = new RunRequest();
 		//at least the second mkdir command will return a 1 exit code
 		runRequest.setCommand("echo 'error' > /dev/stderr; mkdir /tmp/test; mkdir /tmp/test");
@@ -137,7 +138,7 @@ public class RunControllerMvcTest {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.exit_code", is(1)))
 				.andExpect(jsonPath("$.status", is("OK")))
-				.andExpect(jsonPath("$.standard_output", startsWith("error")));
+				.andExpect(jsonPath("$.error_output", startsWith("error")));
 	}
 	
 	@Test

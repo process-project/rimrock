@@ -1,6 +1,8 @@
 package pl.cyfronet.rimrock.integration;
 
 import java.io.ByteArrayInputStream;
+import java.time.Duration;
+import java.time.Instant;
 
 import org.globus.ftp.DataSourceStream;
 import org.globus.ftp.FileInfo;
@@ -35,6 +37,8 @@ public class GridFtpClientTest {
 	public void shouldCopyFile() throws Exception {
 		GridFTPClient client = null;
 		
+		Instant start = Instant.now();
+		
 		try {
 			GSSCredential gsscredential = proxyHelper.getGssCredential(proxyFactory.getProxy());
 			client = new GridFTPClient(gridFtpHost, 2811);
@@ -49,17 +53,23 @@ public class GridFtpClientTest {
 			String remoteDir = client.getCurrentDir();
 			log.info("Current folder: {}", remoteDir);
 			client.changeDir(".rimrock");
-			client.put("file.txt", new DataSourceStream(new ByteArrayInputStream(( "hello" + System.currentTimeMillis()).getBytes())), null);
-			//after each file transfer it is required to reset the client with the following two lines
+			client.put("file.txt", new DataSourceStream(new ByteArrayInputStream(("hello"
+					+ System.currentTimeMillis()).getBytes())), null);
+			//after each file transfer it is required to reset the client with the following two
+			//lines
 			client.setPassive();
 			client.setLocalActive();
 			
 			for(Object o : client.list()) {
 				FileInfo fileInfo = (FileInfo) o;
-				log.info("File {} of type {}", fileInfo.getName(), fileInfo.isDirectory() ? "directory" : "file");
+				log.info("File {} of type {}", fileInfo.getName(), fileInfo.isDirectory()
+						? "directory" : "file");
 			}
 		} finally {
 			client.close();
 		}
+		
+		log.info("GridFTP operations took {} ms", Duration.between(start,
+				Instant.now()).toMillis());
 	}
 }

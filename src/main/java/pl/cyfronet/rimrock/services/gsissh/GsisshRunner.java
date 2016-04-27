@@ -1,17 +1,18 @@
 package pl.cyfronet.rimrock.services.gsissh;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.security.KeyStoreException;
-import java.security.cert.CertificateException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.airavata.gsi.ssh.api.authentication.GSIAuthenticationInfo;
+import org.apache.airavata.gsi.ssh.jsch.ExtendedJSch;
 import org.globus.gsi.CredentialException;
 import org.ietf.jgss.GSSCredential;
 import org.ietf.jgss.GSSException;
@@ -21,15 +22,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import com.sshtools.j2ssh.SshClient;
-import com.sshtools.j2ssh.authentication.AuthenticationProtocolState;
-import com.sshtools.j2ssh.authentication.GSSAuthenticationClient;
-import com.sshtools.j2ssh.configuration.SshConnectionProperties;
-import com.sshtools.j2ssh.connection.ChannelState;
-import com.sshtools.j2ssh.io.IOStreamConnector;
-import com.sshtools.j2ssh.io.IOStreamConnectorState;
-import com.sshtools.j2ssh.session.SessionChannelClient;
-import com.sshtools.j2ssh.util.InvalidStateException;
+import com.google.common.io.ByteStreams;
+import com.jcraft.jsch.Channel;
+import com.jcraft.jsch.ChannelExec;
+import com.jcraft.jsch.ExtendedSession;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.JSchException;
 
 import pl.cyfronet.rimrock.gsi.ProxyHelper;
 
@@ -42,22 +40,29 @@ public class GsisshRunner {
 		int exitCode;
 	}
 	
-	@Value("${run.timeout.millis}") int runTimeoutMillis;
-	@Value("${gsissh.pool.size}") int poolSize;
+	@Value("${run.timeout.millis}")
+	int runTimeoutMillis;
 	
-	@Autowired ProxyHelper proxyHelper;
+	@Value("${gsissh.pool.size}")
+	int poolSize;
+	
+	@Autowired
+	ProxyHelper proxyHelper;
 	
 	private Map<String, AtomicInteger> logins;
 	
 	public GsisshRunner() {
 		logins = new HashMap<>();
+		initialize();
 	}
 	
 	/**
 	 * Runs the given command on the host. Authentication uses the given proxy. If given timeout
 	 * (provided in millis) is greater than 0 it is used, otherwise a default value is used. 
 	 */
-	public RunResults run(String host, String proxyValue, String command, int timeoutMillis) throws CredentialException, GSSException, IOException, InvalidStateException, InterruptedException, KeyStoreException, CertificateException {
+	public RunResults run(String host, String proxyValue, String command, int timeoutMillis)
+			throws JSchException, CredentialException, InterruptedException, GSSException,
+			IOException {
 		String userLogin = proxyHelper.getUserLogin(proxyValue);
 		
 		try {
@@ -65,90 +70,82 @@ public class GsisshRunner {
 			proxyHelper.verify(proxyValue);
 			
 			GSSCredential gsscredential = proxyHelper.getGssCredential(proxyValue);			
-			SshConnectionProperties properties = new SshConnectionProperties();
-			properties.setHost(host);
-			properties.setUserProxy(gsscredential);
+			JSch jsch = new ExtendedJSch();
+	        ExtendedSession session = (ExtendedSession) jsch.getSession(userLogin, host);
+	        session.setAuthenticationInfo(new GSIAuthenticationInfo() {
+				@Override
+				public GSSCredential getCredentials() throws SecurityException {
+						return gsscredential;
+				}
+			});
+	        
+	        Properties config = new Properties();
+	        config.put("StrictHostKeyChecking", "no");
+	        session.setConfig(config);
 			
-			GSSAuthenticationClient pwd = new GSSAuthenticationClient(gsscredential);
-			pwd.setUsername(userLogin);
-			
-			SshClient ssh = new SshClient();
 			RunResults results = new RunResults();
+			String separator = UUID.randomUUID().toString();
 			
 			try {
-				ssh.connect(properties);
+				session.connect();
 				
-				int result = ssh.authenticate(pwd, host);
-		
-				if(result == AuthenticationProtocolState.COMPLETE) {
-					SessionChannelClient session = ssh.openSessionChannel();
-		
-					if(!session.requestPseudoTerminal("vt100", 320, 24, 0, 0, "")) {
-						throw new IOException("Failed to allocate a pseudo terminal");
-					}
-		
-					if(session.startShell()) {
-						IOStreamConnector input = new IOStreamConnector();
-						IOStreamConnector output = new IOStreamConnector();
-						IOStreamConnector error = new IOStreamConnector();
-						output.setCloseOutput(false);
-						input.setCloseInput(false);
-						error.setCloseOutput(false);
-						
-						String separator = UUID.randomUUID().toString();
-						byte[] completedCommand = completeCommand(command, separator);
-						log.trace("Running command via gsi-ssh: {}", new String(completedCommand));
-						input.connect(new ByteArrayInputStream(completedCommand), session.getOutputStream());
-						
-						ByteArrayOutputStream standardOutput = new ByteArrayOutputStream();
-						output.connect(session.getInputStream(), standardOutput);
-						
-						ByteArrayOutputStream standardError = new ByteArrayOutputStream();
-						error.connect(session.getStderrInputStream(), standardError);
-						
-						//starting timeout thread
-						//TODO(DH): better synchronization is needed here!
-						Thread timeoutThread = new Thread() {
-							public void run() {
-								try {
-									Thread.sleep(timeoutMillis > 0 ? timeoutMillis : runTimeoutMillis);
-								} catch (InterruptedException e) {
-									return;
-								}
-								
-								synchronized(ssh) {
-									if(ssh.isConnected()) {
-										results.setTimeoutOccured(true);
-										ssh.disconnect();
-									}
-								}
-							};
-						};
-						timeoutThread.start();
-						session.getState().waitForState(ChannelState.CHANNEL_CLOSED);
-						output.getState().waitForState(IOStreamConnectorState.CLOSED);
-						
-						if(timeoutThread.isAlive()) {
-							timeoutThread.interrupt();
+				Channel channel = session.openChannel("exec");
+				
+		        byte[] completedCommand = completeCommand(command, separator);
+		        log.trace("Running command via gsi-ssh: {}", new String(completedCommand));
+				((ChannelExec) channel).setCommand(completedCommand);
+		        channel.setInputStream(null);
+		        ((ChannelExec) channel).setErrStream(System.err);
+		        InputStream outputStream = channel.getInputStream();
+		        InputStream errorStream = ((ChannelExec) channel).getErrStream();
+		        channel.connect();
+		        
+		        Thread timeoutThread = new Thread() {
+					public void run() {
+						try {
+							Thread.sleep(timeoutMillis > 0 ? timeoutMillis : runTimeoutMillis);
+						} catch (InterruptedException e) {
+							return;
 						}
 						
-						String retrievedStandardOutput = new String(standardOutput.toByteArray());
-						NormalizedOutput normalizedOutput = normalizeStandardOutput(retrievedStandardOutput, separator);
-						results.setOutput(normalizedOutput.output);
+						log.debug("Timeout thread awoke. Setting timeout state...");
 						
-						if(!results.isTimeoutOccured()) {
-							results.setExitCode(normalizedOutput.exitCode);
+						synchronized(jsch) {
+							results.setTimeoutOccured(true);
+							
+							if(session.isConnected()) {
+								session.disconnect(); //this also disconnects all channels
+							}
 						}
-						
-						results.setError(new String(standardError.toByteArray()));
-					} else {
-						throw new IOException("Failed to start the users shell");
-					}
-				}
+					};
+				};
+				timeoutThread.start();
+				
+		        
+		        ByteArrayOutputStream standardOutput = new ByteArrayOutputStream();
+		        ByteStreams.copy(outputStream, standardOutput);
+		        
+		        ByteArrayOutputStream standardError = new ByteArrayOutputStream();
+		        ByteStreams.copy(errorStream, standardError);
+				
+		        if(timeoutThread.isAlive()) {
+		        	timeoutThread.interrupt();
+		        }
+		        
+		        String retrievedStandardOutput = new String(standardOutput.toByteArray());
+		        NormalizedOutput normalizedOutput = normalizeStandardOutput(retrievedStandardOutput,
+		        		separator);
+		        results.setOutput(normalizedOutput.output);
+		        
+		        if (!results.isTimeoutOccured()) {
+		        	results.setExitCode(normalizedOutput.exitCode);
+		        }
+		        
+		        results.setError(new String(standardError.toByteArray()));
 			} finally {
-				synchronized(ssh) {
-					if(ssh != null && ssh.isConnected()) {
-						ssh.disconnect();
+				synchronized(jsch) {
+					if(session.isConnected()) {
+						session.disconnect(); //this also disconnects all channels
 					}
 				}
 			}
@@ -223,5 +220,11 @@ public class GsisshRunner {
 
 	private byte[] completeCommand(String command, String separator) {
 		return ("unset HISTFILE; echo '" + separator + "'; " + command + "; echo $?; echo '" + separator + "'; exit\n").getBytes();
+	}
+
+	private void initialize() {
+		JSch.setConfig("gssapi-with-mic.x509", "org.apache.airavata.gsi.ssh.GSSContextX509");
+	    JSch.setConfig("userauth.gssapi-with-mic",
+	    		"com.jcraft.jsch.UserAuthGSSAPIWithMICGSSCredentials");
 	}
 }

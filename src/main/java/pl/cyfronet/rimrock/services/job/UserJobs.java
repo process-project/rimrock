@@ -20,6 +20,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.ClassPathResource;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jcraft.jsch.JSchException;
+
 import pl.cyfronet.rimrock.controllers.rest.PathHelper;
 import pl.cyfronet.rimrock.controllers.rest.jobs.JobNotFoundException;
 import pl.cyfronet.rimrock.domain.Job;
@@ -31,9 +34,6 @@ import pl.cyfronet.rimrock.services.filemanager.FileManagerFactory;
 import pl.cyfronet.rimrock.services.gsissh.GsisshRunner;
 import pl.cyfronet.rimrock.services.gsissh.RunException;
 import pl.cyfronet.rimrock.services.gsissh.RunResults;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sshtools.j2ssh.util.InvalidStateException;
 
 public class UserJobs {
 	private static final Logger log = LoggerFactory.getLogger(UserJobs.class);
@@ -66,15 +66,10 @@ public class UserJobs {
 	 * @param workingDirectory Job working directory.
 	 * @param script           Job script payload.
 	 * @return Information about job status, std oud and std err file paths.
-	 * @throws FileManagerException Thrown when there is not possible to transfer start job scripts.
-	 * @throws CredentialException  Thrown where it is not possible to log in into given host using user credentials.
-	 * @throws RunException         Thrown when any error connected with executing job submissions on given host occurs.
-	 * @throws CertificateException
-	 * @throws KeyStoreException
 	 */
 	public Job submit(String host, String workingDirectory, String script, String tag)
 			throws FileManagerException, CredentialException, RunException, KeyStoreException,
-			CertificateException {
+			CertificateException, JSchException {
 		PathHelper pathHelper = new PathHelper(host, userLogin);
 		String transferPath = buildPath(pathHelper.getTransferPath(),
 				pathHelper.addHostPrefix(workingDirectory));
@@ -110,15 +105,10 @@ public class UserJobs {
 	 * @param hosts Limit hosts to the supplied ones. If null is given all hosts for a given user will be used based on job history.
 	 * @param tag
 	 * @return Updated jobs.
-	 * @throws CredentialException  Thrown where it is not possible to log in into given host using user credentials.
-	 * @throws FileManagerException Thrown when there is not possible to transfer start job scripts.
-	 * @throws CertificateException
-	 * @throws KeyStoreException
-	 * @throws RunException
 	 */
 	public List<Job> update(List<String> hosts, String tag, List<String> overrideJobIds)
 			throws CredentialException,
-			FileManagerException, RunException, KeyStoreException, CertificateException {
+			FileManagerException, RunException, KeyStoreException, CertificateException, JSchException {
 		if (hosts == null) {
 			hosts = jobRepository.getHosts(userLogin);
 		}
@@ -218,18 +208,10 @@ public class UserJobs {
 	/**
 	 * Delete job. If job is in state different then "FINISHED", than it is also
 	 * deleted from the infrastructure.
-	 *
-	 * @param jobId Job identifier.
-	 * @throws JobNotFoundException Thrown when job is not found in the database.
-	 * @throws CredentialException  Thrown where it is not possible to log in into given host using user credentials.
-	 * @throws FileManagerException Thrown when there is not possible to transfer start job scripts.
-	 * @throws CertificateException
-	 * @throws KeyStoreException
-	 * @throws RunException
 	 */
 	public void delete(String jobId) throws JobNotFoundException, CredentialException,
 			FileManagerException, RunException, KeyStoreException,
-			CertificateException {
+			CertificateException, JSchException {
 		Job job = abortJob(jobId);
 		log.info("Local job {} deleted", job.getJobId());
 		jobRepository.delete(job);
@@ -237,7 +219,7 @@ public class UserJobs {
 
 	public void abort(String jobId) throws CredentialException, RunException, FileManagerException,
 	JobNotFoundException, KeyStoreException,
-			CertificateException {
+			CertificateException, JSchException {
 		Job job = abortJob(jobId);
 		job.setStatus("ABORTED");
 		log.info("Local job {} aborted", job.getJobId());
@@ -250,7 +232,7 @@ public class UserJobs {
 
 	private Job abortJob(String jobId) throws JobNotFoundException, FileManagerException,
 	CredentialException, RunException, KeyStoreException,
-			CertificateException {
+			CertificateException, JSchException {
 		Job job = jobRepository.findOneByJobId(jobId);
 	
 		if (job == null) {
@@ -283,7 +265,7 @@ public class UserJobs {
 
 	private StatusResult getStatusResult(String host, List<String> jobIds)
 			throws CredentialException, RunException, FileManagerException, KeyStoreException,
-			CertificateException {
+			CertificateException, JSchException {
 		PathHelper pathHelper = new PathHelper(host, userLogin);
 		fileManager.cp(pathHelper.getTransferPath() + ".rimrock/status",
 				new ClassPathResource("scripts/status"));
@@ -309,14 +291,13 @@ public class UserJobs {
 	}
 
 	private RunResults run(String host, String command, int timeout) throws CredentialException,
-			RunException, KeyStoreException, CertificateException {
+			RunException, KeyStoreException, CertificateException, JSchException {
 		try {
 			RunResults runResults = runner.run(host, proxy, command, timeout);
 			log.debug("Run results for command [{}] are the following: {}", command, runResults);
 
 			return runResults;
-		} catch (InvalidStateException | GSSException | IOException
-				| InterruptedException e) {
+		} catch (GSSException | IOException	| InterruptedException e) {
 			throw new RunException(e.getMessage(), e);
 		}
 	}

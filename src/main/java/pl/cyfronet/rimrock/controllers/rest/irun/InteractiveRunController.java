@@ -35,6 +35,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
+import com.jcraft.jsch.JSchException;
+
 import pl.cyfronet.rimrock.controllers.exceptions.ResourceNotFoundException;
 import pl.cyfronet.rimrock.controllers.rest.PathHelper;
 import pl.cyfronet.rimrock.controllers.rest.irun.InteractiveProcessResponse.Status;
@@ -48,8 +50,6 @@ import pl.cyfronet.rimrock.services.filemanager.FileManagerFactory;
 import pl.cyfronet.rimrock.services.gsissh.GsisshRunner;
 import pl.cyfronet.rimrock.services.gsissh.RunException;
 import pl.cyfronet.rimrock.services.gsissh.RunResults;
-
-import com.sshtools.j2ssh.util.InvalidStateException;
 
 @RestController
 public class InteractiveRunController {
@@ -100,9 +100,9 @@ public class InteractiveRunController {
 	public ResponseEntity<InteractiveProcessResponse> startInteractiveProcess(
 			@RequestHeader("PROXY") String proxy,
 			@Valid @RequestBody InteractiveProcessRequest request, BindingResult errors)
-					throws CredentialException, FileManagerException, InvalidStateException,
-			KeyStoreException, CertificateException, GSSException, IOException,
-			InterruptedException {
+					throws CredentialException, FileManagerException, KeyStoreException,
+					CertificateException, GSSException, IOException,
+			InterruptedException, JSchException {
 		if (errors.hasErrors()) {
 			throw new ValidationException(errors);
 		}

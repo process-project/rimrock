@@ -1,3 +1,6 @@
+v 1.6.12 (not released)
+  - sshtools gsissh library implementation replaced with jsch 
+
 v 1.6.11
   - unique script name used when submitting a job to a default location
   - job working directory override working properly for prometheus jobs

@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.client.ResourceAccessException;
 
-import com.sshtools.j2ssh.util.InvalidStateException;
+import com.jcraft.jsch.JSchException;
 
 import pl.cyfronet.rimrock.controllers.exceptions.ResourceNotFoundException;
 import pl.cyfronet.rimrock.controllers.rest.jobs.ValidationException;
@@ -53,8 +53,8 @@ public class GlobalExceptionHandling {
 		return new ResponseEntity<ErrorResponse>(new ErrorResponse(msg), UNAUTHORIZED);
 	}
 	
-	@ExceptionHandler({FileManagerException.class, InvalidStateException.class, GSSException.class,
-		IOException.class, InterruptedException.class})
+	@ExceptionHandler({ FileManagerException.class, GSSException.class, IOException.class,
+		InterruptedException.class, JSchException.class })
 	public ResponseEntity<ErrorResponse> handleRunCmdError(Exception e) {
 		log.error("Global error intercepted", e);
 		
