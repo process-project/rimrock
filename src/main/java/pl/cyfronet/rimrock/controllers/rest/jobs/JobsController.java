@@ -36,7 +36,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import com.sshtools.j2ssh.util.InvalidStateException;
+import com.jcraft.jsch.JSchException;
 
 import pl.cyfronet.rimrock.controllers.rest.ErrorResponse;
 import pl.cyfronet.rimrock.controllers.rest.RestHelper;
@@ -68,7 +68,7 @@ public class JobsController {
 			@Valid @RequestBody SubmitRequest submitRequest,
 			BindingResult errors) throws CredentialException, GSSException,
 			FileManagerException, RunException, KeyStoreException, CertificateException,
-			IOException {
+			IOException, JSchException {
 		if (errors.hasErrors()) {
 			throw new ValidationException(errors);
 		}
@@ -86,8 +86,8 @@ public class JobsController {
 	public ResponseEntity<JobInfo> jobInfo(@RequestHeader("PROXY") String proxy,
 			@PathVariable("jobId") String jobId) 
 			throws JobNotFoundException, CredentialException, GSSException, 
-			InvalidStateException, FileManagerException, IOException, InterruptedException,
-			KeyStoreException, CertificateException {
+			FileManagerException, IOException, InterruptedException,
+			KeyStoreException, CertificateException, RunException, JSchException {
 		log.debug("Processing status request for job with id {}", jobId);
 	
 		UserJobs manager = userJobsFactory.get(proxyHelper.decodeProxy(proxy));
@@ -109,8 +109,9 @@ public class JobsController {
 	@RequestMapping(value = "/api/jobs", method = GET, produces = APPLICATION_JSON_VALUE)
 	public ResponseEntity<List<JobInfo>> globalStatus(@RequestHeader("PROXY") String proxy,
 			@RequestParam(value = "tag", required = false) String tag) 
-			throws CredentialException, InvalidStateException, GSSException, FileManagerException, 
-			IOException, InterruptedException, KeyStoreException, CertificateException {
+			throws CredentialException, GSSException, FileManagerException, 
+			IOException, InterruptedException, KeyStoreException, CertificateException,
+			RunException, JSchException {
 		UserJobs manager = userJobsFactory.get(proxyHelper.decodeProxy(proxy));
 		List<Job> jobs = manager.update(null, tag, null);
 		List<JobInfo> infos = jobs.stream().
@@ -125,7 +126,7 @@ public class JobsController {
 	public ResponseEntity<Void> deleteJob(@RequestHeader("PROXY") String proxy,
 			@PathVariable("jobId") String jobId) 
 			throws CredentialException, GSSException, FileManagerException, JobNotFoundException,
-			KeyStoreException, CertificateException, IOException {
+			KeyStoreException, CertificateException, IOException, RunException, JSchException {
 		UserJobs manager = userJobsFactory.get(proxyHelper.decodeProxy(proxy));
 		manager.delete(jobId);
 		
@@ -138,7 +139,7 @@ public class JobsController {
 			@Valid @RequestBody JobActionRequest actionRequest, BindingResult errors,
 			@PathVariable("jobId") String jobId) 
 			throws CredentialException, GSSException, FileManagerException, JobNotFoundException,
-			KeyStoreException, CertificateException, IOException {
+			KeyStoreException, CertificateException, IOException, RunException, JSchException {
 		if(errors.hasErrors()) {
 			throw new ValidationException(RestHelper.convertErrors(errors));
 		}

@@ -24,6 +24,8 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.jcraft.jsch.JSchException;
+
 import pl.cyfronet.rimrock.controllers.rest.RunResponse;
 import pl.cyfronet.rimrock.controllers.rest.RunResponse.Status;
 import pl.cyfronet.rimrock.controllers.rest.jobs.ValidationException;
@@ -31,8 +33,6 @@ import pl.cyfronet.rimrock.gsi.ProxyHelper;
 import pl.cyfronet.rimrock.services.gsissh.GsisshRunner;
 import pl.cyfronet.rimrock.services.gsissh.RunException;
 import pl.cyfronet.rimrock.services.gsissh.RunResults;
-
-import com.sshtools.j2ssh.util.InvalidStateException;
 
 @Controller
 public class RunController {
@@ -49,24 +49,30 @@ public class RunController {
 		this.proxyHelper = proxyHelper;
 	}
 	
-	@RequestMapping(value = "/api/process", method = POST, consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
+	@RequestMapping(value = "/api/process", method = POST, consumes = APPLICATION_JSON_VALUE,
+			produces = APPLICATION_JSON_VALUE)
 	@ResponseBody
-	public ResponseEntity<RunResponse> run(@RequestHeader("PROXY") String proxy, @Valid @RequestBody RunRequest runRequest, BindingResult errors) throws CredentialException, InvalidStateException, GSSException, IOException, InterruptedException, KeyStoreException, CertificateException {
+	public ResponseEntity<RunResponse> run(@RequestHeader("PROXY") String proxy,
+			@Valid @RequestBody RunRequest runRequest, BindingResult errors)
+					throws CredentialException, GSSException, IOException, InterruptedException,
+					KeyStoreException, CertificateException, JSchException {
 		log.debug("Processing run request {}", runRequest);
 		
 		if(errors.hasErrors()) {
 			throw new ValidationException(errors);
 		}
 		
-		RunResults results = runner.run(runRequest.getHost(), proxyHelper.decodeProxy(proxy), runRequest.getCommand(), -1);
+		RunResults results = runner.run(runRequest.getHost(), proxyHelper.decodeProxy(proxy),
+				runRequest.getCommand(), -1);
 		
 		if(results.isTimeoutOccured()) {
 			throw new RunException(
-					"timeout occurred; maximum allowed execution time for this operation is " + runTimeoutMillis + " ms", 
-					results);				
+					"timeout occurred; maximum allowed execution time for this operation is "
+			+ runTimeoutMillis + " ms", results);				
 		}
 		
 		return new ResponseEntity<RunResponse>(
-				new RunResponse(Status.OK, results.getExitCode(), results.getOutput(), results.getError(), null), OK);
+				new RunResponse(Status.OK, results.getExitCode(), results.getOutput(),
+						results.getError(), null), OK);
 	}
 }
