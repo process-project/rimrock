@@ -27,6 +27,7 @@ import com.jcraft.jsch.JSchException;
 import pl.cyfronet.rimrock.controllers.exceptions.ResourceNotFoundException;
 import pl.cyfronet.rimrock.controllers.rest.jobs.ValidationException;
 import pl.cyfronet.rimrock.controllers.rest.proxygeneration.BanException;
+import pl.cyfronet.rimrock.controllers.rest.proxygeneration.ProxyGenerationException;
 import pl.cyfronet.rimrock.services.filemanager.FileManagerException;
 import pl.cyfronet.rimrock.services.gsissh.RunException;
 
@@ -94,18 +95,27 @@ public class GlobalExceptionHandling {
 		return new ResponseEntity<ErrorResponse>(new ErrorResponse(e.getMessage()), NOT_FOUND);
 	}
 	
+	@ExceptionHandler(BanException.class)
+	public ResponseEntity<ErrorResponse> handleBanException(BanException e) {
+		log.error("Global error intercepted", e);
+		
+		return new ResponseEntity<ErrorResponse>(new ErrorResponse(e.getMessage()), LOCKED);
+	}
+	
+	@ExceptionHandler(ProxyGenerationException.class)
+	public ResponseEntity<ErrorResponse> handleProxyGenerationException(
+			ProxyGenerationException e) {
+		log.error("Global error intercepted", e);
+		
+		return new ResponseEntity<ErrorResponse>(new ErrorResponse(e.getMessage()),
+				UNPROCESSABLE_ENTITY);
+	}
+	
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<ErrorResponse> handleError(Exception e) {
 		log.error("Global error intercepted", e);
 		
 		return new ResponseEntity<ErrorResponse>(new ErrorResponse(e.getMessage()),
 				INTERNAL_SERVER_ERROR);
-	}
-	
-	@ExceptionHandler(BanException.class)
-	public ResponseEntity<ErrorResponse> handleBanException(BanException e) {
-		log.error("Global error intercepted", e);
-		
-		return new ResponseEntity<ErrorResponse>(new ErrorResponse(e.getMessage()), LOCKED);
 	}
 }
