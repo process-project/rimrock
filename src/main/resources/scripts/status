@@ -3,6 +3,7 @@
 QSTAT=''
 SQUEUE=''
 ZJH=/opt/cyfronet/bin/zeus-jobs-history
+SACCT=/net/slurm/releases/production/bin/sacct
 ECHO=/bin/echo
 set -o pipefail
 
@@ -123,6 +124,26 @@ function status_slurm {
 		fi
 		text_output="${text_output}\t\t{\n\t\t\t\"job_id\": \"${job_id}\",\n\t\t\t\"job_state\": \"${state[${job_state}]}\"\n\t\t},\n"
 	done
+
+	if [ "plgmonitoring" != $USER ]
+	then
+		for job_id in "${job_list[@]}"
+		do
+			since=$(date --date "week ago" +%F)
+			saout=$($SACCT -Xp -o NNodes,NCPUS,Elapsed,Submit,Start,End -S ${since} -n -s BF,CA,F,NF,PR,TO -j $job_id | tail -n 1)
+			job_nodes=$(echo "$saout" | cut -f 1 -d "|" 2>&1)
+			job_cores=$(echo "$saout" | cut -f 2 -d "|" 2>&1)
+			job_walltime=$(echo "$saout" | cut -f 3 -d "|" 2>&1)
+			job_queuetime=$(echo "$saout" | cut -f 4 -d "|" 2>&1)
+			job_starttime=$(echo "$saout" | cut -f 5 -d "|" 2>&1)
+			job_endtime=$(echo "$saout" | cut -f 6 -d "|" 2>&1)
+
+			if [ -n "${job_starttime}" ]
+			then
+				text_output_history="${text_output_history}\t\t{\n\t\t\t\"job_id\": \"${job_id}\",\n\t\t\t\"job_nodes\": \"${job_nodes}\",\n\t\t\t\"job_cores\": \"${job_cores}\",\n\t\t\t\"job_walltime\": \"${job_walltime}\",\n\t\t\t\"job_queuetime\": \"${job_queuetime}\",\n\t\t\t\"job_starttime\": \"${job_starttime}\",\n\t\t\t\"job_endtime\": \"${job_endtime}\"\n\t\t},\n"
+			fi
+		done
+	fi
 
 	#remove last ,
 	if [ -n "$text_output" ]
