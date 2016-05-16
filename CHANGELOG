@@ -1,4 +1,4 @@
-v 1.6.12 (not released)
+v 1.6.12
   - sshtools gsissh library implementation replaced with jsch
   - banning mechanism now allows only for two generation attempts
   - global interactive process retrieval REST method optimized
