@@ -201,11 +201,17 @@ public class InteractiveRunController {
 		
 		List<InteractiveProcessResponse> response = processes.stream().
 			<InteractiveProcessResponse>map(process -> {
-				String output = process.getOutput();
-				String error = process.getError();
-				process.setOutput("");
-				process.setError("");
-				processRepository.save(process);
+				String output = "";
+				String error = "";
+				
+				if (process.getOutput() != null && !process.getOutput().isEmpty()
+						|| process.getError() != null && !process.getError().isEmpty()) {
+					output = process.getOutput();
+					error = process.getError();
+					process.setOutput("");
+					process.setError("");
+					processRepository.save(process);
+				}
 				
 				InteractiveProcessResponse processResponse = new InteractiveProcessResponse(
 						Status.OK, null);
