@@ -1,6 +1,5 @@
 package pl.cyfronet.rimrock.controllers.rest.proxygeneration;
 
-import static org.springframework.http.HttpStatus.LOCKED;
 import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 
@@ -30,7 +29,6 @@ import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import com.jcraft.jsch.SftpException;
 
-import pl.cyfronet.rimrock.controllers.exceptions.ResourceNotFoundException;
 import pl.cyfronet.rimrock.controllers.rest.jobs.ValidationException;
 import pl.cyfronet.rimrock.gridworkerapi.service.JSagaExtras;
 
@@ -81,7 +79,8 @@ public class ProxyGenerationController {
 			@RequestHeader(USER_PASSWORD_HEADER_NAME)
 			Optional<String> basedUserPassword,
 			@RequestHeader(PRIVATE_KEY_PASSWORD_HEADER_NAME)
-			Optional<String> basedPrivateKeyPassword) throws BanException {
+			Optional<String> basedPrivateKeyPassword)
+					throws BanException, ProxyGenerationException {
 		log.info("Proxy generation request for user {} started",
 				userLogin.orElse("missing user login"));
 		
@@ -119,13 +118,13 @@ public class ProxyGenerationController {
 				log.error(msg, e);
 				banUtil.failure(userLogin.get());
 				
-				throw new ResourceNotFoundException(msg);
+				throw new ProxyGenerationException();
 			} catch (RemoteException e) {
 				String msg = "Proxy certificate could not be generated";
 				log.error(msg, e);
 				banUtil.failure(userLogin.get());
 				
-				throw new RuntimeException(msg);
+				throw new ProxyGenerationException();
 			}
 		} else {
 			throw new ValidationException("User login, user password and private key password "
@@ -139,10 +138,11 @@ public class ProxyGenerationController {
 			throws JSchException, SftpException {
 		KeyFsCredentials result = new KeyFsCredentials();
 		ChannelSftp channel = null;
+		Session session = null;
 		
 		try {
 			JSch jsch = new JSch();
-			Session session = jsch.getSession(userLogin, keyFsHost, 22);
+			session = jsch.getSession(userLogin, keyFsHost, 22);
 			session.setPassword(userPassword);
 			session.setConfig("StrictHostKeyChecking", "no");
 			session.connect();
@@ -158,7 +158,11 @@ public class ProxyGenerationController {
 					.lines().collect(Collectors.joining("\n"));
 		} finally {
 			if (channel != null) {
-				channel.exit();
+				channel.disconnect();;
+			}
+			
+			if (session != null) {
+				session.disconnect();
 			}
 		}
 		
