@@ -186,12 +186,12 @@ def job_sequence():
 
 
 def job_cancel_sequence():
-    response, code = make_request("/api/jobs", {"host": ui_url, "script": "#!/bin/bash\n\n#PBS -q plgrid\necho hello\nexit 0"})
+    response, code = make_request("/api/jobs", {"host": ui_url, "script": "#!/bin/bash\n\n#PBS -q plgrid\necho hello\nsleep 20s\nexit 0"})
     status = response["status"]
     job_id = response["job_id"]
     err_msg = None
 
-    time.sleep(3)
+    time.sleep(5)
 
     response, code = make_request("/api/jobs/" + job_id, method="DELETE")
     if code != 204:
