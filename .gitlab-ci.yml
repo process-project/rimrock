@@ -7,7 +7,7 @@ testing:
   - echo "deb http://repository.egi.eu/sw/production/cas/1/current egi-igtf core" > /etc/apt/sources.list.d/egi.list
   - mkdir -p /etc/grid-security/certificates
   - apt update
-  - apt install -y install-recommends ca-policy-egi-core
+  - apt install -y --install-recommends ca-policy-egi-core
   - wget http://software.plgrid.pl/packages/general/ca_PLGRID-SimpleCA-1.0-4.noarch.rpm
   - apt install -y alien
   - alien --to-deb ca_PLGRID-SimpleCA-1.0-4.noarch.rpm
