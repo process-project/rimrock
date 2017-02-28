@@ -1,5 +1,6 @@
 v unreleased
   - contact information updated
+  - prometheus job start script fixed to return valid standard output paths
 
 v 1.6.12
   - sshtools gsissh library implementation replaced with jsch
