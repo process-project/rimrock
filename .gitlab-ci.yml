@@ -9,6 +9,7 @@ testing:
   - apt update
   - apt install -y ca-policy-egi-core
   - wget http://software.plgrid.pl/packages/general/ca_PLGRID-SimpleCA-1.0-4.noarch.rpm
+  - apt install -y alien
   - alien --to-deb ca_PLGRID-SimpleCA-1.0-4.noarch.rpm
   - dpkg -i ca-plgrid-simpleca_1.0-5_all.deb
   - apt install -y fetch-crl
