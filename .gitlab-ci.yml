@@ -2,4 +2,14 @@ image: maven:3-jdk-8
 
 testing:
   stage: test
-  script: mvn test -B -Dmaven.repo.local=/cache/.m2/repository
+  script:
+  - wget -q -O - https://dist.eugridpma.info/distribution/igtf/current/GPG-KEY-EUGridPMA-RPM-3 | apt-key add -
+  - echo "deb http://repository.egi.eu/sw/production/cas/1/current egi-igtf core" > /etc/apt/sources.list.d/egi.list
+  - mkdir -p /etc/grid-security/certificates
+  - apt update
+  - apt install ca-policy-egi-core
+  - wget http://software.plgrid.pl/packages/general/ca_PLGRID-SimpleCA-1.0-4.noarch.rpm
+  - alien --to-deb ca_PLGRID-SimpleCA-1.0-4.noarch.rpm
+  - dpkg -i ca-plgrid-simpleca_1.0-5_all.deb
+  - apt install fetch-crl
+  - mvn test -B -Dmaven.repo.local=/cache/.m2/repository
