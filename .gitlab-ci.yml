@@ -1,0 +1,5 @@
+image: maven:3-jdk-8
+
+testing:
+  stage: test
+  script: mvn test -B -Dmaven.repo.local=/cache/.m2/repository
