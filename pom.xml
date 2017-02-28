@@ -5,7 +5,7 @@
 
 	<groupId>pl.cyfronet</groupId>
 	<artifactId>rimrock</artifactId>
-	<version>1.6.13-SNAPSHOT</version>
+	<version>1.6.13</version>
 	<packaging>jar</packaging>
 
 	<name>rimrock - Robust Remote Process Controller</name>
@@ -32,7 +32,7 @@
 		<jsaga.grid.worker.version>0.1.4</jsaga.grid.worker.version>
 		<qcg.grid.worker.version>0.1.1</qcg.grid.worker.version>
 	</properties>
-	
+
 	<repositories>
 		<repository>
 			<id>dice-mvnrepo</id>
