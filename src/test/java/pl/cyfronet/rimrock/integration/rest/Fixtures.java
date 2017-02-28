@@ -9,11 +9,11 @@ import java.util.UUID;
 import com.google.common.collect.ObjectArrays;
 
 public class Fixtures {
-	private static final String grant = "diceservices";
-	
+	private static final String grant = "diceservices2";
+
 	public static Collection<Object[]> jobParameters() {
 		return
-				Arrays.asList(new Object[][] {     
+				Arrays.asList(new Object[][] {
 					{
 						"zeus.cyfronet.pl",
 						"#!/bin/bash\n" +
@@ -31,7 +31,7 @@ public class Fixtures {
 					}
 				});
 	}
-	
+
 	public static Collection<Object[]> jobWithDirOverrideParameters() {
 		String randomDirectory = UUID.randomUUID().toString();
 		List<String> workingDirectories = Arrays.asList(
@@ -39,12 +39,12 @@ public class Fixtures {
 				"/net/people/plgtesthar/" + randomDirectory);
 		List<Object[]> jobParameters = new ArrayList<>(jobParameters());
 		Collection<Object[]> result = new ArrayList<>();
-		
+
 		for (int i = 0; i < workingDirectories.size(); i++) {
 			jobParameters.get(i);
 			result.add(ObjectArrays.concat(jobParameters.get(i), workingDirectories.get(i)));
 		}
-		
+
 		return result;
 	}
 }
