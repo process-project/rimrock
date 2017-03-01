@@ -1,6 +1,6 @@
-# Rimrock - Robust Remote Process Controller
+# Rimrock
 
-TODO
+Robust Remote Process Controller
 
 ## Requirements
 
@@ -26,7 +26,7 @@ Please see the [development manual](doc/development/README.md).
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create new pull request
 
-##Releasing
+## Releasing
 
 1. Merge all branches which are to be released into the develop branch.
 2. Update CHANGELOG.
@@ -36,7 +36,7 @@ Please see the [development manual](doc/development/README.md).
 6. Create a tag named `x.x.x`.
 7. Switch back to the develop branch and update version to next SNAPSHOT.
 
-##Deploying
+## Deploying
 
 1. The final jar file is an init.d compliant executable script and can start the application by a user who is the file owner.
 2. Copy the final jar file to a known location and make it executable with `chmod +x {jar-file-location}`.

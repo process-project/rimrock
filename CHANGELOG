@@ -1,6 +1,10 @@
 v unreleased
   - run request of the process API extended with a working directory attribute
 
+v 1.6.13
+  - contact information updated
+  - prometheus job start script fixed to return valid standard output paths
+
 v 1.6.12
   - sshtools gsissh library implementation replaced with jsch
   - banning mechanism now allows only for two generation attempts
