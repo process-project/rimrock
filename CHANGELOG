@@ -1,4 +1,4 @@
-v unreleased
+v 1.7.0
   - run request of the process API extended with a working directory attribute
 
 v 1.6.13
