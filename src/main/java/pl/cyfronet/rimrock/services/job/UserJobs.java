@@ -112,29 +112,29 @@ public class UserJobs {
 		if (hosts == null) {
 			hosts = jobRepository.getHosts(userLogin);
 		}
-		
+
 		if (hosts.size() == 0) {
 			return Arrays.asList();
 		}
 
-		List<Status> statuses = new ArrayList<Status>();
-		List<History> histories = new ArrayList<History>();
+		List<Status> statuses = new ArrayList<>();
+		List<History> histories = new ArrayList<>();
 
 		for (String host : hosts) {
 			List<String> jobIds = jobRepository.getNotTerminalJobIdsForUserLoginAndHost(userLogin,
 					host);
-			
+
 			if (overrideJobIds != null) {
 				jobIds.retainAll(overrideJobIds);
 			}
-			
+
 			if (jobIds.size() > 0) {
 				StatusResult statusResult = getStatusResult(host, jobIds);
-	
+
 				if (statusResult.getErrorMessage() != null) {
 					throw new RunException(statusResult.getErrorMessage());
 				}
-	
+
 				statuses.addAll(statusResult.getStatuses());
 				histories.addAll(statusResult.getHistory());
 			}
@@ -147,7 +147,7 @@ public class UserJobs {
 		} else {
 			jobs = jobRepository.findByUsernameOnHosts(userLogin, hosts);
 		}
-		
+
 		if (overrideJobIds != null) {
 			jobs = jobs.stream().filter(job -> overrideJobIds.contains(job.getJobId()))
 						.collect(Collectors.toList());
@@ -234,24 +234,24 @@ public class UserJobs {
 	CredentialException, RunException, KeyStoreException,
 			CertificateException, JSchException {
 		Job job = jobRepository.findOneByJobId(jobId);
-	
+
 		if (job == null) {
 			throw new JobNotFoundException(jobId);
 		}
-	
+
 		if (!"FINISHED".equals(job.getStatus())) {
 			String host = job.getHost();
 			PathHelper pathHelper = new PathHelper(host, userLogin);
 			fileManager.cp(pathHelper.getTransferPath() + ".rimrock/stop",
 					new ClassPathResource("scripts/stop"));
-	
+
 			RunResults result = run(host, String.format("cd %s.rimrock; chmod +x stop; ./stop %s",
 					pathHelper.getFileRootPath(), jobId), timeout);
 			processRunExceptions(result);
 			log.info("Local job {} aborted on the computing infrastructure as it was not "
 					+ "completed yet", jobId);
 		}
-		
+
 		return job;
 	}
 
@@ -277,7 +277,7 @@ public class UserJobs {
 			StatusResult statusResult = new StatusResult();
 			statusResult.setResult("ERROR");
 			statusResult.setErrorMessage(result.getError());
-			
+
 			if ((statusResult.getErrorMessage() == null
 					|| statusResult.getErrorMessage().isEmpty())
 					&& result.isTimeoutOccured()) {
@@ -293,7 +293,7 @@ public class UserJobs {
 	private RunResults run(String host, String command, int timeout) throws CredentialException,
 			RunException, KeyStoreException, CertificateException, JSchException {
 		try {
-			RunResults runResults = runner.run(host, proxy, command, timeout);
+			RunResults runResults = runner.run(host, proxy, command, null, timeout);
 			log.debug("Run results for command [{}] are the following: {}", command, runResults);
 
 			return runResults;

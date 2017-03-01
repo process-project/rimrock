@@ -20,7 +20,6 @@ import org.ietf.jgss.GSSException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -78,13 +77,13 @@ public class UserJobsTest {
 		when(
 			runner.run(eq("host"), eq(proxy),
 					startsWith("cd /home/dir/; chmod +x .rimrock/start; ./.rimrock/start script-"),
-					anyInt())).thenReturn(result);
+					any(), anyInt())).thenReturn(result);
 
 		Job job = userJobs.submit("host", "/home/dir", "script payload", null);
 
 		verify(fileManager).cp(startsWith("/home/dir/script-"), any(Resource.class));
 		verify(fileManager).cp(eq("/home/dir/.rimrock/start"), any(Resource.class));
-		
+
 		assertEquals("jobId", job.getJobId());
 		assertEquals("QUEUED", job.getStatus());
 		assertEquals(userLogin, job.getUserLogin());
@@ -111,7 +110,7 @@ public class UserJobsTest {
 		when(
 			runner.run(eq("host"), eq(proxy),
 					startsWith("cd /home/dir/; chmod +x .rimrock/start; ./.rimrock/start script-"),
-					anyInt())).thenThrow(new GSSException(1));
+					any(), anyInt())).thenThrow(new GSSException(1));
 
 		try {
 			userJobs.submit("host", "/home/dir", "script payload", null);
@@ -129,9 +128,9 @@ public class UserJobsTest {
 		result.setOutput("{\"corrupted\": true}");
 
 		when(
-			runner.run(eq("host"), eq(proxy),							   
+			runner.run(eq("host"), eq(proxy),
 					startsWith("cd /home/dir/; chmod +x .rimrock/start; ./.rimrock/start script-"),
-					anyInt())).thenReturn(result);
+					any(), anyInt())).thenReturn(result);
 
 		try {
 			userJobs.submit("host", "/home/dir", "script payload", null);
@@ -165,13 +164,13 @@ public class UserJobsTest {
 						eq("zeus.cyfronet.pl"),
 						eq(proxy),
 						startsWith("cd /people/userLogin/.rimrock; chmod +x status; ./status"),
-						anyInt())).thenReturn(zeusResult);
+						any(), anyInt())).thenReturn(zeusResult);
 		when(
 				runner.run(
 						eq("ui.cyfronet.pl"),
 						eq(proxy),
 						startsWith("cd /people/userLogin/.rimrock; chmod +x status; ./status"),
-						anyInt())).thenReturn(uiResult);
+						any(), anyInt())).thenReturn(uiResult);
 
 		userJobs.update(Arrays.asList("zeus.cyfronet.pl", "ui.cyfronet.pl"), null, null);
 
@@ -206,7 +205,7 @@ public class UserJobsTest {
 						eq("zeus.cyfronet.pl"),
 						eq(proxy),
 						startsWith("cd /people/userLogin/.rimrock; chmod +x status; ./status"),
-						anyInt())).thenReturn(zeusResult);
+						any(), anyInt())).thenReturn(zeusResult);
 
 		userJobs.update(Arrays.asList("zeus.cyfronet.pl"), null, null);
 
@@ -225,10 +224,10 @@ public class UserJobsTest {
 	@Test
 	public void testUpdateJobStatusesWhenNoHosts() throws Exception {
 		List<Job> jobs = userJobs.update(Arrays.asList(), null, null);
-		
+
 		assertEquals(0, jobs.size());
 	}
-	
+
 	@Test
 	public void testDeleteRunningJob() throws Exception {
 		createJob("to_delete", userLogin, "zeus.cyfronet.pl");
@@ -237,7 +236,7 @@ public class UserJobsTest {
 						eq("zeus.cyfronet.pl"),
 						eq(proxy),
 						eq("cd /people/userLogin/.rimrock; chmod +x stop; ./stop to_delete"),
-						anyInt())).thenReturn(new RunResults());
+						any(), anyInt())).thenReturn(new RunResults());
 
 		userJobs.delete("to_delete");
 
@@ -246,7 +245,8 @@ public class UserJobsTest {
 
 	@Test
 	public void testDeleteFinishedJob() throws Exception {
-		Job job = new Job("finished_to_delete", "FINISHED", "", "", userLogin, "zeus.cyfronet.pl", null);
+		Job job = new Job("finished_to_delete", "FINISHED", "", "", userLogin, "zeus.cyfronet.pl",
+				null);
 		jobRepository.save(job);
 
 		userJobs.delete("finished_to_delete");
@@ -255,24 +255,24 @@ public class UserJobsTest {
 				.run(eq("zeus.cyfronet.pl"),
 						eq(proxy),
 						eq("cd /people/userLogin/.rimrock; chmod +x stop; ./stop finished_to_delete"),
-						anyInt());
+						any(), anyInt());
 		assertNull(jobRepository.findOneByJobId("to_delete"));
 	}
 
 	@Test
 	public void testGetUserJob() throws Exception {
-		Job userJob = createJob("user_job", userLogin, "zeus.cyfronet.pl");		
-		
+		Job userJob = createJob("user_job", userLogin, "zeus.cyfronet.pl");
+
 		Job job = userJobs.get(userJob.getJobId());
-		
+
 		assertEquals(userJob.getId(), job.getId());
 	}
-	
+
 	public void testNotGetOtherUserJob() throws Exception {
 		Job userJob = createJob("different_user_job", "different_user", "zeus.cyfronet.pl");
-		
+
 		Job job = userJobs.get(userJob.getJobId());
-		
+
 		assertNull(job);
 	}
 
