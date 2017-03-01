@@ -28,27 +28,27 @@ import pl.cyfronet.rimrock.services.gsissh.RunResults;
 @DirtiesContext
 public class CleanHistoryAndLongOutputTest {
 	private static final Logger log = LoggerFactory.getLogger(CleanHistoryAndLongOutputTest.class);
-	
+
 	@Autowired private ProxyFactory proxyFactory;
 	@Autowired private GsisshRunner runner;
-	
+
 	@Value("${run.timeout.millis}") private int runTimeoutMillis;
-	
+
 	@Test
 	public void testWhetherHistoryIsClean() throws CredentialException, KeyStoreException,
 			CertificateException, GSSException, IOException,
 			InterruptedException, Exception {
 		RunResults history = runner.run("ui.cyfronet.pl", proxyFactory.getProxy(),
-				"cat .bash_history | sha1sum", runTimeoutMillis);
+				"cat .bash_history | sha1sum", null, runTimeoutMillis);
 		log.info("History: {}", history.getOutput());
-		runner.run("ui.cyfronet.pl", proxyFactory.getProxy(), "echo hello", runTimeoutMillis);
-		
+		runner.run("ui.cyfronet.pl", proxyFactory.getProxy(), "echo hello", null, runTimeoutMillis);
+
 		RunResults newHistory = runner.run("ui.cyfronet.pl", proxyFactory.getProxy(),
-				"cat .bash_history | sha1sum", runTimeoutMillis);
+				"cat .bash_history | sha1sum", null, runTimeoutMillis);
 		log.info("New history: {}", newHistory.getOutput());
 		assertEquals(history.getOutput(), newHistory.getOutput());
 	}
-	
+
 	@Test
 	public void testLongOutput() throws CredentialException, KeyStoreException,
 			CertificateException, GSSException, IOException,
@@ -56,7 +56,7 @@ public class CleanHistoryAndLongOutputTest {
 		long outputLength = 5120;
 		RunResults result = runner.run("ui.cyfronet.pl", proxyFactory.getProxy(),
 				"cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w " + outputLength + " | head -n 1",
-				runTimeoutMillis);
+				null, runTimeoutMillis);
 		assertEquals(outputLength, result.getOutput().length());
 	}
 }

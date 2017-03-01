@@ -1,4 +1,5 @@
 v unreleased
+  - run request of the process API extended with a working directory attribute
 
 v 1.6.13
   - contact information updated

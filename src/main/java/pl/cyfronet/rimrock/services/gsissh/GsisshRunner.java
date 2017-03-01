@@ -34,42 +34,43 @@ import pl.cyfronet.rimrock.gsi.ProxyHelper;
 @Service
 public class GsisshRunner {
 	private static final Logger log = LoggerFactory.getLogger(GsisshRunner.class);
-	
+
 	private class NormalizedOutput {
 		String output;
 		int exitCode;
 	}
-	
+
 	@Value("${run.timeout.millis}")
 	int runTimeoutMillis;
-	
+
 	@Value("${gsissh.pool.size}")
 	int poolSize;
-	
+
 	@Autowired
 	ProxyHelper proxyHelper;
-	
+
 	private Map<String, AtomicInteger> logins;
-	
+
 	public GsisshRunner() {
 		logins = new HashMap<>();
 		initialize();
 	}
-	
+
 	/**
 	 * Runs the given command on the host. Authentication uses the given proxy. If given timeout
-	 * (provided in millis) is greater than 0 it is used, otherwise a default value is used. 
+	 * (provided in millis) is greater than 0 it is used, otherwise a default value is used.
 	 */
-	public RunResults run(String host, String proxyValue, String command, int timeoutMillis)
+	public RunResults run(String host, String proxyValue, String command, String workingDirectory,
+			int timeoutMillis)
 			throws JSchException, CredentialException, InterruptedException, GSSException,
 			IOException {
 		String userLogin = proxyHelper.getUserLogin(proxyValue);
-		
+
 		try {
 			checkPool(userLogin);
 			proxyHelper.verify(proxyValue);
-			
-			GSSCredential gsscredential = proxyHelper.getGssCredential(proxyValue);			
+
+			GSSCredential gsscredential = proxyHelper.getGssCredential(proxyValue);
 			JSch jsch = new ExtendedJSch();
 	        ExtendedSession session = (ExtendedSession) jsch.getSession(userLogin, host);
 	        session.setAuthenticationInfo(new GSIAuthenticationInfo() {
@@ -78,20 +79,20 @@ public class GsisshRunner {
 						return gsscredential;
 				}
 			});
-	        
+
 	        Properties config = new Properties();
 	        config.put("StrictHostKeyChecking", "no");
 	        session.setConfig(config);
-			
+
 			RunResults results = new RunResults();
 			String separator = UUID.randomUUID().toString();
-			
+
 			try {
 				session.connect();
-				
+
 				Channel channel = session.openChannel("exec");
-				
-		        byte[] completedCommand = completeCommand(command, separator);
+
+		        byte[] completedCommand = completeCommand(command, separator, workingDirectory);
 		        log.trace("Running command via gsi-ssh: {}", new String(completedCommand));
 				((ChannelExec) channel).setCommand(completedCommand);
 		        channel.setInputStream(null);
@@ -99,20 +100,21 @@ public class GsisshRunner {
 		        InputStream outputStream = channel.getInputStream();
 		        InputStream errorStream = ((ChannelExec) channel).getErrStream();
 		        channel.connect();
-		        
+
 		        Thread timeoutThread = new Thread() {
+					@Override
 					public void run() {
 						try {
 							Thread.sleep(timeoutMillis > 0 ? timeoutMillis : runTimeoutMillis);
 						} catch (InterruptedException e) {
 							return;
 						}
-						
+
 						log.debug("Timeout thread awoke. Setting timeout state...");
-						
+
 						synchronized(jsch) {
 							results.setTimeoutOccured(true);
-							
+
 							if(session.isConnected()) {
 								session.disconnect(); //this also disconnects all channels
 							}
@@ -120,27 +122,27 @@ public class GsisshRunner {
 					};
 				};
 				timeoutThread.start();
-				
-		        
+
+
 		        ByteArrayOutputStream standardOutput = new ByteArrayOutputStream();
 		        ByteStreams.copy(outputStream, standardOutput);
-		        
+
 		        ByteArrayOutputStream standardError = new ByteArrayOutputStream();
 		        ByteStreams.copy(errorStream, standardError);
-				
+
 		        if(timeoutThread.isAlive()) {
 		        	timeoutThread.interrupt();
 		        }
-		        
+
 		        String retrievedStandardOutput = new String(standardOutput.toByteArray());
 		        NormalizedOutput normalizedOutput = normalizeStandardOutput(retrievedStandardOutput,
 		        		separator);
 		        results.setOutput(normalizedOutput.output);
-		        
+
 		        if (!results.isTimeoutOccured()) {
 		        	results.setExitCode(normalizedOutput.exitCode);
 		        }
-		        
+
 		        results.setError(new String(standardError.toByteArray()));
 			} finally {
 				synchronized(jsch) {
@@ -149,7 +151,7 @@ public class GsisshRunner {
 					}
 				}
 			}
-			
+
 			return results;
 		} finally {
 			freePool(userLogin);
@@ -161,44 +163,44 @@ public class GsisshRunner {
 			if(!logins.containsKey(userLogin)) {
 				logins.put(userLogin, new AtomicInteger(0));
 			}
-			
+
 			while(logins.get(userLogin).get() >= poolSize) {
 				log.debug("Thread {} awaits for gsissh execution", Thread.currentThread().getId());
 				logins.wait();
 			}
-			
+
 			log.debug("Thread {} granted gsissh execution", Thread.currentThread().getId());
 			logins.get(userLogin).incrementAndGet();
 		}
 	}
-	
+
 	private void freePool(String userLogin) {
 		synchronized(logins) {
 			log.debug("Thread {} frees gsissh execution", Thread.currentThread().getId());
-			
+
 			int size = logins.get(userLogin).decrementAndGet();
-			
+
 			if(size == 0) {
 				logins.remove(userLogin);
 			}
-			
+
 			logins.notify();
 		}
 	}
 
 	private NormalizedOutput normalizeStandardOutput(String output, String separator) {
 		log.trace("Output being normalized: {}", output);
-		
+
 		NormalizedOutput result = new NormalizedOutput();
-		
+
 		//matching proper output
 		Pattern pattern = Pattern.compile(".*^" + separator + "$\\s+(.*)^(.*?)\\s+^" + separator + "$.*",
 				Pattern.MULTILINE | Pattern.DOTALL);
 		Matcher matcher = pattern.matcher(output);
-		
+
 		if(matcher.matches()) {
 			result.output = matcher.group(1).replaceAll("\r\n", "\n").trim();
-			
+
 			try {
 				result.exitCode = Integer.parseInt(matcher.group(2));
 			} catch(NumberFormatException e) {
@@ -209,17 +211,23 @@ public class GsisshRunner {
 			Pattern fallbackPattern = Pattern.compile(".*^" + separator + "$\\s+(.*)",
 					Pattern.MULTILINE | Pattern.DOTALL);
 			matcher = fallbackPattern.matcher(output);
-			
+
 			if(matcher.matches()) {
 				result.output = matcher.group(1).replaceAll("\r\n", "\n").trim();
 			}
 		}
-		
+
 		return result;
 	}
 
-	private byte[] completeCommand(String command, String separator) {
-		return ("unset HISTFILE; echo '" + separator + "'; " + command + "; echo $?; echo '" + separator + "'; exit\n").getBytes();
+	private byte[] completeCommand(String command, String separator, String workingDirectory) {
+		return ("unset HISTFILE; "
+				+ "echo '" + separator + "'; "
+				+ (workingDirectory != null ? "cd " + workingDirectory + "; " : "")
+				+ command + "; echo $?; "
+				+ "echo '" + separator + "'; "
+				+ "exit\n")
+				.getBytes();
 	}
 
 	private void initialize() {

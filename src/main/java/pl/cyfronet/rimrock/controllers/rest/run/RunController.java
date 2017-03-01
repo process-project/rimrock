@@ -37,9 +37,9 @@ import pl.cyfronet.rimrock.services.gsissh.RunResults;
 @Controller
 public class RunController {
 	private static final Logger log = LoggerFactory.getLogger(RunController.class);
-	
+
 	@Value("${run.timeout.millis}") private int runTimeoutMillis;
-	
+
 	private GsisshRunner runner;
 	private ProxyHelper proxyHelper;
 
@@ -48,7 +48,7 @@ public class RunController {
 		this.runner = runner;
 		this.proxyHelper = proxyHelper;
 	}
-	
+
 	@RequestMapping(value = "/api/process", method = POST, consumes = APPLICATION_JSON_VALUE,
 			produces = APPLICATION_JSON_VALUE)
 	@ResponseBody
@@ -57,21 +57,21 @@ public class RunController {
 					throws CredentialException, GSSException, IOException, InterruptedException,
 					KeyStoreException, CertificateException, JSchException {
 		log.debug("Processing run request {}", runRequest);
-		
+
 		if(errors.hasErrors()) {
 			throw new ValidationException(errors);
 		}
-		
+
 		RunResults results = runner.run(runRequest.getHost(), proxyHelper.decodeProxy(proxy),
-				runRequest.getCommand(), -1);
-		
+				runRequest.getCommand(), runRequest.getWorkingDirectory(), -1);
+
 		if(results.isTimeoutOccured()) {
 			throw new RunException(
 					"timeout occurred; maximum allowed execution time for this operation is "
-			+ runTimeoutMillis + " ms", results);				
+			+ runTimeoutMillis + " ms", results);
 		}
-		
-		return new ResponseEntity<RunResponse>(
+
+		return new ResponseEntity<>(
 				new RunResponse(Status.OK, results.getExitCode(), results.getOutput(),
 						results.getError(), null), OK);
 	}

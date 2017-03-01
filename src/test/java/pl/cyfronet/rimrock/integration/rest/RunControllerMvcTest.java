@@ -43,7 +43,7 @@ import pl.cyfronet.rimrock.gsi.ProxyHelper;
 
 /**
  * DH: Consider using https://code.google.com/p/rest-assured/ for RESt tests
- * 
+ *
  * @author daniel
  *
  */
@@ -54,33 +54,33 @@ import pl.cyfronet.rimrock.gsi.ProxyHelper;
 public class RunControllerMvcTest {
 	@ClassRule
 	public static final SpringClassRule SPRING_CLASS_RULE = new SpringClassRule();
-	
+
 	@Rule
 	public final SpringMethodRule springMethodRule = new SpringMethodRule();
-	
+
 	@Autowired
 	private WebApplicationContext wac;
-	
+
 	@Autowired
 	private ObjectMapper mapper;
-	
+
 	@Autowired
 	private ProxyFactory proxyFactory;
-	
+
 	@Autowired
 	private ProxyHelper proxyHelper;
-	
+
 	@Value("${run.timeout.millis}")
 	private int runTimeoutMillis;
-	
+
 	private MockMvc mockMvc;
-	
+
 	private String host;
-	
+
 	@Parameters
     public static Collection<Object[]> data() {
     	return
-			Arrays.asList(new Object[][] {     
+			Arrays.asList(new Object[][] {
 				{
 					"zeus.cyfronet.pl"
 				},
@@ -89,11 +89,11 @@ public class RunControllerMvcTest {
 				}
 			});
     }
-    
+
     public RunControllerMvcTest(String host) {
 		this.host = host;
 	}
-	
+
 	@Before
     public void setup() {
         this.mockMvc = MockMvcBuilders.webAppContextSetup(this.wac).build();
@@ -104,14 +104,14 @@ public class RunControllerMvcTest {
 		RunRequest runRequest = new RunRequest();
 		runRequest.setCommand("pwd");
 		runRequest.setHost(host);
-		
+
 		mockMvc.perform(post("/api/process")
 				.header("PROXY", proxyHelper.encodeProxy(proxyFactory.getProxy()))
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(mapper.writeValueAsBytes(runRequest)))
-				
+
 				.andDo(print())
-				
+
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.status", is("OK")))
@@ -126,21 +126,21 @@ public class RunControllerMvcTest {
 		//at least the second mkdir command will return a 1 exit code
 		runRequest.setCommand("echo 'error' > /dev/stderr; mkdir /tmp/test; mkdir /tmp/test");
 		runRequest.setHost(host);
-		
+
 		mockMvc.perform(post("/api/process")
 				.header("PROXY", proxyHelper.encodeProxy(proxyFactory.getProxy()))
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(mapper.writeValueAsBytes(runRequest)))
-				
+
 				.andDo(print())
-				
+
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.exit_code", is(1)))
 				.andExpect(jsonPath("$.status", is("OK")))
 				.andExpect(jsonPath("$.error_output", startsWith("error")));
 	}
-	
+
 	@Test
 	public void testNotNullValidation() throws JsonProcessingException, Exception {
 		RunRequest runRequest = new RunRequest();
@@ -148,9 +148,9 @@ public class RunControllerMvcTest {
 				.header("PROXY", proxyHelper.encodeProxy(proxyFactory.getProxy()))
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(mapper.writeValueAsBytes(runRequest)))
-				
+
 				.andDo(print())
-				
+
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isUnprocessableEntity())
 				.andExpect(jsonPath("$.exit_code", is(-1)))
@@ -158,45 +158,66 @@ public class RunControllerMvcTest {
 				.andExpect(jsonPath("$.status", is("ERROR")))
 				.andExpect(jsonPath("$.error_message", containsString("host:")));
 	}
-	
+
 	@Test
 	public void testMultilineOutput() throws Exception {
 		RunRequest runRequest = new RunRequest();
 		runRequest.setCommand("echo hello1; echo hello2; echo hello3");
 		runRequest.setHost(host);
-		
+
 		mockMvc.perform(post("/api/process")
 				.header("PROXY", proxyHelper.encodeProxy(proxyFactory.getProxy()))
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(mapper.writeValueAsBytes(runRequest)))
-				
+
 				.andDo(print())
-				
+
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.status", is("OK")))
 				.andExpect(jsonPath("$.exit_code", is(0)))
 				.andExpect(jsonPath("$.standard_output", is("hello1\nhello2\nhello3")));
 	}
-	
+
 	@Test
 	public void testTimeout() throws Exception {
 		RunRequest runRequest = new RunRequest();
 		runRequest.setCommand("echo 'going to sleep'; sleep " + ((runTimeoutMillis / 1000) + 5));
 		runRequest.setHost(host);
-		
+
 		mockMvc.perform(post("/api/process")
 				.header("PROXY", proxyHelper.encodeProxy(proxyFactory.getProxy()))
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(mapper.writeValueAsBytes(runRequest)))
-				
+
 				.andDo(print())
-				
+
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isRequestTimeout())
 				.andExpect(jsonPath("$.status", is("ERROR")))
 				.andExpect(jsonPath("$.exit_code", is(-1)))
 				.andExpect(jsonPath("$.standard_output", is("going to sleep")))
 				.andExpect(jsonPath("$.error_message", startsWith("timeout")));
+	}
+
+	@Test
+	public void testWorkingDirectoryOverride() throws JsonProcessingException, Exception {
+		RunRequest runRequest = new RunRequest();
+		runRequest.setCommand("pwd");
+		runRequest.setHost(host);
+		runRequest.setWorkingDirectory("/tmp");
+
+		mockMvc.perform(post("/api/process")
+				.header("PROXY", proxyHelper.encodeProxy(proxyFactory.getProxy()))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(mapper.writeValueAsBytes(runRequest)))
+
+				.andDo(print())
+
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.status", is("OK")))
+				.andExpect(jsonPath("$.exit_code", is(0)))
+				.andExpect(jsonPath("$.standard_output", is("/tmp")));
 	}
 }
