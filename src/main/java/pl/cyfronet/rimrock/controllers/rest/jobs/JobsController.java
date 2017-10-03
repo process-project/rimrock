@@ -50,18 +50,18 @@ import pl.cyfronet.rimrock.services.job.UserJobsFactory;
 @Controller
 public class JobsController {
 	private static final Logger log = LoggerFactory.getLogger(JobsController.class);
-	
+
 	private UserJobsFactory userJobsFactory;
 	private ProxyHelper proxyHelper;
-	
+
 	@Value("${plgridData.url}")	private String plgDataUrl;
-	
+
 	@Autowired
 	public JobsController(UserJobsFactory userJobsFactory, ProxyHelper proxyHelper) {
 		this.userJobsFactory = userJobsFactory;
 		this.proxyHelper = proxyHelper;
 	}
-	
+
 	@RequestMapping(value = "/api/jobs", method = POST, consumes = APPLICATION_JSON_VALUE,
 			produces = APPLICATION_JSON_VALUE)
 	public ResponseEntity<JobInfo> submit(@RequestHeader("PROXY") String proxy,
@@ -69,6 +69,7 @@ public class JobsController {
 			BindingResult errors) throws CredentialException, GSSException,
 			FileManagerException, RunException, KeyStoreException, CertificateException,
 			IOException, JSchException {
+
 		if (errors.hasErrors()) {
 			throw new ValidationException(errors);
 		}
@@ -79,20 +80,21 @@ public class JobsController {
 				submitRequest.getWorkingDirectory(), submitRequest.getScript(),
 				submitRequest.getTag());
 
-		return new ResponseEntity<JobInfo>(new JobInfo(job, plgDataUrl), CREATED);
+		return new ResponseEntity<>(new JobInfo(job, plgDataUrl), CREATED);
 	}
-	
+
 	@RequestMapping(value = "/api/jobs/{jobId:.+}", method = GET, produces = APPLICATION_JSON_VALUE)
 	public ResponseEntity<JobInfo> jobInfo(@RequestHeader("PROXY") String proxy,
-			@PathVariable("jobId") String jobId) 
-			throws JobNotFoundException, CredentialException, GSSException, 
+			@PathVariable("jobId") String jobId)
+			throws JobNotFoundException, CredentialException, GSSException,
 			FileManagerException, IOException, InterruptedException,
 			KeyStoreException, CertificateException, RunException, JSchException {
+
 		log.debug("Processing status request for job with id {}", jobId);
-	
+
 		UserJobs manager = userJobsFactory.get(proxyHelper.decodeProxy(proxy));
 		Job job = manager.get(jobId);
-		
+
 		if(job == null) {
 			throw new JobNotFoundException(jobId);
 		}
@@ -103,13 +105,13 @@ public class JobsController {
 			job = manager.get(jobId);
 		}
 
-		return new ResponseEntity<JobInfo>(new JobInfo(job, plgDataUrl), OK);
+		return new ResponseEntity<>(new JobInfo(job, plgDataUrl), OK);
 	}
 
 	@RequestMapping(value = "/api/jobs", method = GET, produces = APPLICATION_JSON_VALUE)
 	public ResponseEntity<List<JobInfo>> globalStatus(@RequestHeader("PROXY") String proxy,
-			@RequestParam(value = "tag", required = false) String tag) 
-			throws CredentialException, GSSException, FileManagerException, 
+			@RequestParam(value = "tag", required = false) String tag)
+			throws CredentialException, GSSException, FileManagerException,
 			IOException, InterruptedException, KeyStoreException, CertificateException,
 			RunException, JSchException {
 		UserJobs manager = userJobsFactory.get(proxyHelper.decodeProxy(proxy));
@@ -117,43 +119,43 @@ public class JobsController {
 		List<JobInfo> infos = jobs.stream().
 				map(job -> new JobInfo(job, plgDataUrl)).
 				collect(Collectors.toList());
-		
-		return new ResponseEntity<List<JobInfo>>(infos, OK);
+
+		return new ResponseEntity<>(infos, OK);
 	}
 
 	@RequestMapping(value = "/api/jobs/{jobId:.+}", method = DELETE,
 			produces = APPLICATION_JSON_VALUE)
 	public ResponseEntity<Void> deleteJob(@RequestHeader("PROXY") String proxy,
-			@PathVariable("jobId") String jobId) 
+			@PathVariable("jobId") String jobId)
 			throws CredentialException, GSSException, FileManagerException, JobNotFoundException,
 			KeyStoreException, CertificateException, IOException, RunException, JSchException {
 		UserJobs manager = userJobsFactory.get(proxyHelper.decodeProxy(proxy));
 		manager.delete(jobId);
-		
-		return new ResponseEntity<Void>(NO_CONTENT);
+
+		return new ResponseEntity<>(NO_CONTENT);
 	}
-	
+
 	@RequestMapping(value = "/api/jobs/{jobId:.+}", method = RequestMethod.PUT,
 			consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
 	public ResponseEntity<Void> processJobAction(@RequestHeader("PROXY") String proxy,
 			@Valid @RequestBody JobActionRequest actionRequest, BindingResult errors,
-			@PathVariable("jobId") String jobId) 
+			@PathVariable("jobId") String jobId)
 			throws CredentialException, GSSException, FileManagerException, JobNotFoundException,
 			KeyStoreException, CertificateException, IOException, RunException, JSchException {
 		if(errors.hasErrors()) {
 			throw new ValidationException(RestHelper.convertErrors(errors));
 		}
-		
+
 		if(actionRequest.getAction().equalsIgnoreCase("abort")) {
 			UserJobs manager = userJobsFactory.get(proxyHelper.decodeProxy(proxy));
 			manager.abort(jobId);
 		}
-		
-		return new ResponseEntity<Void>(NO_CONTENT);
+
+		return new ResponseEntity<>(NO_CONTENT);
 	}
-	
+
 	@ExceptionHandler(JobNotFoundException.class)
 	private ResponseEntity<ErrorResponse> handleJobNotFoundError(JobNotFoundException e) {
-		return new ResponseEntity<ErrorResponse>(new ErrorResponse(e.getMessage()), NOT_FOUND);
+		return new ResponseEntity<>(new ErrorResponse(e.getMessage()), NOT_FOUND);
 	}
 }

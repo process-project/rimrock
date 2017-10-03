@@ -51,6 +51,7 @@ public class UserJobs {
 					ProxyHelper proxyHelper, ObjectMapper mapper)
 			throws CredentialException, GSSException, KeyStoreException, CertificateException,
 			IOException {
+
 		this.proxy = proxy;
 		this.userLogin = proxyHelper.getUserLogin(proxy);
 		this.runner = runner;
@@ -70,6 +71,7 @@ public class UserJobs {
 	public Job submit(String host, String workingDirectory, String script, String tag)
 			throws FileManagerException, CredentialException, RunException, KeyStoreException,
 			CertificateException, JSchException {
+
 		PathHelper pathHelper = new PathHelper(host, userLogin);
 		String transferPath = buildPath(pathHelper.getTransferPath(),
 				pathHelper.addHostPrefix(workingDirectory));
@@ -107,8 +109,9 @@ public class UserJobs {
 	 * @return Updated jobs.
 	 */
 	public List<Job> update(List<String> hosts, String tag, List<String> overrideJobIds)
-			throws CredentialException,
-			FileManagerException, RunException, KeyStoreException, CertificateException, JSchException {
+			throws CredentialException, FileManagerException, RunException, KeyStoreException,
+			CertificateException, JSchException {
+
 		if (hosts == null) {
 			hosts = jobRepository.getHosts(userLogin);
 		}
@@ -212,14 +215,15 @@ public class UserJobs {
 	public void delete(String jobId) throws JobNotFoundException, CredentialException,
 			FileManagerException, RunException, KeyStoreException,
 			CertificateException, JSchException {
+
 		Job job = abortJob(jobId);
 		log.info("Local job {} deleted", job.getJobId());
 		jobRepository.delete(job);
 	}
 
 	public void abort(String jobId) throws CredentialException, RunException, FileManagerException,
-	JobNotFoundException, KeyStoreException,
-			CertificateException, JSchException {
+			JobNotFoundException, KeyStoreException, CertificateException, JSchException {
+
 		Job job = abortJob(jobId);
 		job.setStatus("ABORTED");
 		log.info("Local job {} aborted", job.getJobId());
@@ -231,8 +235,9 @@ public class UserJobs {
 	}
 
 	private Job abortJob(String jobId) throws JobNotFoundException, FileManagerException,
-	CredentialException, RunException, KeyStoreException,
+			CredentialException, RunException, KeyStoreException,
 			CertificateException, JSchException {
+
 		Job job = jobRepository.findOneByJobId(jobId);
 
 		if (job == null) {
@@ -266,6 +271,7 @@ public class UserJobs {
 	private StatusResult getStatusResult(String host, List<String> jobIds)
 			throws CredentialException, RunException, FileManagerException, KeyStoreException,
 			CertificateException, JSchException {
+
 		PathHelper pathHelper = new PathHelper(host, userLogin);
 		fileManager.cp(pathHelper.getTransferPath() + ".rimrock/status",
 				new ClassPathResource("scripts/status"));
@@ -292,6 +298,7 @@ public class UserJobs {
 
 	private RunResults run(String host, String command, int timeout) throws CredentialException,
 			RunException, KeyStoreException, CertificateException, JSchException {
+
 		try {
 			RunResults runResults = runner.run(host, proxy, command, null, timeout);
 			log.debug("Run results for command [{}] are the following: {}", command, runResults);

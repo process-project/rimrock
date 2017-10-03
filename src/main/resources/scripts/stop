@@ -24,6 +24,7 @@ function detect_rm {
 	if [ $? -eq 0 ]
 	then
 		RM="torque"
+		return
 	fi
 
 	SCANCEL=$(which scancel 2>/dev/null)
