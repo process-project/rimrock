@@ -20,6 +20,7 @@ function detect_rm {
 	if [ $? -eq 0 ]
 	then
 		RM="torque"
+		return
 	fi
 
 	SQUEUE=$(which squeue 2>/dev/null)

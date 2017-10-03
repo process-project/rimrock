@@ -1,4 +1,5 @@
-v unreleased
+v 1.7.1
+  - torque picked as the default resource manager in case both torque and slurm are present
 
 v 1.7.0
   - run request of the process API extended with a working directory attribute
