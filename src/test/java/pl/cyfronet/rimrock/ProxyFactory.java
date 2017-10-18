@@ -7,7 +7,6 @@ import java.security.GeneralSecurityException;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.tomcat.util.http.fileupload.ByteArrayOutputStream;
 import org.globus.gsi.GSIConstants;
 import org.globus.gsi.OpenSSLKey;
@@ -59,7 +58,6 @@ public class ProxyFactory {
 	private String generateProxy() throws GeneralSecurityException,
 			IOException, Exception {
 		log.info("Generating proxy");
-		log.info("Key: {}", IOUtils.toString(userKeyFile.getInputStream()));
 
 		X509Certificate userCert = CertificateLoadUtil.loadCertificate(userCertFile.getInputStream());
 		OpenSSLKey key = new BouncyCastleOpenSSLKey(userKeyFile.getInputStream());

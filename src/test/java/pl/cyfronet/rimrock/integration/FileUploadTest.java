@@ -26,10 +26,10 @@ import pl.cyfronet.rimrock.services.filemanager.FileManagerFactory;
 public class FileUploadTest {
 	@Autowired private FileManagerFactory factory;
 	@Autowired private ProxyFactory proxyFactory;
-	
+
 	@Test
-//	@Ignore
-	public void shouldUploadFile() throws Exception {			
+	@Ignore
+	public void shouldUploadFile() throws Exception {
 		String uploadPath = getHomedir() + "/a/b/c/upload_test.xml";
 		getFileManager().cp(uploadPath, new FileSystemResource(new File("pom.xml")));
 	}
@@ -40,32 +40,32 @@ public class FileUploadTest {
 		String path = getHomedir() + "/upload_test.xml";
 		getFileManager().rm(path);
 	}
-	
+
 	@Test
 	@Ignore
 	public void shouldRmDir() throws Exception {
 		String path = getHomedir() + "/delete_test";
 		getFileManager().rmDir(path);
 	}
-	
+
 	private String getHomedir() throws Exception {
 		return "/people/" + getUser();
 	}
-	
+
 	private String getUser() throws Exception {
 		X509Credential proxy = new X509Credential(new ByteArrayInputStream(proxyFactory.getProxy().getBytes()));
 		GSSCredential gsscredential = new GlobusGSSCredentialImpl(proxy, GSSCredential.INITIATE_ONLY);
 		String dn = gsscredential.getName().toString();
 		Pattern pattern = Pattern.compile(".*=(.*)$");
 		Matcher matcher = pattern.matcher(dn);
-		
+
 		if(matcher.matches()) {
 			return matcher.group(1);
 		} else {
 			throw new IllegalArgumentException("Could not extract user name from the supplied user proxy");
 		}
-	}	
-	
+	}
+
 	private FileManager getFileManager() throws Exception {
 		String proxy = proxyFactory.getProxy();
 		return factory.get(proxy);
