@@ -23,35 +23,35 @@ import org.springframework.stereotype.Service;
 @Service
 public class ProxyFactory {
 	private static final Logger log = LoggerFactory.getLogger(ProxyFactory.class);
-	
+
 	@Value("classpath:usercert.pem")
 	private Resource userCertFile;
-	
+
 	@Value("classpath:userkey.pem")
 	private Resource userKeyFile;
-	
+
 	@Value("${test.user.key.pass:}")
 	private String userKeyPass;
-	
+
 	@Value("${test.proxy.path:}")
-	private String proxyPath; 
-	
+	private String proxyPath;
+
 	private BouncyCastleCertProcessingFactory factory;
 	private String proxy;
 
 	public ProxyFactory() {
 		factory = BouncyCastleCertProcessingFactory.getDefault();
 	}
-	
+
 	public synchronized String getProxy() throws Exception {
-		if(proxy == null) {
-			if(proxyPath != null && !proxyPath.isEmpty()) {
+		if (proxy == null) {
+			if (proxyPath != null && !proxyPath.isEmpty()) {
 				proxy = getProxyPayload();
 			} else {
 				proxy = generateProxy();
 			}
 		}
-		
+
 		return proxy;
 	}
 
@@ -62,7 +62,7 @@ public class ProxyFactory {
 		X509Certificate userCert = CertificateLoadUtil.loadCertificate(userCertFile.getInputStream());
 		OpenSSLKey key = new BouncyCastleOpenSSLKey(userKeyFile.getInputStream());
 
-		if(key.isEncrypted()) {
+		if (key.isEncrypted()) {
 			try {
 				key.decrypt(userKeyPass);
 			} catch (GeneralSecurityException e) {
@@ -73,16 +73,16 @@ public class ProxyFactory {
 		PrivateKey userKey = key.getPrivateKey();
 		X509Credential credential = factory.createCredential(
 				new X509Certificate[] {userCert}, userKey, 1024, 3600, GSIConstants.CertificateType.GSI_2_PROXY);
-		
+
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		credential.save(out);
 
 		String proxyValue = new String(out.toByteArray());
 		log.info("Generated proxy: {}", proxyValue);
-		
+
 		return proxyValue;
 	}
-	
+
 	private String getProxyPayload() throws IOException {
 		return new String(Files.readAllBytes(Paths.get(proxyPath)));
 	}
