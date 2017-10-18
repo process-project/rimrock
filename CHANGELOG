@@ -1,5 +1,5 @@
 v unreleased
-  -
+  - ResourceSecurityWrapperStore locally modified to solve the certificate load memory leak
 
 v 1.7.1
   - torque picked as the default resource manager in case both torque and slurm are present
