@@ -16,4 +16,7 @@ testing:
   - echo $APP_PROPS > src/test/resources/config/application.properties
   - echo $USER_CERT > src/test/resources/usercert.pem
   - echo $USER_KEY > src/test/resources/userkey.pem
+  - pwd
+  - cat src/test/resources/usercert.pem
+  - cat src/test/resources/userkey.pem
   - mvn test -B -Dmaven.repo.local=/cache/.m2/repository
