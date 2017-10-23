@@ -1,3 +1,5 @@
+v unreleased
+
 v 1.7.2
   - ResourceSecurityWrapperStore locally modified to solve the certificate load memory leak
   - GitLab CI scripts modified to include deployment and release stages
