@@ -17,3 +17,112 @@ testing:
   - echo "$USER_CERT" > src/test/resources/usercert.pem
   - echo "$USER_KEY" > src/test/resources/userkey.pem
   - mvn test -B -Dmaven.repo.local=/cache/.m2/repository
+  
+prod_deploy:
+  stage: deploy
+  environment: production
+  only:
+  - production
+  script:
+  - eval $(ssh-agent -s)
+  - ssh-add <(echo "$SSH_RW_KEY")
+  - mkdir -p ~/.ssh
+  - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
+  - mvn clean package -B -DskipTests -Dmaven.repo.local=/cache/.m2/repository
+  - ssh rimrock@rimrock.plgrid.pl "mkdir -p rimrock"
+  - scp target/*.jar rimrock@rimrock.plgrid.pl:rimrock/rimrock.jar
+  - ssh rimrock@rimrock.plgrid.pl "chmod +x rimrock/rimrock.jar"
+  - ssh rimrock@rimrock.plgrid.pl "sudo /etc/init.d/rimrock restart"
+  
+bugfix_release:
+  stage: deploy
+  only:
+  - master
+  when: manual
+  script:
+  - eval $(ssh-agent -s)
+  - ssh-add <(echo "$SSH_RW_KEY")
+  - mkdir -p ~/.ssh
+  - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
+  - git config --global user.name "Gitlab CI"
+  - git config --global user.email gitlab-ci@cyfronet.pl
+  - git remote set-url origin git@gitlab.dev.cyfronet.pl:plgrid/rimrock.git
+  - git checkout master
+  - git pull
+  - mvn -B -Dmaven.repo.local=/cache/.m2/repository build-helper:parse-version versions:set -DnewVersion=\${parsedVersion.majorVersion}.\${parsedVersion.minorVersion}.\${parsedVersion.incrementalVersion} versions:commit
+  - export version=`printf 'RIMROCK_VERSION=${project.version}' | mvn -Dmaven.repo.local=/cache/.m2/repository help:evaluate | grep RIMROCK_VERSION | sed "s/RIMROCK_VERSION=//"`
+  - export date=`date +%Y-%m-%d`
+  - echo "Evaluated version and date are $version and $date"
+  - sed -i "s/unreleased/$version/" CHANGELOG
+  - git add CHANGELOG pom.xml
+  - git commit -m "release $version"
+  - git tag -a "$version" -m "release $version"
+  - sed -i '1i\v unreleased\n' CHANGELOG
+  - mvn -B -Dmaven.repo.local=/cache/.m2/repository build-helper:parse-version versions:set -DnewVersion=\${parsedVersion.majorVersion}.\${parsedVersion.minorVersion}.\${parsedVersion.nextIncrementalVersion}-SNAPSHOT versions:commit
+  - git add CHANGELOG pom.xml
+  - export version=`printf 'RIMROCK_VERSION=${project.version}' | mvn -Dmaven.repo.local=/cache/.m2/repository help:evaluate | grep RIMROCK_VERSION | sed "s/RIMROCK_VERSION=//"`
+  - git commit -m "next development cycle for $version"
+  - git push origin master
+  - git push origin --tags
+    
+feature_release:
+  stage: deploy
+  only:
+  - master
+  when: manual
+  script:
+  - eval $(ssh-agent -s)
+  - ssh-add <(echo "$SSH_RW_KEY")
+  - mkdir -p ~/.ssh
+  - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
+  - git config --global user.name "Gitlab CI"
+  - git config --global user.email gitlab-ci@cyfronet.pl
+  - git remote set-url origin git@gitlab.dev.cyfronet.pl:plgrid/rimrock.git
+  - git checkout master
+  - git pull
+  - mvn -B -Dmaven.repo.local=/cache/.m2/repository build-helper:parse-version versions:set -DnewVersion=\${parsedVersion.majorVersion}.\${parsedVersion.nextMinorVersion}.0 versions:commit
+  - export version=`printf 'RIMROCK_VERSION=${project.version}' | mvn -Dmaven.repo.local=/cache/.m2/repository help:evaluate | grep RIMROCK_VERSION | sed "s/RIMROCK_VERSION=//"`
+  - export date=`date +%Y-%m-%d`
+  - echo "Evaluated version and date are $version and $date"
+  - sed -i "s/unreleased/$version/" CHANGELOG
+  - git add changelog.md pom.xml
+  - git commit -m "release $version"
+  - git tag -a "$version" -m "release $version"
+  - sed -i '1i\v unreleased\n' CHANGELOG
+  - mvn -B -Dmaven.repo.local=/cache/.m2/repository build-helper:parse-version versions:set -DnewVersion=\${parsedVersion.majorVersion}.\${parsedVersion.minorVersion}.\${parsedVersion.nextIncrementalVersion}-SNAPSHOT versions:commit
+  - git add changelog.md pom.xml
+  - export version=`printf 'RIMROCK_VERSION=${project.version}' | mvn -Dmaven.repo.local=/cache/.m2/repository help:evaluate | grep RIMROCK_VERSION | sed "s/RIMROCK_VERSION=//"`
+  - git commit -m "next development cycle for $version"
+  - git push origin master
+  - git push origin --tags
+    
+api_release:
+  stage: deploy
+  only:
+  - master
+  when: manual
+  script:
+  - eval $(ssh-agent -s)
+  - ssh-add <(echo "$SSH_RW_KEY")
+  - mkdir -p ~/.ssh
+  - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
+  - git config --global user.name "Gitlab CI"
+  - git config --global user.email gitlab-ci@cyfronet.pl
+  - git remote set-url origin git@gitlab.dev.cyfronet.pl:plgrid/rimrock.git
+  - git checkout master
+  - git pull
+  - mvn -B -Dmaven.repo.local=/cache/.m2/repository build-helper:parse-version versions:set -DnewVersion=\${parsedVersion.nextMajorVersion}.0.0 versions:commit
+  - export version=`printf 'RIMROCK_VERSION=${project.version}' | mvn -Dmaven.repo.local=/cache/.m2/repository help:evaluate | grep RIMROCK_VERSION | sed "s/RIMROCK_VERSION=//"`
+  - export date=`date +%Y-%m-%d`
+  - echo "Evaluated version and date are $version and $date"
+  - sed -i "s/unreleased/$version/" CHANGELOG
+  - git add changelog.md pom.xml
+  - git commit -m "release $version"
+  - git tag -a "$version" -m "release $version"
+  - sed -i '1i\v unreleased\n' CHANGELOG
+  - mvn -B -Dmaven.repo.local=/cache/.m2/repository build-helper:parse-version versions:set -DnewVersion=\${parsedVersion.majorVersion}.\${parsedVersion.minorVersion}.\${parsedVersion.nextIncrementalVersion}-SNAPSHOT versions:commit
+  - git add changelog.md pom.xml
+  - export version=`printf 'RIMROCK_VERSION=${project.version}' | mvn -Dmaven.repo.local=/cache/.m2/repository help:evaluate | grep RIMROCK_VERSION | sed "s/RIMROCK_VERSION=//"`
+  - git commit -m "next development cycle for $version"
+  - git push origin master
+  - git push origin --tags
