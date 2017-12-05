@@ -20,17 +20,17 @@ function report_success {
 }
 
 function detect_rm {
-	QDEL=$(which qdel 2>/dev/null)
-	if [ $? -eq 0 ]
-	then
-		RM="torque"
-		return
-	fi
-
 	SCANCEL=$(which scancel 2>/dev/null)
 	if [ $? -eq 0 ]
 	then
 		RM="slurm"
+		return
+	fi
+	
+	QDEL=$(which qdel 2>/dev/null)
+	if [ $? -eq 0 ]
+	then
+		RM="torque"
 	fi
 }
 
