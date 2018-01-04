@@ -22,7 +22,7 @@ import org.junit.runners.Parameterized.Parameters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.rules.SpringClassRule;
@@ -46,7 +46,7 @@ import pl.cyfronet.rimrock.gsi.ProxyHelper;
 import pl.cyfronet.rimrock.repositories.JobRepository;
 
 @RunWith(Parameterized.class)
-@SpringApplicationConfiguration(classes = RimrockApplication.class)
+@SpringBootTest(classes = RimrockApplication.class)
 @WebAppConfiguration
 @DirtiesContext
 public class JobsControllerMvcTest {
@@ -107,7 +107,7 @@ public class JobsControllerMvcTest {
 				
 				.andDo(print())
 				
-				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
 				.andExpect(status().isCreated())
 				.andReturn();
 		
@@ -121,7 +121,7 @@ public class JobsControllerMvcTest {
 				
 				.andDo(print())
 				
-				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
 				.andExpect(status().isOk());
 	}
 	
@@ -132,7 +132,7 @@ public class JobsControllerMvcTest {
 				
 				.andDo(print())
 				
-				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
 				.andExpect(jsonPath("$.status", is("ERROR")))
 				.andExpect(status().isNotFound());
 	}
@@ -154,7 +154,7 @@ public class JobsControllerMvcTest {
 				
 				.andDo(print())
 				
-				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
 				.andExpect(status().isOk());
 	}
 	
@@ -171,7 +171,7 @@ public class JobsControllerMvcTest {
 				
 				.andDo(print())
 				
-				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
 				.andExpect(status().isCreated())
 				.andReturn();
 		
@@ -201,7 +201,7 @@ public class JobsControllerMvcTest {
 				
 				.andDo(print())
 				
-				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
 				.andExpect(status().isCreated())
 				.andReturn();
 		
@@ -225,7 +225,7 @@ public class JobsControllerMvcTest {
 				
 				.andDo(print())
 				
-				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
 				.andExpect(jsonPath("$.status", is("ABORTED")))
 				.andExpect(status().isOk());
 	}

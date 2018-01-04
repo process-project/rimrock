@@ -23,7 +23,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.Resource;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -42,7 +42,7 @@ import pl.cyfronet.rimrock.services.gsissh.RunException;
 import pl.cyfronet.rimrock.services.gsissh.RunResults;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(classes = RimrockApplication.class)
+@SpringBootTest(classes = RimrockApplication.class)
 @DirtiesContext
 public class UserJobsTest {
 	@Mock private FileManagerFactory fileManagerFactory;

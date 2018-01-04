@@ -23,7 +23,7 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.rules.SpringClassRule;
@@ -48,7 +48,7 @@ import pl.cyfronet.rimrock.gsi.ProxyHelper;
  *
  */
 @RunWith(Parameterized.class)
-@SpringApplicationConfiguration(classes = RimrockApplication.class)
+@SpringBootTest(classes = RimrockApplication.class)
 @WebAppConfiguration
 @DirtiesContext
 public class RunControllerMvcTest {
@@ -112,7 +112,7 @@ public class RunControllerMvcTest {
 
 				.andDo(print())
 
-				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.status", is("OK")))
 				.andExpect(jsonPath("$.exit_code", is(0)))
@@ -134,7 +134,7 @@ public class RunControllerMvcTest {
 
 				.andDo(print())
 
-				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.exit_code", is(1)))
 				.andExpect(jsonPath("$.status", is("OK")))
@@ -151,7 +151,7 @@ public class RunControllerMvcTest {
 
 				.andDo(print())
 
-				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
 				.andExpect(status().isUnprocessableEntity())
 				.andExpect(jsonPath("$.exit_code", is(-1)))
 				.andExpect(jsonPath("$.standard_output", is(equalTo(null))))
@@ -172,7 +172,7 @@ public class RunControllerMvcTest {
 
 				.andDo(print())
 
-				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.status", is("OK")))
 				.andExpect(jsonPath("$.exit_code", is(0)))
@@ -192,7 +192,7 @@ public class RunControllerMvcTest {
 
 				.andDo(print())
 
-				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
 				.andExpect(status().isRequestTimeout())
 				.andExpect(jsonPath("$.status", is("ERROR")))
 				.andExpect(jsonPath("$.exit_code", is(-1)))
@@ -214,7 +214,7 @@ public class RunControllerMvcTest {
 
 				.andDo(print())
 
-				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.status", is("OK")))
 				.andExpect(jsonPath("$.exit_code", is(0)))

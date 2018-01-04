@@ -9,7 +9,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import pl.cyfronet.rimrock.ProxyFactory;
@@ -18,7 +18,7 @@ import pl.cyfronet.rimrock.services.gsissh.GsisshRunner;
 import pl.cyfronet.rimrock.services.gsissh.RunResults;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(classes = RimrockApplication.class)
+@SpringBootTest(classes = RimrockApplication.class)
 public class ConcurrentSshSessionsTest {
 	private static final String HOST = "zeus.cyfronet.pl";
 

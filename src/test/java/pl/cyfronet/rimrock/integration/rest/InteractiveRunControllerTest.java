@@ -22,8 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.boot.test.WebIntegrationTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.rules.SpringClassRule;
 import org.springframework.test.context.junit4.rules.SpringMethodRule;
@@ -40,8 +39,7 @@ import pl.cyfronet.rimrock.controllers.rest.irun.InteractiveProcessRequest;
 import pl.cyfronet.rimrock.gsi.ProxyHelper;
 
 @RunWith(Parameterized.class)
-@SpringApplicationConfiguration(classes = RimrockApplication.class)
-@WebIntegrationTest
+@SpringBootTest(classes = RimrockApplication.class, webEnvironment=SpringBootTest.WebEnvironment.DEFINED_PORT)
 @DirtiesContext
 @Ignore("public IP needed to run this test")
 public class InteractiveRunControllerTest {
