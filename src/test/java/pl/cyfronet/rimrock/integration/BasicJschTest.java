@@ -11,6 +11,7 @@ import org.ietf.jgss.GSSCredential;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -28,22 +29,25 @@ import pl.cyfronet.rimrock.gsi.ProxyHelper;
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = RimrockApplication.class)
 public class BasicJschTest {
-	
+
+    @Value("${test.user.login}")
+    private String userLogin;
+
 	@Autowired
 	ProxyFactory proxyFactory;
-	
+
 	@Autowired
 	private ProxyHelper proxyHelper;
-	
+
 	@Test
 	public void testJsch() throws JSchException, IOException {
 		JSch.setConfig("gssapi-with-mic.x509", "org.apache.airavata.gsi.ssh.GSSContextX509");
         JSch.setConfig("userauth.gssapi-with-mic",
         		"com.jcraft.jsch.UserAuthGSSAPIWithMICGSSCredentials");
-        
+
         JSch jsch = new ExtendedJSch();
-        
-        ExtendedSession session = (ExtendedSession) jsch.getSession("plgtesthar",
+
+        ExtendedSession session = (ExtendedSession) jsch.getSession(userLogin,
         		"zeus.cyfronet.pl", 22);
         session.setAuthenticationInfo(new GSIAuthenticationInfo() {
 			@Override
@@ -54,14 +58,14 @@ public class BasicJschTest {
 							proxyFactory.getProxy());
 					System.out.println("Proxy generation time: " + Duration.between(start,
 							Instant.now()).toMillis());
-					
+
 					return gssCredential;
 				} catch (Exception e) {
 					return null;
 				}
 			}
 		});
-        
+
         Instant start = Instant.now();
         Properties config = new Properties();
         config.put("StrictHostKeyChecking", "no");
@@ -73,11 +77,11 @@ public class BasicJschTest {
         channel.setInputStream(null);
         ((ChannelExec) channel).setErrStream(System.err);
         channel.connect();
-        
+
         ByteStreams.copy(channel.getInputStream(), System.out);
         channel.disconnect();
         session.disconnect();
-        
+
         System.out.println("Time: " + Duration.between(start, Instant.now()).toMillis());
 	}
 }

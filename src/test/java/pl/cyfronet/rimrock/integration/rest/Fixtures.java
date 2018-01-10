@@ -35,8 +35,8 @@ public class Fixtures {
 	public static Collection<Object[]> jobWithDirOverrideParameters() {
 		String randomDirectory = UUID.randomUUID().toString();
 		List<String> workingDirectories = Arrays.asList(
-				"/people/plgtesthar/" + randomDirectory,
-				"/net/people/plgtesthar/" + randomDirectory);
+				"/people/{userLogin}/" + randomDirectory,
+				"/net/people/{userLogin}/" + randomDirectory);
 		List<Object[]> jobParameters = new ArrayList<>(jobParameters());
 		Collection<Object[]> result = new ArrayList<>();
 
