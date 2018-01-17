@@ -31,7 +31,7 @@ import pl.cyfronet.rimrock.RimrockApplication;
 import pl.cyfronet.rimrock.controllers.rest.proxygeneration.ProxyGenerationController;
 import pl.cyfronet.rimrock.gsi.ProxyHelper;
 
-@SpringBootTest(classes = RimrockApplication.class, webEnvironment=SpringBootTest.WebEnvironment.DEFINED_PORT)
+@SpringBootTest(classes = RimrockApplication.class, webEnvironment=SpringBootTest.WebEnvironment.RANDOM_PORT)
 @FixMethodOrder(NAME_ASCENDING)
 public class ProxyGenerationControllerTest {
 	private static final Logger log = LoggerFactory.getLogger(ProxyGenerationControllerTest.class);

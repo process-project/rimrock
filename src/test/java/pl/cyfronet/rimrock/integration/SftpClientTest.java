@@ -81,7 +81,7 @@ public class SftpClientTest {
 		log.info("Cert and key retrieval time in ms: {}", Duration.between(i1, i2).toMillis());
 		
 		try {
-			SftpATTRS missing = c.stat("/mnt/keyfs/users/plgtesthar/.globus/missing");
+			SftpATTRS missing = c.stat(String.format("/mnt/keyfs/users/%s/.globus/missing", userLogin));
 			log.info(missing.toString());
 		} catch (SftpException e) {
 			log.info("The file is missing as it should");
