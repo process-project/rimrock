@@ -17,8 +17,7 @@ public class Fixtures {
 					{
 						"zeus.cyfronet.pl",
 						"#!/bin/bash\n" +
-						"#PBS -A " + grant + "\n" +
-						"#PBS -l walltime=00:00:01\n" +
+						"#SBATCH -A " + grant + "\n" +
 						"echo hello\n" +
 						"exit 0"
 					},
