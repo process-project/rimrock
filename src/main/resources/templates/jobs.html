@@ -462,7 +462,7 @@ curl -k -X DELETE --header "PROXY:$proxy" <th:block th:text="'https://' + ${#htt
 								</p> <pre>
 proxy="`cat {path-to-proxy-file} | base64 | tr -d '\n'`"
 
-curl -k -X PUT --data '{"action":"abort"}' --header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpServletRequest.serverName} + @{~/api/jobs/50463091.batch.grid.cyf-kr.edu.pl}" />
+curl -k -X PUT --data '{"action":"abort"}' --header "Content-Type:application/json" --header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpServletRequest.serverName} + @{~/api/jobs/50463091.batch.grid.cyf-kr.edu.pl}" />
   					</pre>
 							</td>
 						</tr>
