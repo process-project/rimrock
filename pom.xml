@@ -25,7 +25,6 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<start-class>pl.cyfronet.rimrock.RimrockApplication</start-class>
 		<java.version>1.8</java.version>
-		<!-- <tomcat.version>8.0.17</tomcat.version> -->
 		<gatling.version>2.1.7</gatling.version>
 		<jglobus.version>2.1.0</jglobus.version>
 		<rimrock.api.version>0.2.0</rimrock.api.version>
