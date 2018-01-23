@@ -12,7 +12,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -22,7 +22,7 @@ import pl.cyfronet.rimrock.services.filemanager.FileManager;
 import pl.cyfronet.rimrock.services.filemanager.FileManagerFactory;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(classes = RimrockApplication.class)
+@SpringBootTest(classes = RimrockApplication.class)
 public class FileUploadTest {
 	@Autowired private FileManagerFactory factory;
 	@Autowired private ProxyFactory proxyFactory;

@@ -15,7 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import pl.cyfronet.rimrock.ProxyFactory;
@@ -24,7 +24,7 @@ import pl.cyfronet.rimrock.gsi.ProxyHelper;
 
 @Ignore("This may come in handy in the future...")
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(classes = RimrockApplication.class)
+@SpringBootTest(classes = RimrockApplication.class)
 public class GridFtpClientTest {
 	private final static Logger log = LoggerFactory.getLogger(GridFtpClientTest.class);
 	

@@ -2,13 +2,11 @@ package pl.cyfronet.rimrock.integration.rest;
 
 import static com.jayway.restassured.RestAssured.given;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.runners.MethodSorters.NAME_ASCENDING;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Arrays;
 import java.util.Base64;
 
 import org.globus.gsi.CredentialException;
@@ -21,8 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.boot.test.WebIntegrationTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.rules.SpringClassRule;
 import org.springframework.test.context.junit4.rules.SpringMethodRule;
 
@@ -34,8 +31,7 @@ import pl.cyfronet.rimrock.RimrockApplication;
 import pl.cyfronet.rimrock.controllers.rest.proxygeneration.ProxyGenerationController;
 import pl.cyfronet.rimrock.gsi.ProxyHelper;
 
-@SpringApplicationConfiguration(classes = RimrockApplication.class)
-@WebIntegrationTest
+@SpringBootTest(classes = RimrockApplication.class, webEnvironment=SpringBootTest.WebEnvironment.RANDOM_PORT)
 @FixMethodOrder(NAME_ASCENDING)
 public class ProxyGenerationControllerTest {
 	private static final Logger log = LoggerFactory.getLogger(ProxyGenerationControllerTest.class);

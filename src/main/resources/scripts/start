@@ -23,17 +23,17 @@ function report_success {
 }
 
 function detect_rm {
-	QSUB=$(which qsub 2>/dev/null)
-	if [ $? -eq 0 ]
-	then
-		RM="torque"
-		return
-	fi
-
 	SBATCH=$(which sbatch 2>/dev/null)
 	if [ $? -eq 0 ]
 	then
 		RM="slurm"
+		return
+	fi
+	
+	QSUB=$(which qsub 2>/dev/null)
+	if [ $? -eq 0 ]
+	then
+		RM="torque"
 	fi
 }
 
@@ -73,12 +73,19 @@ function submit_slurm {
 		report_error "sbatch error! $output"
 		exit 22
 	fi
+	
+	# Try to locate JOB id
+	if [[ $output =~ ^(.*)(job\ [0-9]*)$ ]]; then
+		job_id=$(echo ${BASH_REMATCH[2]} | cut -d " " -f2)
+	else
+		report_error "sbatch error! Unable to find JOB ID in: $output"
+		exit 24
+	fi
 
-	job_id=$(echo "$output" | cut -d " " -f 4)
 	full_job_id=$job_id.$HOST
 
 	#ask for job details
-	output=$(script -eqfc "${SCONTROL} show job $job_id" 2>&1)
+	output=$(${SCONTROL} show job $job_id 2>&1)
 
 	if [ $? -ne 0 ]
 	then

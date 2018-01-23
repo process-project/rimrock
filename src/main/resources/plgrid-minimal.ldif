@@ -99,24 +99,24 @@ objectClass: organizationalUnit
 objectClass: top
 ou: People
 
-dn: uid=plgharezlak,ou=People,dc=global,dc=plgrid,dc=pl
+dn: uid=plgmeizner,ou=People,dc=global,dc=plgrid,dc=pl
 objectClass: top
 objectClass: person
 objectClass: inetOrgPerson
 objectClass: plgridAccessServiceClass
-uid: plgharezlak
-sn: Harezlak
-cn: Daniel Harezlak
+uid: plgmeizner
+sn: Meizner
+cn: Jan Meizner
 plgridAccessService: PLG_OTHER_REMAINING_RIMROCK
 plgridSite: cyfronet
 
-dn: uid=plgtesthar,ou=People,dc=global,dc=plgrid,dc=pl
+dn: uid=plgtestjmr,ou=People,dc=global,dc=plgrid,dc=pl
 objectClass: top
 objectClass: person
 objectClass: inetOrgPerson
 objectClass: plgridAccessServiceClass
-uid: plgtesthar
-sn: Harezlak
-cn: Daniel Harezlak
+uid: plgtestjmr
+sn: Meizner
+cn: Jan Meizner
 plgridAccessService: PLG_OTHER_REMAINING_RIMROCK
 plgridSite: cyfronet

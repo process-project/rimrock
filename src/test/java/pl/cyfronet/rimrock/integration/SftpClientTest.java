@@ -13,7 +13,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.rules.SpringClassRule;
 import org.springframework.test.context.junit4.rules.SpringMethodRule;
 
@@ -27,7 +27,7 @@ import com.jcraft.jsch.SftpException;
 
 import pl.cyfronet.rimrock.RimrockApplication;
 
-@SpringApplicationConfiguration(classes = RimrockApplication.class)
+@SpringBootTest(classes = RimrockApplication.class)
 public class SftpClientTest {
 	private static final Logger log = LoggerFactory.getLogger(SftpClientTest.class);
 
@@ -81,7 +81,7 @@ public class SftpClientTest {
 		log.info("Cert and key retrieval time in ms: {}", Duration.between(i1, i2).toMillis());
 		
 		try {
-			SftpATTRS missing = c.stat("/mnt/keyfs/users/plgtesthar/.globus/missing");
+			SftpATTRS missing = c.stat(String.format("/mnt/keyfs/users/%s/.globus/missing", userLogin));
 			log.info(missing.toString());
 		} catch (SftpException e) {
 			log.info("The file is missing as it should");
