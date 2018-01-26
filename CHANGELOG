@@ -1,4 +1,8 @@
 v unreleased
+  - Added OWASP dependency checker
+  - Upgraded Spring to 1.5.9
+  - Fixed tomcat.validation-query for HSQL
+  - Added support for SLURM on Zeus
 
 v 1.7.2
   - ResourceSecurityWrapperStore locally modified to solve the certificate load memory leak

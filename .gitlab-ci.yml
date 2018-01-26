@@ -85,12 +85,12 @@ feature_release:
   - export date=`date +%Y-%m-%d`
   - echo "Evaluated version and date are $version and $date"
   - sed -i "s/unreleased/$version/" CHANGELOG
-  - git add changelog.md pom.xml
+  - git add CHANGELOG pom.xml
   - git commit -m "release $version"
   - git tag -a "$version" -m "release $version"
   - sed -i '1i\v unreleased\n' CHANGELOG
   - mvn -B -Dmaven.repo.local=/cache/.m2/repository build-helper:parse-version versions:set -DnewVersion=\${parsedVersion.majorVersion}.\${parsedVersion.minorVersion}.\${parsedVersion.nextIncrementalVersion}-SNAPSHOT versions:commit
-  - git add changelog.md pom.xml
+  - git add CHANGELOG pom.xml
   - export version=`printf 'RIMROCK_VERSION=${project.version}' | mvn -Dmaven.repo.local=/cache/.m2/repository help:evaluate | grep RIMROCK_VERSION | sed "s/RIMROCK_VERSION=//"`
   - git commit -m "next development cycle for $version"
   - git push origin master
@@ -116,12 +116,12 @@ api_release:
   - export date=`date +%Y-%m-%d`
   - echo "Evaluated version and date are $version and $date"
   - sed -i "s/unreleased/$version/" CHANGELOG
-  - git add changelog.md pom.xml
+  - git add CHANGELOG pom.xml
   - git commit -m "release $version"
   - git tag -a "$version" -m "release $version"
   - sed -i '1i\v unreleased\n' CHANGELOG
   - mvn -B -Dmaven.repo.local=/cache/.m2/repository build-helper:parse-version versions:set -DnewVersion=\${parsedVersion.majorVersion}.\${parsedVersion.minorVersion}.\${parsedVersion.nextIncrementalVersion}-SNAPSHOT versions:commit
-  - git add changelog.md pom.xml
+  - git add CHANGELOG pom.xml
   - export version=`printf 'RIMROCK_VERSION=${project.version}' | mvn -Dmaven.repo.local=/cache/.m2/repository help:evaluate | grep RIMROCK_VERSION | sed "s/RIMROCK_VERSION=//"`
   - git commit -m "next development cycle for $version"
   - git push origin master
