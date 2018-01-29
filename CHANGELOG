@@ -1,3 +1,5 @@
+v unreleased
+
 v 1.8.1
   - Fixed Jobs documentation (TORQUE -> SLURM for Zeus)
 
