@@ -48,7 +48,8 @@ bugfix_release:
   - git config --global user.email gitlab-ci@cyfronet.pl
   - git remote set-url origin git@gitlab.dev.cyfronet.pl:plgrid/rimrock.git
   - git checkout master
-  - git pull
+  - git fetch
+  - git reset --hard origin/master
   - mvn -B -Dmaven.repo.local=/cache/.m2/repository build-helper:parse-version versions:set -DnewVersion=\${parsedVersion.majorVersion}.\${parsedVersion.minorVersion}.\${parsedVersion.incrementalVersion} versions:commit
   - export version=`printf 'RIMROCK_VERSION=${project.version}' | mvn -Dmaven.repo.local=/cache/.m2/repository help:evaluate | grep RIMROCK_VERSION | sed "s/RIMROCK_VERSION=//"`
   - export date=`date +%Y-%m-%d`
@@ -79,7 +80,8 @@ feature_release:
   - git config --global user.email gitlab-ci@cyfronet.pl
   - git remote set-url origin git@gitlab.dev.cyfronet.pl:plgrid/rimrock.git
   - git checkout master
-  - git pull
+  - git fetch
+  - git reset --hard origin/master
   - mvn -B -Dmaven.repo.local=/cache/.m2/repository build-helper:parse-version versions:set -DnewVersion=\${parsedVersion.majorVersion}.\${parsedVersion.nextMinorVersion}.0 versions:commit
   - export version=`printf 'RIMROCK_VERSION=${project.version}' | mvn -Dmaven.repo.local=/cache/.m2/repository help:evaluate | grep RIMROCK_VERSION | sed "s/RIMROCK_VERSION=//"`
   - export date=`date +%Y-%m-%d`
@@ -110,7 +112,8 @@ api_release:
   - git config --global user.email gitlab-ci@cyfronet.pl
   - git remote set-url origin git@gitlab.dev.cyfronet.pl:plgrid/rimrock.git
   - git checkout master
-  - git pull
+  - git fetch
+  - git reset --hard origin/master
   - mvn -B -Dmaven.repo.local=/cache/.m2/repository build-helper:parse-version versions:set -DnewVersion=\${parsedVersion.nextMajorVersion}.0.0 versions:commit
   - export version=`printf 'RIMROCK_VERSION=${project.version}' | mvn -Dmaven.repo.local=/cache/.m2/repository help:evaluate | grep RIMROCK_VERSION | sed "s/RIMROCK_VERSION=//"`
   - export date=`date +%Y-%m-%d`
