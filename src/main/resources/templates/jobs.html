@@ -118,8 +118,8 @@
 								</p> <pre>
 proxy="`cat {path-to-proxy-file} | base64 | tr -d '\n'`"
 
-#zeus.cyfronet.pl (TORQUE)
-curl -k -X POST --data '{"host":"zeus.cyfronet.pl", "script":"#!/bin/bash\necho hello\nexit 0"}' \
+#zeus.cyfronet.pl (SLURM)
+curl -k -X POST --data '{"host":"zeus.cyfronet.pl", "script":"#!/bin/bash\n#SBATCH -A {grantid}\necho hello\nexit 0"}' \
 --header "Content-Type:application/json" --header "PROXY:$proxy" <th:block th:text="'https://' + ${#httpServletRequest.serverName} + @{~/api/jobs}" />
 
 #prometheus.cyfronet.pl (SLURM)

@@ -1,4 +1,5 @@
 v unreleased
+  - Fixed Jobs documentation (TORQUE -> SLURM for Zeus)
 
 v 1.8.0
   - Added OWASP dependency checker
