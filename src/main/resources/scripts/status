@@ -109,15 +109,31 @@ function status_slurm {
 	state["SPECIAL_EXIT"]="ERROR"
 
 	declare -a job_list=($@)
+
+	unscoped_job_list=''
+	f=true
+
+	for job_id in "${job_list[@]}"
+	do
+	  if $f
+	  then
+	    f=false
+          else
+	    unscoped_job_list+=,
+          fi
+	  unscoped_job_list+=$(echo $job_id | cut -d'.' -f1)
+	done
+	
 	comma_job_list=$(sed -e "s/ /,/g" <<< ${job_list[@]})
 
 	text_output=""
 	text_output_history=""
 
-    job_states=$($SQUEUE -h -u $USER -o "%A|%T" -j $comma_job_list 2>&1)
+    job_states=$($SQUEUE -h -u $USER -o "%A|%T" -j $unscoped_job_list 2>&1)
 	for job_id in "${job_list[@]}"
 	do
-        job_state=$(echo "$job_states" | grep $job_id | cut -f 2 -d "|" 2>&1)
+	ujid=$(echo $job_id | cut -d'.' -f1)
+        job_state=$(echo "$job_states" | grep $ujid | cut -f 2 -d "|" 2>&1)
 		if [ $? -ne 0 -o "x${job_state}" = "x" ]
 		then
 			#report_error "squeue error! $job_state"
@@ -130,7 +146,8 @@ function status_slurm {
 	if [ "plgmonitoring" != $USER ]
 	then
 	    since=$(date --date "week ago" +%F)
-	    saout=$($SACCT -Xp -o JobID,NNodes,NCPUS,Elapsed,Submit,Start,End -S ${since} -n -s BF,CA,F,NF,PR,TO,CD -j $comma_job_list)
+	    saout=$($SACCT -Xp -o JobID,NNodes,NCPUS,Elapsed,Submit,Start,End -S ${since} -n -s BF,CA,F,NF,PR,TO,CD -j $unscoped_job_list)
+	    
 		for job_id in "${job_list[@]}"
 		do
 			job_nodes=$(echo "$saout" | grep $job_id | cut -f 2 -d "|" 2>&1)
