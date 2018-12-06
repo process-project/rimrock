@@ -1,4 +1,4 @@
-v unreleased
+v 1.8.2
   - Fixing SLURM update script to work faster 
   - Fixing JOB ID handling in the SLURM update script
   - Fixing Surefire Maven plugin configuration
