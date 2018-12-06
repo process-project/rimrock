@@ -1,4 +1,8 @@
 v unreleased
+  - Fixing SLURM update script to work faster 
+  - Fixing JOB ID handling in the SLURM update script
+  - Fixing Surefire Maven plugin configuration
+  - Updating PLGrid grant ID for integration testing
 
 v 1.8.1
   - Fixed Jobs documentation (TORQUE -> SLURM for Zeus)
