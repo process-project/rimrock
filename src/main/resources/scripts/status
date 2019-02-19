@@ -148,8 +148,9 @@ function status_slurm {
 	    since=$(date --date "week ago" +%F)
 	    saout=$($SACCT -Xp -o JobID,NNodes,NCPUS,Elapsed,Submit,Start,End -S ${since} -n -s BF,CA,F,NF,PR,TO,CD -j $unscoped_job_list)
 	    
-		for job_id in "${job_list[@]}"
+		for scoped_job_id in "${job_list[@]}"
 		do
+		    job_id=$(echo $scoped_job_id | cut -d'.' -f1)
 			job_nodes=$(echo "$saout" | grep $job_id | cut -f 2 -d "|" 2>&1)
 			job_cores=$(echo "$saout" | grep $job_id | cut -f 3 -d "|" 2>&1)
 			job_walltime=$(echo "$saout" | grep $job_id | cut -f 4 -d "|" 2>&1)
@@ -159,7 +160,7 @@ function status_slurm {
 
 			if [ -n "${job_starttime}" ]
 			then
-				text_output_history="${text_output_history}\t\t{\n\t\t\t\"job_id\": \"${job_id}\",\n\t\t\t\"job_nodes\": \"${job_nodes}\",\n\t\t\t\"job_cores\": \"${job_cores}\",\n\t\t\t\"job_walltime\": \"${job_walltime}\",\n\t\t\t\"job_queuetime\": \"${job_queuetime}\",\n\t\t\t\"job_starttime\": \"${job_starttime}\",\n\t\t\t\"job_endtime\": \"${job_endtime}\"\n\t\t},\n"
+				text_output_history="${text_output_history}\t\t{\n\t\t\t\"job_id\": \"${scoped_job_id}\",\n\t\t\t\"job_nodes\": \"${job_nodes}\",\n\t\t\t\"job_cores\": \"${job_cores}\",\n\t\t\t\"job_walltime\": \"${job_walltime}\",\n\t\t\t\"job_queuetime\": \"${job_queuetime}\",\n\t\t\t\"job_starttime\": \"${job_starttime}\",\n\t\t\t\"job_endtime\": \"${job_endtime}\"\n\t\t},\n"
 			fi
 		done
 	fi
