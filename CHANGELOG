@@ -1,4 +1,4 @@
-v unreleased
+v 1.8.3
   - Fixing SLURM update script to generate proper JOB history
 
 v 1.8.2
