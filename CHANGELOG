@@ -1,4 +1,5 @@
 v unreleased
+  - Fixing SLURM update script to generate proper JOB history
 
 v 1.8.2
   - Fixing SLURM update script to work faster 
