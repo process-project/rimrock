@@ -20,7 +20,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 
-import pl.cyfronet.rimrock.controllers.rest.proxygeneration.ProxyGenerationController;
+//import pl.cyfronet.rimrock.controllers.rest.proxygeneration.ProxyGenerationController;
 import pl.cyfronet.rimrock.gsi.ProxyHelper;
 
 public class LdapAuthenticationProvider implements AuthenticationProvider {
@@ -73,14 +73,12 @@ public class LdapAuthenticationProvider implements AuthenticationProvider {
 		
 		PreAuthenticatedAuthenticationToken result = null;
 		
-		if (!credentials.equals(ProxyGenerationController.USER_CREDENTIALS)) {
-			try {
-				proxyHelper.verify(credentials);
-			} catch (CredentialException e) {
-				log.warn("Bad credentials sent", e);
-				
-				throw new BadCredentialsException("Bad credentials provided: " + e.getMessage(), e);
-			}
+		try {
+			proxyHelper.verify(credentials);
+		} catch (CredentialException e) {
+			log.warn("Bad credentials sent", e);
+			
+			throw new BadCredentialsException("Bad credentials provided: " + e.getMessage(), e);
 		}
 		
 		if(ldapEbabled) {
