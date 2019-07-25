@@ -1,4 +1,4 @@
-package pl.cyfronet.rimrock.providers.ldap;
+package pl.cyfronet.rimrock.errors;
 
 import static org.springframework.security.web.WebAttributes.AUTHENTICATION_EXCEPTION;
 import static org.springframework.web.context.request.RequestAttributes.SCOPE_REQUEST;

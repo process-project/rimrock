@@ -1,4 +1,4 @@
-package pl.cyfronet.rimrock.providers.ldap;
+package pl.cyfronet.rimrock.filters;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter;
 
-//import pl.cyfronet.rimrock.controllers.rest.proxygeneration.ProxyGenerationController;
 import pl.cyfronet.rimrock.gsi.ProxyHelper;
 
 public class ProxyHeaderPreAuthenticationProcessingFilter extends AbstractPreAuthenticatedProcessingFilter {

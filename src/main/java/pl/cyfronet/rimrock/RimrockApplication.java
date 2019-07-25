@@ -123,7 +123,7 @@ public class RimrockApplication extends WebMvcConfigurerAdapter {
 			@Override
 			public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
 				//doing the whole chain processing: userLogin value will be set by
-				//the pl.cyfronet.rimrock.providers.ldap.LdapAuthenticationProvider.authenticate(Authentication) method
+				//the pl.cyfronet.rimrock.providers.proxy.ProxyAuthenticationProvider.authenticate(Authentication) method
 				chain.doFilter(request, response);
 				
 				//cleaning the set userLogin value

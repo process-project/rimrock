@@ -1,4 +1,4 @@
-package pl.cyfronet.rimrock.providers.ldap;
+package pl.cyfronet.rimrock.errors;
 
 import org.springframework.security.core.AuthenticationException;
 
