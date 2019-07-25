@@ -28,8 +28,6 @@
 		<gatling.version>2.1.7</gatling.version>
 		<jglobus.version>2.1.0</jglobus.version>
 		<rimrock.api.version>0.2.0</rimrock.api.version>
-		<jsaga.grid.worker.version>0.1.4</jsaga.grid.worker.version>
-		<qcg.grid.worker.version>0.1.1</qcg.grid.worker.version>
 	</properties>
 
 	<repositories>
@@ -65,17 +63,6 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-security</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.directory.server</groupId>
-			<artifactId>apacheds-server-jndi</artifactId>
-			<version>1.5.5</version>
-			<exclusions>
-				<exclusion>
-					<artifactId>bcprov-jdk15</artifactId>
-					<groupId>bouncycastle</groupId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 
 		<!-- Database implementation -->
@@ -210,39 +197,6 @@
 				<configuration>
 					<simulationClass>test.RimrockTestSimulation</simulationClass>
 				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-dependency-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>copy</id>
-						<phase>generate-resources</phase>
-						<goals>
-							<goal>copy</goal>
-						</goals>
-						<configuration>
-							<artifactItems>
-								<artifactItem>
-									<groupId>pl.cyfronet.rimrock</groupId>
-									<artifactId>rimrock-jsaga</artifactId>
-									<version>${jsaga.grid.worker.version}</version>
-									<type>jar</type>
-									<overWrite>true</overWrite>
-									<outputDirectory>${project.build.directory}/classes/workers</outputDirectory>
-								</artifactItem>
-								<artifactItem>
-									<groupId>pl.cyfronet.rimrock</groupId>
-									<artifactId>rimrock-qcg</artifactId>
-									<version>${qcg.grid.worker.version}</version>
-									<type>jar</type>
-									<overWrite>true</overWrite>
-									<outputDirectory>${project.build.directory}/classes/workers</outputDirectory>
-								</artifactItem>
-							</artifactItems>
-						</configuration>
-					</execution>
-				</executions>
 			</plugin>
 			<plugin>
                 <groupId>org.apache.maven.plugins</groupId>
