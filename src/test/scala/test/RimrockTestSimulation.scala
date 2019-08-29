@@ -16,52 +16,6 @@ object ProcessSequence {
 		)
 }
 
-object IProcessSequence {
-	val iprocess =
-		//execution of interactive bash request
-		exec(http("IProcess start bash")
-			.post("/api/iprocesses")
-			.body(StringBody("""{"host": "zeus.cyfronet.pl", "command": "bash"}""")).asJSON
-			.check(jsonPath("$.status").is("OK"), jsonPath("$.process_id").saveAs("processId"))
-		)
-		//printing the session to see the 'processId' value for debugging
-		.exec {session =>
-			println(session)
-			
-			session
-		}
-		//checking the execution status with direct GET request
-		.exec(http("IProcess direct GET")
-			.get("/api/iprocesses/${processId}")
-			.check(jsonPath("$.status").is("OK"))
-		)
-		//checking the execution status with list (all user processes) GET request
-		.exec(http("IProcess list GET")
-			.get("/api/iprocesses")
-			.check(jsonPath("$[*]").count.greaterThan(0))
-		)
-		//providing input which should close the process
-		.exec(http("IProcess input provision")
-			.put("/api/iprocesses/${processId}")
-			.body(StringBody("""{"standard_input": "exit"}""")).asJSON
-			.check(jsonPath("$.status").is("OK"), jsonPath("$.finished").saveAs("finished"))
-		)
-		//waiting until the process finishes
-		.asLongAs(session => !session("finished").as[String].equals("true")) {
-			exec(http("IProcess looping until finished")
-				.get("/api/iprocesses/${processId}")
-				.check(jsonPath("$.status").is("OK"), jsonPath("$.finished").saveAs("finished"))
-			)
-			//printing the session to see the 'finished' value for debugging
-			.exec {session =>
-				println(session)
-			
-				session
-			}
-			.pause(1)
-		}
-}
-
 object JobSequence {
 	val job =
 		//submitting new job
@@ -134,14 +88,11 @@ class RimrocTestSimulation extends Simulation {
 		.userAgentHeader("curl/7.37.1")
 
 	val processScenario = scenario("Process scenario").repeat(100) { exec(ProcessSequence.process) }
-			
-	val iprocessScenario = scenario("IProcess scenario").exec(IProcessSequence.iprocess)
 	
 	val jobScenario = scenario("Job scenario").repeat(10) { exec(JobSequence.job) }
 
 	setUp(
 		processScenario.inject(atOnceUsers(1)),
-		iprocessScenario.inject(atOnceUsers(1)),
 		jobScenario.inject(atOnceUsers(1))
 	).protocols(httpProtocol)
 }
