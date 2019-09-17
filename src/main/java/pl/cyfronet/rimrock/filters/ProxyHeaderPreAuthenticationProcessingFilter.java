@@ -1,4 +1,4 @@
-package pl.cyfronet.rimrock.providers.ldap;
+package pl.cyfronet.rimrock.filters;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter;
 
-import pl.cyfronet.rimrock.controllers.rest.proxygeneration.ProxyGenerationController;
 import pl.cyfronet.rimrock.gsi.ProxyHelper;
 
 public class ProxyHeaderPreAuthenticationProcessingFilter extends AbstractPreAuthenticatedProcessingFilter {
@@ -31,14 +30,7 @@ public class ProxyHeaderPreAuthenticationProcessingFilter extends AbstractPreAut
 				log.warn("Could not properly process proxy value", e);
 				//ignoring - null will be returned
 			}
-		} else if (request.getRequestURI().equals(
-				ProxyGenerationController.PROXY_GENERATION_PATH)) {
-			String userLogin = request.getHeader(ProxyGenerationController.USER_LOGIN_HEADER_NAME);
-			
-			if (userLogin != null) {
-				return userLogin;
-			}
-		}
+		} 
 		
 		return null;
 	}
@@ -54,10 +46,7 @@ public class ProxyHeaderPreAuthenticationProcessingFilter extends AbstractPreAut
 				log.warn("Could not properly process proxy value", e);
 				//ignoring - null will be returned
 			}
-		} else if (request.getRequestURI().equals(
-				ProxyGenerationController.PROXY_GENERATION_PATH)) {
-			return ProxyGenerationController.USER_CREDENTIALS;
-		}
+		} 
 		
 		return null;
 	}
