@@ -1,4 +1,6 @@
 v unreleased
+  - Removing of the legacy features: Globus, QCG, IProcesses and Proxy Generation to streamline Rimrock
+  - [Breaking change] API incompatibility due to removed API endpoints (remaining endpoints unchanged)
 
 v 1.8.3
   - Fixing SLURM update script to generate proper JOB history
