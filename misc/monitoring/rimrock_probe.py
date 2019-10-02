@@ -136,36 +136,6 @@ def process_sequence():
     check_response(desired_response, 200, response, code)
 
 
-def iprocesses_sequence():
-    response, code = make_request("/api/iprocesses", {"host": ui_url, "command": "bash"})
-    check_response({"status": "OK"}, None, response, code)
-
-    process_id = response["process_id"]
-    debug_log("process_id: " + process_id)
-
-    response, code = make_request("/api/iprocesses/" + process_id, method="GET")
-    check_response({"status": "OK"}, 200, response, code)
-
-    response, code = make_request("/api/iprocesses", method="GET")
-    if len(response) == 0:
-        return_critical("Listing user jobs didn't return anything", response)
-
-    response, code = make_request("/api/iprocesses/" + process_id, {"standard_input": "exit"}, method="PUT")
-    check_response({"status": "OK"}, 200, response, code)
-
-    finished = response["finished"]
-    count = 0
-
-    while not finished:
-        time.sleep(1)
-        response, code = make_request("/api/iprocesses/" + process_id, method="GET")
-        check_response({"status": "OK"}, None, response, code)
-        finished = response["finished"]
-        count += 1
-        if count > 20:
-            return_critical("Iprocess did not finish in 20 seconds, after issuing exit command!")
-
-
 def job_sequence():
     response, code = make_request("/api/jobs", {"host": ui_url, "script": "#!/bin/bash\n\n#PBS -q plgrid\necho hello\nexit 0"})
     status = response["status"]
@@ -258,7 +228,6 @@ if __name__ == "__main__":
     timeout = options.timeout
 
     process_sequence()
-    iprocesses_sequence()
     job_sequence()
     job_cancel_sequence()
 
