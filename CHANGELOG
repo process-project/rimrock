@@ -1,3 +1,5 @@
+v unreleased
+
 v 2.0.0
   - Removing of the legacy features: Globus, QCG, IProcesses and Proxy Generation to streamline Rimrock
   - [Breaking change] API incompatibility due to removed API endpoints (remaining endpoints unchanged)
