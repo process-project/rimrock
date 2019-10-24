@@ -64,7 +64,9 @@ public class JobsController {
 
 	@RequestMapping(value = "/api/jobs", method = POST, consumes = APPLICATION_JSON_VALUE,
 			produces = APPLICATION_JSON_VALUE)
-	public ResponseEntity<JobInfo> submit(@RequestHeader("PROXY") String proxy,
+	public ResponseEntity<JobInfo> submit(@RequestHeader("PROXY") String proxy, 
+			@RequestHeader(name="SSH_PRIV_KEY", required=false) String ssh_priv_key,
+			@RequestHeader(name="SSH_PUB_KEY", required=false) String ssh_pub_key,
 			@Valid @RequestBody SubmitRequest submitRequest,
 			BindingResult errors) throws CredentialException, GSSException,
 			FileManagerException, RunException, KeyStoreException, CertificateException,
@@ -73,6 +75,9 @@ public class JobsController {
 		if (errors.hasErrors()) {
 			throw new ValidationException(errors);
 		}
+		
+		// FIXME: MOCK
+		log.info("PUB_KEY: {}\nPRIV KEY: {}", ssh_pub_key, ssh_priv_key);
 
 		UserJobs manager = userJobsFactory.get(proxyHelper.decodeProxy(proxy));
 

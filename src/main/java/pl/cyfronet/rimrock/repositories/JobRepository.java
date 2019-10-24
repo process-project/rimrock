@@ -30,4 +30,6 @@ public interface JobRepository extends CrudRepository<Job, Long> {
 			+ "(status != 'FINISHED' and status != 'ABORTED' OR cores IS NULL)")
 	List<String> getNotTerminalJobIdsForUserLoginAndHost(@Param("userLogin") String userLogin,
 			@Param("host") String host);
+	
+	List<Job> findByHost(String host);
 }

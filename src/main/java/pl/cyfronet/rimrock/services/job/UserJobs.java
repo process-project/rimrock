@@ -37,6 +37,15 @@ import pl.cyfronet.rimrock.services.gsissh.RunResults;
 
 public class UserJobs {
 	private static final Logger log = LoggerFactory.getLogger(UserJobs.class);
+	
+	// TODO: Mock - remove when not needed
+		private static final int LRZ_MOCK_ID = 12345678;
+		
+		private class MockedStatus {
+			@JsonProperty("aaa")
+			private String aaa;
+		}
+	// --------------------
 
 	private int timeout = 20000;
 	private String proxy;
@@ -76,19 +85,60 @@ public class UserJobs {
 		String transferPath = buildPath(pathHelper.getTransferPath(),
 				pathHelper.addHostPrefix(workingDirectory));
 		String fileRootPath = buildPath(pathHelper.getFileRootPath(), workingDirectory);
-		log.debug("Starting {} user job in {}:{} ", new Object[] { userLogin, host, transferPath });
+		log.info("Starting {} user job in {}:{} ", new Object[] { userLogin, host, transferPath });
 
 		String scriptFileName = "script-" + UUID.randomUUID().toString() + ".sh";
-		fileManager.cp(transferPath + scriptFileName, new ByteArrayResource(script.getBytes()));
-		fileManager.cp(transferPath + ".rimrock/start", new ClassPathResource("scripts/start"));
-
-		RunResults result = run(host,
-				String.format("cd %s; chmod +x .rimrock/start; ./.rimrock/start " + scriptFileName,
-						fileRootPath), timeout);
-		processRunExceptions(result);
-
-		SubmitResult submitResult = readResult(result.getOutput(), SubmitResult.class);
-
+		
+		SubmitResult submitResult = null;
+		RunResults result = null;
+		
+		if ( "lxlogin5.lrz.de".equals(host)) {
+			// TODO: Mock - remove when not needed
+			log.info("MOCK LRZ");
+			
+			String full_fake_job_id = LRZ_MOCK_ID + ".lxlogin5.lrz.de";
+			
+			List<Job> jl = jobRepository.findByHost(host);
+			int jl_size = jl.size();
+			
+			if (jl_size > 0) {
+				Job last_lrz_job = jl.get(jl.size()-1);
+				String last_lrz_job_id = last_lrz_job.getJobId();
+				String unscoped_lji = (last_lrz_job_id.split("\\.", 2))[0];
+				int fake_job_id = Integer.parseInt(unscoped_lji) + 1;
+				full_fake_job_id = fake_job_id + ".lxlogin5.lrz.de";
+				
+				log.info("LAST: {}, ID: {}", last_lrz_job, last_lrz_job_id);
+			} else {	
+				log.info("NO LAST");
+			}
+			
+			result = new RunResults();
+			result.setExitCode(0);
+			result.setError("");
+			result.setOutput("");
+			
+			String res_json = "{\n\t\"result\": \"OK\",\n\t\"job_id\": \""+
+			full_fake_job_id +
+			"\",\n\t\"standard_output\": \"out\",\n\t\"standard_error\": \"err\"\n}";
+			submitResult = readResult(res_json, SubmitResult.class);
+			log.info("RES: {} , JOB_ID: {}, OUT: {}, ERR: {}",submitResult.getResult(), submitResult.getJobId(), 
+					submitResult.getStandardOutputLocation(), submitResult.getStandardErrorLocation());
+			// ------------------------------------------------
+		} else {
+			log.info("REAL");
+			
+			fileManager.cp(transferPath + scriptFileName, new ByteArrayResource(script.getBytes()));
+			fileManager.cp(transferPath + ".rimrock/start", new ClassPathResource("scripts/start"));
+	
+			result = run(host,
+					String.format("cd %s; chmod +x .rimrock/start; ./.rimrock/start " + scriptFileName,
+							fileRootPath), timeout);
+			processRunExceptions(result);
+	
+			submitResult = readResult(result.getOutput(), SubmitResult.class);
+		}
+		
 		if ("OK".equals(submitResult.getResult())) {
 			String jobStatus = "QUEUED";
 			log.info("Local job {} sbumitted and saved with status {}",
@@ -271,28 +321,81 @@ public class UserJobs {
 	private StatusResult getStatusResult(String host, List<String> jobIds)
 			throws CredentialException, RunException, FileManagerException, KeyStoreException,
 			CertificateException, JSchException {
+		
+		if ("lxlogin5.lrz.de".equals(host)) {
+			// FIXME: LRZ MOCK
+//	        String res = "{\n" +
+//	                "        \"statuses\": [\n" +
+//	                "\n" +
+//	                "        ],\n" +
+//	                "\t\"history\": [\n" +
+//	                "                {\n" +
+//	                "                        \"job_id\": \"16793253\",\n" +
+//	                "                        \"job_nodes\": \"1\",\n" +
+//	                "                        \"job_cores\": \"1\",\n" +
+//	                "                        \"job_walltime\": \"00:05:02\",\n" +
+//	                "                        \"job_queuetime\": \"2019-10-10T15:00:12\",\n" +
+//	                "                        \"job_starttime\": \"2019-10-10T15:00:19\",\n" +
+//	                "                        \"job_endtime\": \"2019-10-10T15:05:21\"\n" +
+//	                "                },\n" +
+//	                "                {\n" +
+//	                "                        \"job_id\": \"16793290\",\n" +
+//	                "                        \"job_nodes\": \"1\",\n" +
+//	                "                        \"job_cores\": \"1\",\n" +
+//	                "                        \"job_walltime\": \"00:05:02\",\n" +
+//	                "                        \"job_queuetime\": \"2019-10-10T15:12:33\",\n" +
+//	                "                        \"job_starttime\": \"2019-10-10T15:14:36\",\n" +
+//	                "                        \"job_endtime\": \"2019-10-10T15:19:38\"\n" +
+//	                "                }\n" +
+//	                "        ],\n" +
+//	                "\t\"result\": \"OK\"\n" +
+//	                "}\n";
+//			
 
-		PathHelper pathHelper = new PathHelper(host, userLogin);
-		fileManager.cp(pathHelper.getTransferPath() + ".rimrock/status",
-				new ClassPathResource("scripts/status"));
-		RunResults result = run(host, String.format("cd %s.rimrock; chmod +x status; ./status %s",
-				pathHelper.getFileRootPath(), jobIds.stream().collect(Collectors.joining(" "))),
-				timeout);
+			String res = "{\n" +
+	                "\t\"statuses\": [\n" +
+	                "\t\t{\n" +
+	                "\t\t\t\"job_id\": \"16793253\",\n" +
+	                "\t\t\t\"job_state\": \"RUNNING\"\n" +
+	                "\t\t}\n" +
+	                "\t],\n" +
+	                "\t\"history\": [\n" +
+	                "\n" +
+	                "\t],\n" +
+	                "\t\"result\": \"OK\"\n" +
+	                "}\n";
+		
 
-		if (result.isTimeoutOccured() || result.getExitCode() != 0) {
-			StatusResult statusResult = new StatusResult();
-			statusResult.setResult("ERROR");
-			statusResult.setErrorMessage(result.getError());
-
-			if ((statusResult.getErrorMessage() == null
-					|| statusResult.getErrorMessage().isEmpty())
-					&& result.isTimeoutOccured()) {
-				statusResult.setErrorMessage("Timeout occurred");
-			}
-
-			return statusResult;
+			
+			return readResult(res, StatusResult.class);
+			
+//			StatusResult statusResult = new StatusResult();
+//			statusResult.setResult("ERROR");
+//			statusResult.setErrorMessage("Not yet implemented");
+//			return statusResult;
 		} else {
-			return readResult(result.getOutput(), StatusResult.class);
+			PathHelper pathHelper = new PathHelper(host, userLogin);
+			fileManager.cp(pathHelper.getTransferPath() + ".rimrock/status",
+					new ClassPathResource("scripts/status"));
+			RunResults result = run(host, String.format("cd %s.rimrock; chmod +x status; ./status %s",
+					pathHelper.getFileRootPath(), jobIds.stream().collect(Collectors.joining(" "))),
+					timeout);
+	
+			if (result.isTimeoutOccured() || result.getExitCode() != 0) {
+				StatusResult statusResult = new StatusResult();
+				statusResult.setResult("ERROR");
+				statusResult.setErrorMessage(result.getError());
+	
+				if ((statusResult.getErrorMessage() == null
+						|| statusResult.getErrorMessage().isEmpty())
+						&& result.isTimeoutOccured()) {
+					statusResult.setErrorMessage("Timeout occurred");
+				}
+	
+				return statusResult;
+			} else {
+				return readResult(result.getOutput(), StatusResult.class);
+			}
 		}
 	}
 
