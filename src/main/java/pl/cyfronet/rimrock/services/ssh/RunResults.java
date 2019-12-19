@@ -1,4 +1,4 @@
-package pl.cyfronet.rimrock.services.gsissh;
+package pl.cyfronet.rimrock.services.ssh;
 
 public class RunResults {
 	private String output;

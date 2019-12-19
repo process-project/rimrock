@@ -37,9 +37,9 @@ import pl.cyfronet.rimrock.repositories.JobRepository;
 import pl.cyfronet.rimrock.services.filemanager.FileManager;
 import pl.cyfronet.rimrock.services.filemanager.FileManagerException;
 import pl.cyfronet.rimrock.services.filemanager.FileManagerFactory;
-import pl.cyfronet.rimrock.services.gsissh.GsisshRunner;
-import pl.cyfronet.rimrock.services.gsissh.RunException;
-import pl.cyfronet.rimrock.services.gsissh.RunResults;
+import pl.cyfronet.rimrock.services.ssh.GsisshRunner;
+import pl.cyfronet.rimrock.services.ssh.RunException;
+import pl.cyfronet.rimrock.services.ssh.RunResults;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = RimrockApplication.class)

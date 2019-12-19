@@ -26,7 +26,7 @@ import com.jcraft.jsch.JSchException;
 import pl.cyfronet.rimrock.controllers.exceptions.ResourceNotFoundException;
 import pl.cyfronet.rimrock.controllers.rest.jobs.ValidationException;
 import pl.cyfronet.rimrock.services.filemanager.FileManagerException;
-import pl.cyfronet.rimrock.services.gsissh.RunException;
+import pl.cyfronet.rimrock.services.ssh.RunException;
 
 @ControllerAdvice
 public class GlobalExceptionHandling {

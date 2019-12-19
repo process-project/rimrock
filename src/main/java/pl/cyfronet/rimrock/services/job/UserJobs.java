@@ -31,20 +31,15 @@ import pl.cyfronet.rimrock.repositories.JobRepository;
 import pl.cyfronet.rimrock.services.filemanager.FileManager;
 import pl.cyfronet.rimrock.services.filemanager.FileManagerException;
 import pl.cyfronet.rimrock.services.filemanager.FileManagerFactory;
-import pl.cyfronet.rimrock.services.gsissh.GsisshRunner;
-import pl.cyfronet.rimrock.services.gsissh.RunException;
-import pl.cyfronet.rimrock.services.gsissh.RunResults;
+import pl.cyfronet.rimrock.services.ssh.GsisshRunner;
+import pl.cyfronet.rimrock.services.ssh.RunException;
+import pl.cyfronet.rimrock.services.ssh.RunResults;
 
 public class UserJobs {
 	private static final Logger log = LoggerFactory.getLogger(UserJobs.class);
 	
 	// TODO: Mock - remove when not needed
 		private static final int LRZ_MOCK_ID = 12345678;
-		
-		private class MockedStatus {
-			@JsonProperty("aaa")
-			private String aaa;
-		}
 	// --------------------
 
 	private int timeout = 20000;

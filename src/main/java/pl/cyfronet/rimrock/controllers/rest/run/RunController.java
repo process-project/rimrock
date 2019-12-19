@@ -30,9 +30,10 @@ import pl.cyfronet.rimrock.controllers.rest.RunResponse;
 import pl.cyfronet.rimrock.controllers.rest.RunResponse.Status;
 import pl.cyfronet.rimrock.controllers.rest.jobs.ValidationException;
 import pl.cyfronet.rimrock.gsi.ProxyHelper;
-import pl.cyfronet.rimrock.services.gsissh.GsisshRunner;
-import pl.cyfronet.rimrock.services.gsissh.RunException;
-import pl.cyfronet.rimrock.services.gsissh.RunResults;
+import pl.cyfronet.rimrock.services.ssh.GsisshRunner;
+import pl.cyfronet.rimrock.services.ssh.RunException;
+import pl.cyfronet.rimrock.services.ssh.RunResults;
+import pl.cyfronet.rimrock.services.ssh.SshRunner;
 
 @Controller
 public class RunController {
@@ -40,12 +41,14 @@ public class RunController {
 
 	@Value("${run.timeout.millis}") private int runTimeoutMillis;
 
-	private GsisshRunner runner;
+	private GsisshRunner gsiRunner;
+	private SshRunner sshRunner;
 	private ProxyHelper proxyHelper;
 
 	@Autowired
-	public RunController(GsisshRunner runner, ProxyHelper proxyHelper) {
-		this.runner = runner;
+	public RunController(GsisshRunner gsiRunner, ProxyHelper proxyHelper, SshRunner sshRunner) {
+		this.gsiRunner = gsiRunner;
+		this.sshRunner = sshRunner;
 		this.proxyHelper = proxyHelper;
 	}
 
@@ -53,6 +56,8 @@ public class RunController {
 			produces = APPLICATION_JSON_VALUE)
 	@ResponseBody
 	public ResponseEntity<RunResponse> run(@RequestHeader("PROXY") String proxy,
+			@RequestHeader(name="SSH_USER", required=false) String sshUser,
+			@RequestHeader(name="SSH_PRIV_KEY", required=false) String sshPrivKey,
 			@Valid @RequestBody RunRequest runRequest, BindingResult errors)
 					throws CredentialException, GSSException, IOException, InterruptedException,
 					KeyStoreException, CertificateException, JSchException {
@@ -62,8 +67,16 @@ public class RunController {
 			throw new ValidationException(errors);
 		}
 
-		RunResults results = runner.run(runRequest.getHost(), proxyHelper.decodeProxy(proxy),
+		RunResults results; 
+		
+		if(sshUser == null || sshPrivKey == null) {
+			results = gsiRunner.run(runRequest.getHost(), proxyHelper.decodeProxy(proxy),
 				runRequest.getCommand(), runRequest.getWorkingDirectory(), -1);
+		} else {
+			results = sshRunner.run(runRequest.getHost(), proxyHelper.decodeProxy(proxy),
+				runRequest.getCommand(), runRequest.getWorkingDirectory(), -1,
+				sshUser, sshPrivKey);
+		}
 
 		if(results.isTimeoutOccured()) {
 			throw new RunException(

@@ -20,8 +20,8 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import pl.cyfronet.rimrock.ProxyFactory;
 import pl.cyfronet.rimrock.RimrockApplication;
-import pl.cyfronet.rimrock.services.gsissh.GsisshRunner;
-import pl.cyfronet.rimrock.services.gsissh.RunResults;
+import pl.cyfronet.rimrock.services.ssh.GsisshRunner;
+import pl.cyfronet.rimrock.services.ssh.RunResults;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = RimrockApplication.class)

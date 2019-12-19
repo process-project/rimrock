@@ -43,9 +43,9 @@ import pl.cyfronet.rimrock.controllers.rest.RestHelper;
 import pl.cyfronet.rimrock.domain.Job;
 import pl.cyfronet.rimrock.gsi.ProxyHelper;
 import pl.cyfronet.rimrock.services.filemanager.FileManagerException;
-import pl.cyfronet.rimrock.services.gsissh.RunException;
 import pl.cyfronet.rimrock.services.job.UserJobs;
 import pl.cyfronet.rimrock.services.job.UserJobsFactory;
+import pl.cyfronet.rimrock.services.ssh.RunException;
 
 @Controller
 public class JobsController {
@@ -66,7 +66,6 @@ public class JobsController {
 			produces = APPLICATION_JSON_VALUE)
 	public ResponseEntity<JobInfo> submit(@RequestHeader("PROXY") String proxy, 
 			@RequestHeader(name="SSH_PRIV_KEY", required=false) String ssh_priv_key,
-			@RequestHeader(name="SSH_PUB_KEY", required=false) String ssh_pub_key,
 			@Valid @RequestBody SubmitRequest submitRequest,
 			BindingResult errors) throws CredentialException, GSSException,
 			FileManagerException, RunException, KeyStoreException, CertificateException,
@@ -77,7 +76,7 @@ public class JobsController {
 		}
 		
 		// FIXME: MOCK
-		log.info("PUB_KEY: {}\nPRIV KEY: {}", ssh_pub_key, ssh_priv_key);
+		log.info("PRIV KEY: {}", ssh_priv_key);
 
 		UserJobs manager = userJobsFactory.get(proxyHelper.decodeProxy(proxy));
 
