@@ -94,7 +94,10 @@ function submit_slurm {
 	fi
 
 	prefix=""
-	if [ "$(hostname)" == "login01.pro.cyfronet.pl" ]
+	
+	re='^login.*\.pro(metheus)?\.cyfronet\.pl$'
+	
+	if [[ "$(hostname)" =~ $re ]]
 	then
         prefix="/prometheus"
 	fi

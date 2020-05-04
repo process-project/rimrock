@@ -18,7 +18,9 @@ public class PathHelper {
 		zeusAliases = Arrays.asList("zeus.cyfronet.pl", "ui.cyfronet.pl");
 		prometheusAliases = Arrays.asList("login01.prometheus.cyf-kr.edu.pl",
 				"prometheus.cyf-kr.edu.pl", "login01.prometheus.cyfronet.pl",
-				"prometheus.cyfronet.pl");
+				"prometheus.cyfronet.pl", "pro.cyfronet.pl", 
+				"login01.pro.cyfronet.pl", "login02.prometheus.cyfronet.pl",
+				"login02.pro.cyfronet.pl");
 	}
 
 	public String getTransferPath() {
