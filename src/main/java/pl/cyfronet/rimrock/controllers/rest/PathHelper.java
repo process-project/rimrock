@@ -1,12 +1,10 @@
 package pl.cyfronet.rimrock.controllers.rest;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.regex.Pattern;
 
 public class PathHelper {
-	private List<String> zeusAliases;
-	
-	private List<String> prometheusAliases;
+	private Pattern prometheusPattern;
+	private Pattern zeusPattern;
 	
 	private String host;
 	
@@ -15,16 +13,14 @@ public class PathHelper {
 	public PathHelper(String host, String userLogin) {
 		this.host = host;
 		this.userLogin = userLogin;
-		zeusAliases = Arrays.asList("zeus.cyfronet.pl", "ui.cyfronet.pl");
-		prometheusAliases = Arrays.asList("login01.prometheus.cyf-kr.edu.pl",
-				"prometheus.cyf-kr.edu.pl", "login01.prometheus.cyfronet.pl",
-				"prometheus.cyfronet.pl");
+	    prometheusPattern = Pattern.compile("^(login\\d+\\.)?pro(metheus)?\\.cyf(ronet|-kr\\.edu)\\.pl$");
+	    zeusPattern = Pattern.compile("^(ui|zeus)\\.cyf(ronet|-kr\\.edu)\\.pl$");
 	}
 
 	public String getTransferPath() {
 		String rootPath = getFileRootPath();
 		
-		if (prometheusAliases.contains(host)) {
+		if (prometheusPattern.matcher(host).matches()) {
 			return getHostPrefix() + rootPath;
 		} else {
 			return rootPath;
@@ -32,7 +28,7 @@ public class PathHelper {
 	}
 
 	private String getHostPrefix() {
-		if (prometheusAliases.contains(host)) {
+		if (prometheusPattern.matcher(host).matches()) {
 				return "/prometheus";
 		} else {
 				return "";
@@ -40,9 +36,9 @@ public class PathHelper {
 	}
 
 	public String getFileRootPath() {
-		if (zeusAliases.contains(host)) {
+		if (zeusPattern.matcher(host).matches()) {
 			return "/people/" + userLogin + "/";
-		} else if (prometheusAliases.contains(host)) {
+		} else if (prometheusPattern.matcher(host).matches()) {
 			return "/net/people/" + userLogin + "/";
 		} else {
 			return "/tmp/";
@@ -51,7 +47,7 @@ public class PathHelper {
 
 	public String addHostPrefix(String absolutePath) {
 		if (absolutePath != null) {
-			if (prometheusAliases.contains(host)) {
+			if (prometheusPattern.matcher(host).matches()) {
 				return getHostPrefix() + absolutePath;
 			} else {
 				return absolutePath;
