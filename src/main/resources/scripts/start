@@ -95,7 +95,7 @@ function submit_slurm {
 
 	prefix=""
 	
-	re='^login.*\.pro(metheus)?\.cyfronet\.pl$'
+	re='^login[0-9]+\.pro(metheus)?\.cyf(ronet|-kr\.edu)\.pl$'
 	
 	if [[ "$(hostname)" =~ $re ]]
 	then
