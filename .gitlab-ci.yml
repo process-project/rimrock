@@ -17,7 +17,7 @@ testing:
   - echo "$USER_CERT" > src/test/resources/usercert.pem
   - echo "$USER_KEY" > src/test/resources/userkey.pem
   - mvn test -B -Dmaven.repo.local=/cache/.m2/repository
-  
+
 prod_deploy:
   stage: deploy
   environment: production
@@ -33,7 +33,7 @@ prod_deploy:
   - scp target/*.jar rimrock@rimrock.plgrid.pl:rimrock/rimrock.jar
   - ssh rimrock@rimrock.plgrid.pl "chmod +x rimrock/rimrock.jar"
   - ssh rimrock@rimrock.plgrid.pl "sudo /etc/init.d/rimrock restart"
-  
+
 bugfix_release:
   stage: deploy
   only:
@@ -46,7 +46,7 @@ bugfix_release:
   - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
   - git config --global user.name "Gitlab CI"
   - git config --global user.email gitlab-ci@cyfronet.pl
-  - git remote set-url origin git@gitlab.dev.cyfronet.pl:plgrid/rimrock.git
+  - git remote set-url origin git@gitlab.com:cyfronet/rimrock.git
   - git checkout master
   - git fetch
   - git reset --hard origin/master
@@ -65,7 +65,7 @@ bugfix_release:
   - git commit -m "next development cycle for $version"
   - git push origin master
   - git push origin --tags
-    
+
 feature_release:
   stage: deploy
   only:
@@ -78,7 +78,7 @@ feature_release:
   - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
   - git config --global user.name "Gitlab CI"
   - git config --global user.email gitlab-ci@cyfronet.pl
-  - git remote set-url origin git@gitlab.dev.cyfronet.pl:plgrid/rimrock.git
+  - git remote set-url origin git@gitlab.com:cyfronet/rimrock.git
   - git checkout master
   - git fetch
   - git reset --hard origin/master
@@ -97,7 +97,7 @@ feature_release:
   - git commit -m "next development cycle for $version"
   - git push origin master
   - git push origin --tags
-    
+
 api_release:
   stage: deploy
   only:
@@ -110,7 +110,7 @@ api_release:
   - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
   - git config --global user.name "Gitlab CI"
   - git config --global user.email gitlab-ci@cyfronet.pl
-  - git remote set-url origin git@gitlab.dev.cyfronet.pl:plgrid/rimrock.git
+  - git remote set-url origin git@gitlab.com:cyfronet/rimrock.git
   - git checkout master
   - git fetch
   - git reset --hard origin/master

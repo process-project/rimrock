@@ -1,4 +1,5 @@
 v unreleased
+  - Fix gitlab.yml configuration to use gitlab.com instead of gitlab.dev.cyfronet.pl
 
 v 2.0.0
   - Removing of the legacy features: Globus, QCG, IProcesses and Proxy Generation to streamline Rimrock
@@ -9,7 +10,7 @@ v 1.8.3
   - Fixing SLURM update script to generate proper JOB history
 
 v 1.8.2
-  - Fixing SLURM update script to work faster 
+  - Fixing SLURM update script to work faster
   - Fixing JOB ID handling in the SLURM update script
   - Fixing Surefire Maven plugin configuration
   - Updating PLGrid grant ID for integration testing
