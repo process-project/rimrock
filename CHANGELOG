@@ -1,4 +1,5 @@
 v unreleased
+  - Fix link to plgdata file after introducing login2 prometheus login node
   - Fix gitlab.yml configuration to use gitlab.com instead of gitlab.dev.cyfronet.pl
 
 v 2.0.0
