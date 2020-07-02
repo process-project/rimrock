@@ -1,7 +1,6 @@
 #!/bin/bash
 
 QSTAT=''
-SQUEUE=''
 ZJH=/opt/cyfronet/bin/zeus-jobs-history
 SACCT=/net/slurm/releases/production/bin/sacct
 ECHO=/bin/echo
@@ -16,7 +15,6 @@ function report_error {
 }
 
 function detect_rm {
-	SQUEUE=$(which squeue 2>/dev/null)
 	if [ $? -eq 0 ]
 	then
 		RM="slurm"
@@ -100,7 +98,7 @@ function status_slurm {
 	state["SUSPENDED"]="RUNNING"
 	state["CANCELLED"]="RUNNING"
 	state["COMPLETING"]="RUNNING"
-	state["COMPLETED"]="RUNNING"
+	state["COMPLETED"]="FINISHED"
 	state["CONFIGURING"]="RUNNING"
 	state["FAILED"]="ERROR"
 	state["TIMEOUT"]="ERROR"
@@ -129,14 +127,14 @@ function status_slurm {
 	text_output=""
 	text_output_history=""
 
-    job_states=$($SQUEUE -h -u $USER -o "%A|%T" -j $unscoped_job_list 2>&1)
+    job_states=$($SACCT -Xp -o JobID,State -n -s BF,CA,F,NF,PR,TO,CD,R -j $unscoped_job_list 2>&1)
 	for job_id in "${job_list[@]}"
 	do
 	ujid=$(echo $job_id | cut -d'.' -f1)
         job_state=$(echo "$job_states" | grep $ujid | cut -f 2 -d "|" 2>&1)
 		if [ $? -ne 0 -o "x${job_state}" = "x" ]
 		then
-			#report_error "squeue error! $job_state"
+			#report_error "sacct error! $job_state"
 			#exit 13
 			continue
 		fi
@@ -146,7 +144,7 @@ function status_slurm {
 	if [ "plgmonitoring" != $USER ]
 	then
 	    since=$(date --date "week ago" +%F)
-	    saout=$($SACCT -Xp -o JobID,NNodes,NCPUS,Elapsed,Submit,Start,End -S ${since} -n -s BF,CA,F,NF,PR,TO,CD -j $unscoped_job_list)
+	    saout=$($SACCT -Xp -o JobID,NNodes,NCPUS,Elapsed,Submit,Start,End -n -s BF,CA,F,NF,PR,TO,CD -j $unscoped_job_list)
 	    
 		for scoped_job_id in "${job_list[@]}"
 		do
