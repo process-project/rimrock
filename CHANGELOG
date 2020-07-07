@@ -1,4 +1,6 @@
 v unreleased
+  - Fixing status script to get status from saact as squeue is loosing state too fast
+  - Updating grant id to the new one (in tests)
 
 v 2.0.1
   - Fix link to plgdata file after introducing login2 prometheus login node
