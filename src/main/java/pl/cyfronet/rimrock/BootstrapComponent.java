@@ -36,6 +36,9 @@ public class BootstrapComponent implements ApplicationListener<ContextRefreshedE
 	@Value("classpath:certs/OLDTERENASSLCA")
 	private Resource oldTerenaCert;
 	
+	@Value("classpath:certs/GEANTCA")
+	private Resource geantCert;
+	
 	@Override
 	public void onApplicationEvent(ContextRefreshedEvent event) {
 		//see https://www.aquaclusters.com/app/home/project/public/aquadatastudio/discussion/GeneralDiscussions/post/25/Java-6u29-bug-prevents-SSL-connection-to-SQL-Server-2008-R2
@@ -50,7 +53,7 @@ public class BootstrapComponent implements ApplicationListener<ContextRefreshedE
 	
 	private void enableTrustedSSL() throws NoSuchAlgorithmException, KeyStoreException,
 			CertificateException, IOException {
-		log.info("Configuring SSL context to trust TERENA and SIMPLECA");
+		log.info("Configuring SSL context to trust TERENA, SIMPLECA and GEANT");
 		CertificateFactory certFactory = CertificateFactory.getInstance("X.509");
 		Certificate terenaCertificate = certFactory.generateCertificate(
 				terenaCert.getInputStream());
@@ -58,12 +61,15 @@ public class BootstrapComponent implements ApplicationListener<ContextRefreshedE
 				simpleCaCert.getInputStream());
 		Certificate oldTerenaCertificate = certFactory.generateCertificate(
 				oldTerenaCert.getInputStream());
+		Certificate geantCertificate = certFactory.generateCertificate(
+				geantCert.getInputStream());
 		
 		KeyStore store = KeyStore.getInstance(KeyStore.getDefaultType());
 		store.load(null, null);
 		store.setCertificateEntry("terena", terenaCertificate);
 		store.setCertificateEntry("simpleca", simpleCaCertificate);
 		store.setCertificateEntry("oldsimpleca", oldTerenaCertificate);
+		store.setCertificateEntry("geant", geantCertificate);
 		
 		TrustManagerFactory tmf = TrustManagerFactory.getInstance(
 				TrustManagerFactory.getDefaultAlgorithm());

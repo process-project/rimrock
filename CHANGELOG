@@ -1,4 +1,5 @@
 v unreleased
+  - addinge required trusted CA certificate (GEANT)
 
 v 2.0.2
   - Fixing status script to get status from saact as squeue is loosing state too fast
