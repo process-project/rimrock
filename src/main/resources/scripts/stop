@@ -12,7 +12,7 @@ function usage {
 }
 
 function report_error {
-	echo -e "{\n\t\"result\": \"ERROR\",\n\t\"error_message\": \"$1\"\n}"
+	echo -e "$1"
 }
 
 function report_success {
