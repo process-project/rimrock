@@ -1,4 +1,5 @@
 v unreleased
+  - fixed checking for missed states in status script 
 
 v 2.0.3
   - addinge required trusted CA certificate (GEANT)

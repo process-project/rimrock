@@ -127,7 +127,7 @@ function status_slurm {
 	text_output=""
 	text_output_history=""
 
-    job_states=$($SACCT -Xp -o JobID,State -n -s BF,CA,F,NF,PR,TO,CD,R -j $unscoped_job_list 2>&1)
+    job_states=$($SACCT -Xp -o JobID,State -n -j $unscoped_job_list 2>&1)
 	for job_id in "${job_list[@]}"
 	do
 	ujid=$(echo $job_id | cut -d'.' -f1)
